@@ -2,6 +2,7 @@
 #-*- coding:utf-8 -*-
 
 import os
+import re
 import configparser
 from configparser import NoOptionError, NoSectionError
 
@@ -33,7 +34,10 @@ class ConfigParse(object):
                     }
                 }
         """
-        configpath = os.path.join(os.path.dirname(os.getcwd()), 'config')
+        if re.match(r'.*src$', os.getcwd()):
+            configpath = os.path.join(os.getcwd(), 'config')
+        else:
+            configpath = os.path.join(os.path.dirname(os.getcwd()), 'config')
         self.__configfile = os.path.join(configpath, filename)
         if not os.path.exists(configpath):
             os.makedirs(configpath)

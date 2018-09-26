@@ -12,6 +12,8 @@ dist
 build
 report
 demo
+.pytest_cache
+testcases/.pytest_cache
 
 # My configurations:
 db.ini
