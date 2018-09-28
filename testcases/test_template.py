@@ -24,13 +24,21 @@ class TestTemplate(object):
 
     @allure.step("+++ setup method +++")
     def setup_method(self, method):
-        self.logger.info("=== The setup method.")
+        self.logger.info("")
+        self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
+        self.logger.info("Add some datas to database.")
+        self.logger.info("=== End setup method ===")
+        self.logger.info("")
 
     @allure.step("+++ teardown method +++")
     def teardown_method(self, method):
-        self.logger.info("=== The teardown method.")
+        self.logger.info("")
+        self.logger.info("=== Start teardown method ===")
         self.logger.info(method.__name__)
+        self.logger.info("do some database clean operation.")
+        self.logger.info("=== End teardown method ===")
+        self.logger.info("")
 
     @allure.severity("critical")  # blocker, critical, normal, minor, trivial
     @allure.story("TestFunction1")
@@ -54,7 +62,8 @@ class TestTemplate(object):
             self.logger.info("record the temp test values.")
 
         with allure.step("teststep3: assert the test result"):
-            allure.attach("assert result", "assert params result")
+            allure.attach("期望结果：", "expect result")
+            allure.attach("实际结果：", result)
             self.logger.info("assert params result")
             assert True
         self.logger.info(".... End test method1 ....")

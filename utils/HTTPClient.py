@@ -1,9 +1,14 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
+# -*-coding:utf-8-*-
 
 import os
+import time
 import base64
 import requests
+
+
+def get_timestamp():
+    return round(time.time())
 
 
 def get_images(files, package_name='img'):
@@ -20,6 +25,7 @@ def get_images(files, package_name='img'):
         abs_files.append(os.path.join(file_path, file))
     return abs_files
 
+
 def encode_image(files):
     """ 使用base64编码方式对文件内容进行编码，返回编码后的列表，如果有文件不存在则返回空列表。
 
@@ -34,7 +40,8 @@ def encode_image(files):
             return []
     return b64_files
 
-class HTTPClient():
+
+class HTTPClient(object):
     """ 封装的requests.session操作。
     
     :attribute __baseurl: 目标基本的url地址。
@@ -120,9 +127,11 @@ if __name__ == "__main__":
     print(files)
     print(encode_image(files))
     
-    print("\n start")
-    client = HTTPClient('http://192.168.0.105:9088')
-    client.update_header({'PhoneSeri': 'Android123456'})
-    r = client.get('/api/Theme/GetTheme')
-    print(r.status_code)
-    client.close()
+    # print("\n start")
+    # client = HTTPClient('http://192.168.0.105:9088')
+    # client.update_header({'PhoneSeri': 'Android123456'})
+    # r = client.get('/api/Theme/GetTheme')
+    # print(r.status_code)
+    # client.close()
+
+    print(get_timestamp())
