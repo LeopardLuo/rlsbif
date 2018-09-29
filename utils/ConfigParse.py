@@ -144,6 +144,16 @@ class ConfigParse(object):
             return
         self.__parser.remove_option(section, key)
 
+
+def get_device_topic(devicename, item):
+    """ Get the topic value by devicename and item in config file.
+    :param devicename: IOT devicename.
+    :param item: the option name of the topic in config file.
+    :rtype: return the complete topic string.
+    """
+    value = ConfigParse().getItem('iot', item)
+    return '/pk/{0}/{1}'.format(devicename, value)
+
     
 if __name__ == "__main__":
 #     default_config = {'db2': {
