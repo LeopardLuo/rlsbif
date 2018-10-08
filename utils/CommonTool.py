@@ -2,6 +2,9 @@
 # -*- coding:utf-8 -*-
 
 
+import inspect
+import ctypes
+
 class ConstValue(object):
     """ 封装出来的一个常量类。所有设置的属性都只能设置一次，多次设置会产生异常。属性名必须是大写字符串。
     usage:
@@ -46,3 +49,24 @@ def func_bound_comment(logger):
             return result
         return wrapper
     return decorator
+
+
+def _async_raise(tid, exctype):
+    """raises the exception, performs cleanup if needed"""
+    tid = ctypes.c_long(tid)
+    if not inspect.isclass(exctype):
+        exctype = type(exctype)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    elif res != 1:
+        # """if it returns a number greater than one, you're in trouble,
+        #  and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+
+
+def stop_thread(thread):
+    """ Stop a running thread."""
+    _async_raise(thread.ident, SystemExit)
+

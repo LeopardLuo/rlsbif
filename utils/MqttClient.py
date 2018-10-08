@@ -77,7 +77,7 @@ class MqttClient(object):
     :attribute __client: MQTT连接的客户端。
     """
 
-    def __init__(self, host, port=1883, client_id='', username='', password=None, keepalive=60, logger=None):
+    def __init__(self, host, client_id='', username='', password=None, port=1883, keepalive=60, logger=None):
         """ 使用提供的参数值初始化MQTT客户端。
 
         :param host: MQTT服务主机。

@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-
+from time import sleep
+from queue import Queue
+import threading
 import allure
 
 from utils.HTTPClient import *
 from utils.ConfigParse import ConfigParse
+from utils.MqttClient import *
+from utils.CommonTool import *
 
 
 @allure.step("Register-GetMsgCode")
@@ -1417,3 +1421,100 @@ def bs_get_service_order_records(httpclient, system_id, service_order_id, system
         return rsp_content["Result"]
     else:
         return {}
+
+
+@allure.step("IOT-Subscribe-Msg")
+def __subscribe_msg(ProductKey, DeviceName, DeviceSecret, topic, qos, queue):
+    """ Tool function for mqtt subscribe message.
+    :param ProductKey: ali iot platform productkey string type.
+    :param DeviceName: ali iot platform devicename string type.
+    :param DeviceSecret: ali iot platform devicesecret string type.
+    :param topic: subscribe topic string type.
+    :param qos: subscribe topic's qos int type.
+    :param queue: store subscribe message queue.
+    :rtype None.
+    """
+    params = AliParam(ProductKey=ProductKey, DeviceName=DeviceName, DeviceSecret=DeviceSecret)
+    clientid, username, password, hostname = params.get_param()
+    authconfig = {'username': username, 'password': password}
+    msg = subscribe_simple(topic, qos, 1, client_id=clientid, hostname=hostname, port=1883,
+                           auth=authconfig)
+    queue.put(msg)
+
+
+@allure.step("IOT-Subscribe-Message")
+def iot_subscribe_message(ProductKey, DeviceName, DeviceSecret, topic, qos, timeout=60):
+    """ Subscribe iot message.
+    :param ProductKey: ali iot platform productkey string type.
+    :param DeviceName: ali iot platform devicename string type.
+    :param DeviceSecret: ali iot platform devicesecret string type.
+    :param topic: subscribe topic string type.
+    :param qos: subscribe topic's qos int type.
+    :param timeout: subscribe message threading timeout int type, default 60s.
+    :rtype return dict of payload message, or {} failed.
+    """
+    queue = Queue()
+    t1 = threading.Thread(target=__subscribe_msg, args=(ProductKey, DeviceName, DeviceSecret, topic, qos, queue))
+    t1.start()
+    start_time = int(time.time())
+    sleep(5)
+    end_time = int(time.time())
+    during = end_time - start_time
+    while t1.is_alive() and during < timeout:
+        sleep(5)
+        end_time = int(time.time())
+        during = end_time - start_time
+    if t1.is_alive():
+        stop_thread(t1)
+        return {}
+    if queue.empty():
+        return {}
+    msg = queue.get()
+    return msg.payload
+
+
+@allure.step("IOT-Publish-Message")
+def iot_publish_message(ProductKey, DeviceName, DeviceSecret, topic, payload, qos):
+    """ Publish iot message.
+    :param ProductKey: ali iot platform productkey string type.
+    :param DeviceName: ali iot platform devicename string type.
+    :param DeviceSecret: ali iot platform devicesecret string type.
+    :param topic: publish topic string type.
+    :param payload: publish payload dict type.
+    :param qos: publish topic's qos int type.
+    :rtype return None.
+    """
+    params = AliParam(ProductKey=ProductKey, DeviceName=DeviceName, DeviceSecret=DeviceSecret)
+    clientid, username, password, hostname = params.get_param()
+    authconfig = {'username': username, 'password': password}
+    publish_single(topic, payload, qos, hostname=hostname, client_id=clientid,
+                   auth=authconfig)
+
+
+@allure.step("Register Function")
+def make_register(httpclient, client_type, client_version, device_token, imei, code_type, phone, sms_code, timestamp=None, logger=None):
+    """ Register function, return True or False.
+        :param httpclient: http request client.
+        :param client_type: interface defined paramter client_type int type.
+        :param client_version: interface defined parameter client_version string type.
+        :param device_token: interface defined parameter device_token string type.
+        :param imei: interface defined parameter client phone imei string type.
+        :param code_type: interface defined paramter code_type int type.
+        :param phone: interface defined parameter phone string type.
+        :param timestamp: interface defined parameter timestamp int type, optional.
+        :param logger: logger instance for logging, optional.
+        :rtype: True successful, False failed.
+        """
+    with allure.step("GetMsgCode"):
+        code_token = get_msg_code(httpclient, code_type, phone, timestamp, logger)
+        allure.attach("GetMsgCode: ", code_token)
+        logger.info("GetMsgCode result: " + str(code_token))
+        if code_token == "":
+            return False
+    with allure.step("Register"):
+        register_result = register(httpclient, client_type, client_version, device_token, imei, phone, code_token, sms_code, timestamp, logger)
+        allure.attach("Register result: ", register_result)
+        logger.info("Register result: " + register_result)
+        if register_result:
+            return False
+    return True
