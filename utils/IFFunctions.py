@@ -1518,3 +1518,24 @@ def make_register(httpclient, client_type, client_version, device_token, imei, c
         if register_result:
             return False
     return True
+
+
+@allure.step("Login Function")
+def make_login(httpclient, code_type, client_type, client_version, device_token, imei, phone, sms_code, timestamp=None, logger=None):
+    """ APP login interface, return login user info dict.
+        :param httpclient: http request client.
+        :param client_type: interface defined paramter client_type int type.
+        :param client_version: interface defined parameter client_version string type.
+        :param device_token: interface defined parameter device_token string type.
+        :param imei: interface defined parameter client phone imei string type.
+        :param phone: interface defined parameter register phone number string type.
+        :param sms_code: run interface GetMsgCode get from phone sms code string type.
+        :param timestamp: interface defined parameter timestamp int type, optional.
+        :param logger: logger instance for logging, optional.
+        :rtype: result dict login successfully, {} login failed.
+        """
+    code_token = get_msg_code(httpclient, code_type, phone, timestamp, logger)
+    if not code_token:
+        return {}
+    result = app_login(httpclient, client_type, client_version, device_token, imei, phone, sms_code, code_token, timestamp, logger)
+    return result

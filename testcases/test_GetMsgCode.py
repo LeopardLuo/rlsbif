@@ -104,10 +104,10 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 200)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
                 assert len(rsp_content["msg"]) == 0
@@ -153,8 +153,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 200)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
                 assert rsp_content["code"] == result['code']
@@ -207,8 +207,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
@@ -246,8 +246,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 200)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
                 assert rsp_content["code"] == 1
@@ -298,8 +298,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep4: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
@@ -358,8 +358,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
@@ -405,8 +405,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 200)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
                 assert rsp_content["code"] == result['code']
@@ -467,8 +467,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
@@ -506,8 +506,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
@@ -544,8 +544,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
@@ -582,8 +582,8 @@ class TestGetMsgCode(object):
             with allure.step("teststep3: assert the response code and content"):
                 allure.attach("Expect response code：", 400)
                 allure.attach("Actual response code：", rsp.status_code)
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("response content：", rsp_content)
-                self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 400
                 assert rsp_content["code"] != 1
