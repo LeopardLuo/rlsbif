@@ -1510,14 +1510,14 @@ def make_register(httpclient, client_type, client_version, device_token, imei, c
         allure.attach("GetMsgCode: ", code_token)
         logger.info("GetMsgCode result: " + str(code_token))
         if code_token == "":
-            return False
+            return {}
     with allure.step("Register"):
         register_result = register(httpclient, client_type, client_version, device_token, imei, phone, code_token, sms_code, timestamp, logger)
         allure.attach("Register result: ", register_result)
         logger.info("Register result: " + register_result)
         if register_result:
-            return False
-    return True
+            return {}
+    return register_result
 
 
 @allure.step("Login Function")

@@ -156,7 +156,7 @@ class MysqlClient(object):
             .删除记录成功返回True，删除有异常或者出错返回False。
         """
         try:
-            cd = "%s='%s'" % (condition[0], condition[1])
+            cd = "%s like '%s'" % (condition[0], condition[1])
             sql = "DELETE FROM {0} WHERE {1}".format(table, cd)
             self.__cursor.execute(sql)
             self.__cnx.commit()

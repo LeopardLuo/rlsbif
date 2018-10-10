@@ -25,7 +25,7 @@ class TestLogin(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'GetMsgCode')
+                cls.URI = cls.config.getItem('uri', 'AppLogin')
                 allure.attach("uri", cls.URI)
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
@@ -46,6 +46,33 @@ class TestLogin(object):
                 cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
+
+            with allure.step("delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", table)
+                cls.logger.info("table: {0}".format(table))
+                delete_result = cls.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", delete_result)
+                cls.logger.info("delete result: {0}".format(delete_result))
+
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", json)
+                cls.logger.info("register params: {0}".format(json))
+                register_result = make_register(cls.httpclient, json['client_type'], json['client_version'],
+                                       json['device_token'], json['imei'], json['code_type'],
+                                        json['phone'], json['sms_code'], json['timestamp'], cls.logger)
+                allure.attach("register result", register_result)
+                cls.logger.info("register result: {0}".format(register_result))
+                token = register_result['token']
+                member_id = register_result['member_id']
+                cls.httpclient.update_header({"token": token})
+                logout_result = logout(cls.httpclient, member_id, get_timestamp(), cls.logger)
+                allure.attach("logout result", logout_result)
+                cls.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -102,7 +129,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -149,7 +176,7 @@ class TestLogin(object):
         self.logger.info(".... Start test_103002_repeat_login ....")
         try:
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 2, "phone": "13511222002", "timestamp": get_timestamp()}
+                params = {"code_type": 2, "phone": "13511222001", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", params)
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -161,7 +188,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222002", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -248,7 +275,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": client_type, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -323,7 +350,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": client_type, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -382,7 +409,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": client_version, "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -455,7 +482,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": client_version, "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -514,7 +541,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": device_token,
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -586,7 +613,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": device_token,
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -645,7 +672,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": imei, "phone": "13511222001", "sms_code": "1234",
+                        "imei": imei, "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -717,7 +744,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": imei, "phone": "13511222001", "sms_code": "1234",
+                        "imei": imei, "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -770,7 +797,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222002", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222002", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -823,7 +850,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222002", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222002", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -876,7 +903,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -950,7 +977,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": '460011234567890', "phone": phone, "sms_code": "1234",
+                        "imei": '460011234567890', "phone": phone, "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1080,7 +1107,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": '460011234567890', "phone": "13511222001", "sms_code": "1234",
+                        "imei": '460011234567890', "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1139,7 +1166,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": timestamp}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1218,7 +1245,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": '460011234567890', "phone": "13511222001", "sms_code": "1234",
+                        "imei": '460011234567890', "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": timestamp}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1271,7 +1298,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1324,7 +1351,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1377,7 +1404,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1430,7 +1457,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "phone": "13511222001", "sms_code": "1234",
+                        "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1483,7 +1510,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "sms_code": "1234",
+                        "imei": "460011234567890", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1589,7 +1616,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))
@@ -1642,7 +1669,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: get parameters."):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "1234",
+                        "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token}
                 allure.attach("params value", json)
                 self.logger.info("params: {0}".format(json))

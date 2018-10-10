@@ -25,7 +25,7 @@ class TestRegister(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'GetMsgCode')
+                cls.URI = cls.config.getItem('uri', 'Register')
                 allure.attach("uri", cls.URI)
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
@@ -69,6 +69,14 @@ class TestRegister(object):
         self.logger.info("")
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
+        with allure.step("Clear user register table info"):
+            table = 'member'
+            condition = ('user', '1351122%')
+            allure.attach("table and condition", (table, condition))
+            self.logger.info("table: {0}, condition: {1}".format(table, condition))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", delete_result)
+            self.logger.info("delete result: {0}".format(delete_result))
         self.logger.info("Add some datas to database.")
         self.logger.info("=== End setup method ===")
         self.logger.info("")

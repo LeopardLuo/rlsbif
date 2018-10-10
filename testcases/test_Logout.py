@@ -46,6 +46,18 @@ class TestLogin(object):
                 cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
+
+            with allure.step("Insert register user info"):
+                table = 'member'
+                datas = [{'birth_date': '2010-1-10', 'first_name': 'Jimmy', 'last_name': 'Cal', 'gender': 'F',
+                          'hire_date': '2018-9-10'},
+                         {'birth_date': '2010-2-10', 'first_name': 'Bob', 'last_name': 'TT', 'gender': 'M',
+                          'hire_date': '2018-10-10'}]
+                allure.attach("table and condition", (table, datas))
+                cls.logger.info("table: {0}, condition: {1}".format(table, datas))
+                insert_result = cls.mysql.execute_insert(table, datas)
+                allure.attach("insert result", insert_result)
+                cls.logger.info("insert result: {0}".format(insert_result))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -57,6 +69,13 @@ class TestLogin(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
+        with allure.step("delete all user info"):
+            table = 'member'
+            allure.attach("table name", table)
+            cls.logger.info("table: {0}".format(table))
+            delete_result = cls.mysql.execute_delete_all(table)
+            allure.attach("delete result", delete_result)
+            cls.logger.info("delete result: {0}".format(delete_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -111,7 +130,7 @@ class TestLogin(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout post."):
-                self.httpclient.update_header({"token":token})
+                self.httpclient.update_header({"authorization":token})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
@@ -158,7 +177,7 @@ class TestLogin(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout first time."):
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
@@ -216,9 +235,9 @@ class TestLogin(object):
                               ('中', {"msg": "", "code": ""}), ('*', {"msg": "", "code": ""}),
                               ('1中', {"msg": "", "code": ""}), ('1*', {"msg": "", "code": ""}),
                               (' ', {"msg": "", "code": ""}), ('', {"msg": "", "code": ""})],
-                             ids=["client_version(超长值)", "client_version(小数)", "client_version(中文)",
-                                  "client_version(特殊字符)", "client_version(数字中文)",
-                                  "client_version(数字特殊字符)", "client_version(空格)", "client_version(空)"])
+                             ids=["token(超长值)", "token(小数)", "token(中文)",
+                                  "token(特殊字符)", "token(数字中文)",
+                                  "token(数字特殊字符)", "token(空格)", "token(空)"])
     def test_105003_token_wrong(self, token, result):
         """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-105-003).
         :param token: token parameter value.
@@ -236,7 +255,7 @@ class TestLogin(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout post."):
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
@@ -286,7 +305,7 @@ class TestLogin(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout post."):
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
@@ -359,7 +378,7 @@ class TestLogin(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout post."):
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
@@ -427,7 +446,7 @@ class TestLogin(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout post."):
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 json = {"member_id": member_id, "timestamp": timestamp}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
@@ -477,6 +496,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: requests http logout post."):
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
+                self.httpclient.update_header({"authorization": ""})
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
                 allure.attach("request.body", rsp.request.body.decode())
@@ -527,7 +547,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: requests http logout post."):
                 json = {"timestamp": get_timestamp()}
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
                 allure.attach("request.body", rsp.request.body.decode())
@@ -578,7 +598,7 @@ class TestLogin(object):
 
             with allure.step("teststep2: requests http logout post."):
                 json = {"member_id": member_id}
-                self.httpclient.update_header({"token": token})
+                self.httpclient.update_header({"authorization": token})
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", rsp.request.headers)
                 allure.attach("request.body", rsp.request.body.decode())
@@ -609,3 +629,8 @@ class TestLogin(object):
             logout(self.httpclient, member_id, get_timestamp(), self.logger)
             self.logger.info(".... End test_105009_no_timestamp ....")
             self.logger.info("")
+
+
+if __name__ == '__main__':
+    pytest.main(['-v', '-k', '105001', 'test_Logout.py'])
+    # pytest.main(['-v', 'test_Logout.py::TestLogout::test_105001_logout_correct'])
