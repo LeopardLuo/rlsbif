@@ -28,24 +28,24 @@ def get_msg_code(httpclient, code_type, phone, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     json = {"code_type": code_type, "phone": phone, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("GetMsgCode json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("~~~~ start get_msg_code ~~~~")
         logger and logger.info("")
         return ""
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_msg_code ----")
     logger and logger.info("")
@@ -78,24 +78,24 @@ def register(httpclient, client_type, client_version, device_token, imei, phone,
         timestamp = get_timestamp()
     json = {"client_type": client_type, "client_version": client_version, "device_token": device_token, "imei": imei,
             "phone": phone, "code_token": code_token, "sms_code": sms_code, "timestamp": timestamp, "token": token}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("Register json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("~~~~ start register ~~~~")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end register ----")
     logger and logger.info("")
@@ -127,24 +127,24 @@ def app_login(httpclient, client_type, client_version, device_token, imei, phone
         timestamp = get_timestamp()
     json = {"client_type": client_type, "client_version": client_version, "device_token": device_token, "imei": imei,
             "phone": phone, "code_token": code_token, "sms_code": sms_code, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("App Login json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end app_login ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end app_login ----")
     logger and logger.info("")
@@ -174,24 +174,24 @@ def wx_login(httpclient, client_type, client_version, device_token, imei, code, 
         timestamp = get_timestamp()
     json = {"client_type": client_type, "client_version": client_version, "device_token": device_token, "imei": imei,
             "code": code, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("webchat Login json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end wx_login ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end wx_login ----")
     logger and logger.info("")
@@ -216,24 +216,24 @@ def logout(httpclient, member_id, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("Logout json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end logout ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end logout ----")
     logger and logger.info("")
@@ -258,24 +258,24 @@ def userinfo(httpclient, member_id, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     data = {"member_id": member_id, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("UserInfo json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end userinfo ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end userinfo ----")
     logger and logger.info("")
@@ -301,24 +301,24 @@ def modify_nick_name(httpclient, member_id, nickname, timestamp=None, logger=Non
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "nickname": nickname, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("ModifyNickName json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end modify_nick_name ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end modify_nick_name ----")
     logger and logger.info("")
@@ -344,24 +344,24 @@ def modify_sex(httpclient, member_id, sex, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "sex": sex, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("ModifySex json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end modify_sex ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end modify_sex ----")
     logger and logger.info("")
@@ -387,24 +387,24 @@ def modify_head_image(httpclient, member_id, head_image, timestamp=None, logger=
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "head_image": head_image, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("ModifyHeadImage json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end modify_head_image ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end modify_head_image ----")
     logger and logger.info("")
@@ -434,24 +434,24 @@ def modify_home_address(httpclient, member_id, province, city, district, address
         timestamp = get_timestamp()
     json = {"member_id": member_id, "province": province, "city": city, "district": district, "address": address,
             "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("ModifyHomeAddress json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end modify_home_address ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end modify_home_address ----")
     logger and logger.info("")
@@ -479,24 +479,24 @@ def check_phone(httpclient, member_id, phone, sms_code, code_token, timestamp=No
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "phone": phone, "sms_code": sms_code, "code_token": code_token, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("CheckPhone json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end check_phone ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end check_phone ----")
     logger and logger.info("")
@@ -526,24 +526,24 @@ def modify_phone(httpclient, member_id, phone, sms_code, code_token, phone_token
         timestamp = get_timestamp()
     json = {"member_id": member_id, "phone": phone, "sms_code": sms_code, "code_token": code_token,
             "phone_token": phone_token, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("ModifyPhone json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end modify_phone ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end modify_phone ----")
     logger and logger.info("")
@@ -570,24 +570,24 @@ def upload_photo(httpclient, photo_type, member_id, photo, timestamp=None, logge
     if not timestamp:
         timestamp = get_timestamp()
     json = {"photo_type": photo_type, "member_id": member_id, "photo": photo, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("UploadPhoto json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end upload_photo ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end upload_photo ----")
     logger and logger.info("")
@@ -613,24 +613,24 @@ def relate_wx(httpclient, member_id, code, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "code": code, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("RelateWX json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end relate_wx ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end relate_wx ----")
     logger and logger.info("")
@@ -655,24 +655,24 @@ def account_list(httpclient, member_id, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     data = {"member_id": member_id, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("AccountList json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end account_list ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end account_list ----")
     logger and logger.info("")
@@ -701,24 +701,24 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
         timestamp = get_timestamp()
     json = {"member_id": member_id, "identity_card_face": identity_card_face, "identity_card_emblem": identity_card_emblem,
             "face_picture": face_picture, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("UserIdentity json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end user_identity ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end user_identity ----")
     logger and logger.info("")
@@ -746,24 +746,24 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
     if not timestamp:
         timestamp = get_timestamp()
     data = {"member_id": member_id, "page_index": page_index, "page_size": page_size, "timestamp": timestamp, "orderby": orderby}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("GetIdentityOtherList json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end get_identity_other_list ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_identity_other_list ----")
     logger and logger.info("")
@@ -792,24 +792,24 @@ def identity_other(httpclient, member_id, features_name, face_picture, community
         timestamp = get_timestamp()
     json = {"member_id": member_id, "features_name": features_name, "face_picture": face_picture,
             "community_picture": community_picture, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("IdentityOther json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end identity_other ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end identity_other ----")
     logger and logger.info("")
@@ -838,24 +838,24 @@ def modify_identity_other(httpclient, member_id, features_id, face_picture, comm
         timestamp = get_timestamp()
     json = {"member_id": member_id, "features_id": features_id, "face_picture": face_picture,
             "community_picture": community_picture, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("ModifyIdentityOther json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end modify_identity_other ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end modify_identity_other ----")
     logger and logger.info("")
@@ -881,24 +881,24 @@ def remove_identity_other(httpclient, member_id, features_id, timestamp=None, lo
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "features_id": features_id, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("RemoveIdentityOther json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end remove_identity_other ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end remove_identity_other ----")
     logger and logger.info("")
@@ -929,24 +929,24 @@ def get_myservice_order_list(httpclient, member_id, page_index, page_size, state
         timestamp = get_timestamp()
     data = {"member_id": member_id, "page_index": page_index, "page_size": page_size, "state": state,
             "orderby": orderby, "search": search, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("GetMyServiceOrderList json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end get_myservice_order_list ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_myservice_order_list ----")
     logger and logger.info("")
@@ -972,24 +972,24 @@ def feedback(httpclient, member_id, comment, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "comment": comment, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("FeedBack json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end feedback ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end feedback ----")
     logger and logger.info("")
@@ -1016,24 +1016,24 @@ def get_application_list(httpclient, page_index, page_size, orderby=None, timest
     if not timestamp:
         timestamp = get_timestamp()
     data = {"page_index": page_index, "page_size": page_size, "orderby": orderby, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("GetApplicationList json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end get_application_list ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_application_list ----")
     logger and logger.info("")
@@ -1063,24 +1063,24 @@ def get_recognized_record_list(httpclient, member_id, page_index, page_size, ord
         timestamp = get_timestamp()
     data = {"member_id": member_id, "page_index": page_index, "page_size": page_size,
             "orderby": orderby, "search": search, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("GetRecognizedRecordList json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end get_recognized_record_list ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_recognized_record_list ----")
     logger and logger.info("")
@@ -1105,24 +1105,24 @@ def h5_get_business_token(httpclient, member_id, timestamp=None, logger=None):
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("H5GetAuthentication json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end h5_get_business_token ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end h5_get_business_token ----")
     logger and logger.info("")
@@ -1149,24 +1149,24 @@ def bs_get_user_info(httpclient, system_id, member_id, business_token, timestamp
     if not timestamp:
         timestamp = get_timestamp()
     data = {"system_id": system_id, "member_id": member_id, "business_token": business_token, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("BSGetUserInfo json: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end bs_get_user_info ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end bs_get_user_info ----")
     logger and logger.info("")
@@ -1206,24 +1206,24 @@ def bs_create_service_order(httpclient, system_id, business_order_id, member_id,
             "features_id": features_id, "devices_ids": devices_ids, "verify_condition_type": verify_condition_type,
             "begin_time": begin_time, "end_time": end_time, "in_count": in_count, "service_unit": service_unit,
             "service_address": service_address, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("BSCreateServiceOrder json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end bs_create_service_order ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end bs_create_service_order ----")
     logger and logger.info("")
@@ -1261,24 +1261,24 @@ def bs_update_service_order(httpclient, system_id, service_order_id, system_code
     json = {"system_id": system_id, "service_order_id": service_order_id, "system_code": system_code, "features_id": features_id,
             "devices_id": devices_id, "verify_condition_type": verify_condition_type, "begin_time": begin_time,
             "end_time": end_time, "in_count": in_count, "service_unit": service_unit, "service_address": service_address, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("BSUpdateServiceOrder json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end bs_update_service_order ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end bs_update_service_order ----")
     logger and logger.info("")
@@ -1306,24 +1306,24 @@ def bs_close_service_order(httpclient, system_id, service_order_id, system_code,
     if not timestamp:
         timestamp = get_timestamp()
     json = {"system_id": system_id, "service_order_id": service_order_id, "system_code": system_code, "close_code": close_code, "timestamp": timestamp}
-    allure.attach("request params", json)
+    allure.attach("request params", str(json))
     logger and logger.info("BSCancelServiceOrder json: {}".format(json))
     rsp = httpclient.post(uri=uri, json=json)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end bs_close_service_order ----")
         logger and logger.info("")
         return False
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end bs_close_service_order ----")
     logger and logger.info("")
@@ -1349,24 +1349,24 @@ def bs_get_service_order_status(httpclient, system_id, service_order_id, system_
     if not timestamp:
         timestamp = get_timestamp()
     data = {"system_id": system_id, "service_order_id": service_order_id, "system_code": system_code, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("BSServiceOrderStatus data: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end bs_get_service_order_status ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end bs_get_service_order_status ----")
     logger and logger.info("")
@@ -1396,24 +1396,24 @@ def bs_get_service_order_records(httpclient, system_id, service_order_id, system
         timestamp = get_timestamp()
     data = {"system_id": system_id, "service_order_id": service_order_id, "system_code": system_code, "page_index": page_index,
             "page_size": page_size, "timestamp": timestamp}
-    allure.attach("request params", data)
+    allure.attach("request params", str(data))
     logger and logger.info("BSServiceOrderRecord data: {}".format(data))
     rsp = httpclient.get(uri=uri, data=data)
-    allure.attach("request.headers", rsp.request.headers)
+    allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", rsp.request.body.decode())
+    allure.attach("request.body", str(rsp.request.body.decode()))
     logger and logger.info("request.body: {}".format(rsp.request.body.decode()))
     status_code = rsp.status_code
-    allure.attach("status_code", status_code)
+    allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
     if status_code != 200:
-        allure.attach("response content", rsp.text)
+        allure.attach("response content", str(rsp.text))
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end bs_get_service_order_records ----")
         logger and logger.info("")
         return {}
     rsp_content = rsp.json()
-    allure.attach("response content", rsp_content)
+    allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end bs_get_service_order_records ----")
     logger and logger.info("")
@@ -1507,14 +1507,14 @@ def make_register(httpclient, client_type, client_version, device_token, imei, c
         """
     with allure.step("GetMsgCode"):
         code_token = get_msg_code(httpclient, code_type, phone, timestamp, logger)
-        allure.attach("GetMsgCode: ", code_token)
+        allure.attach("GetMsgCode: ", str(code_token))
         logger.info("GetMsgCode result: " + str(code_token))
         if code_token == "":
             return {}
 
     with allure.step("Register"):
         register_result = register(httpclient, client_type, client_version, device_token, imei, phone, code_token, sms_code, get_timestamp(), logger=logger)
-        allure.attach("Register result: ", register_result)
+        allure.attach("Register result: ", str(register_result))
         logger.info("Register result: {0}".format(register_result))
         if not register_result:
             return {}

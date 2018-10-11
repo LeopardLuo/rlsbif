@@ -26,14 +26,14 @@ class TestRegister(object):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
                 cls.URI = cls.config.getItem('uri', 'Register')
-                allure.attach("uri", cls.URI)
+                allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
                 sv_protocol = cls.config.getItem('server', 'protocol')
                 sv_host = cls.config.getItem('server', 'host')
                 sv_port = cls.config.getItem('server', 'port')
                 baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, sv_port)
-                allure.attach("baseurl", baseurl)
+                allure.attach("baseurl", str(baseurl))
                 cls.logger.info("baseurl: " + baseurl)
                 cls.httpclient = HTTPClient(baseurl)
             with allure.step("初始化数据库连接。"):
@@ -42,7 +42,7 @@ class TestRegister(object):
                 db_host = cls.config.getItem('db', 'db_host')
                 db_database = cls.config.getItem('db', 'db_database')
                 db_port = int(cls.config.getItem('db', 'db_port'))
-                allure.attach("db_params", (db_user, db_password, db_host, db_database, db_port))
+                allure.attach("db_params", "{0},{1},{2},{3},{4},".format(db_user, db_password, db_host, db_database, db_port))
                 cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
@@ -50,10 +50,10 @@ class TestRegister(object):
             with allure.step("delete register user info"):
                 table = 'mem_member'
                 condition = ("phone", "1351122%")
-                allure.attach("table name", table)
+                allure.attach("table name", str(table))
                 cls.logger.info("table: {0}".format(table))
                 delete_result = cls.mysql.execute_delete_condition(table, condition)
-                allure.attach("delete result", delete_result)
+                allure.attach("delete result", str(delete_result))
                 cls.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
@@ -100,10 +100,10 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": "13511221001", "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -112,23 +112,23 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": "13511221001", "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
                 assert '登录成功' in rsp_content["message"]
@@ -148,10 +148,10 @@ class TestRegister(object):
             with allure.step("teststep5: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                 logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"], get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -176,11 +176,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -189,23 +189,23 @@ class TestRegister(object):
                 json = {"client_type": client_type, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
@@ -214,10 +214,10 @@ class TestRegister(object):
             with allure.step("teststep5: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                 logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"], get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -256,11 +256,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -269,22 +269,22 @@ class TestRegister(object):
                 json = {"client_type": client_type, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == result["status"]
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if result["status"] == 200:
                     if rsp_content["code"] == 1:
@@ -292,7 +292,7 @@ class TestRegister(object):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                                    get_timestamp(), self.logger)
-                            allure.attach("logout result：", logout_result)
+                            allure.attach("logout result：", str(logout_result))
                             self.logger.info("logout result: {}".format(logout_result))
                             self.httpclient.update_header({"authorization": ""})
                     assert rsp_content["code"] == result["code"]
@@ -300,7 +300,7 @@ class TestRegister(object):
                 else:
                     assert rsp_content
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -333,11 +333,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -346,23 +346,23 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": client_version, "device_token": "123456789",
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
@@ -372,11 +372,11 @@ class TestRegister(object):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                 logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                        get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
                 self.httpclient.update_header({"authorization": ""})
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -402,11 +402,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -415,22 +415,22 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": client_version, "device_token": "123456789",
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == result["status"]
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if result["status"] == 200:
                     if rsp_content["code"] == 1:
@@ -438,7 +438,7 @@ class TestRegister(object):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                                    get_timestamp(), self.logger)
-                            allure.attach("logout result：", logout_result)
+                            allure.attach("logout result：", str(logout_result))
                             self.logger.info("logout result: {}".format(logout_result))
                             self.httpclient.update_header({"authorization": ""})
                     assert rsp_content["code"] == result["code"]
@@ -446,7 +446,7 @@ class TestRegister(object):
                 else:
                     assert rsp_content
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -479,11 +479,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -492,23 +492,23 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": device_token,
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
@@ -518,11 +518,11 @@ class TestRegister(object):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                 logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                        get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
                 self.httpclient.update_header({"authorization": ""})
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -548,11 +548,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -561,22 +561,22 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": device_token,
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
@@ -584,7 +584,7 @@ class TestRegister(object):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                                    get_timestamp(), self.logger)
-                            allure.attach("logout result：", logout_result)
+                            allure.attach("logout result：", str(logout_result))
                             self.logger.info("logout result: {}".format(logout_result))
                             self.httpclient.update_header({"authorization": ""})
                     assert rsp_content["code"] == result["code"]
@@ -592,7 +592,7 @@ class TestRegister(object):
                 else:
                     assert rsp_content
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -625,11 +625,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -638,23 +638,23 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": imei, "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
@@ -664,11 +664,11 @@ class TestRegister(object):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                 logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                        get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
                 self.httpclient.update_header({"authorization": ""})
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -694,11 +694,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -707,23 +707,23 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": imei, "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
@@ -731,7 +731,7 @@ class TestRegister(object):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                                    get_timestamp(), self.logger)
-                            allure.attach("logout result：", logout_result)
+                            allure.attach("logout result：", str(logout_result))
                             self.logger.info("logout result: {}".format(logout_result))
                             self.httpclient.update_header({"authorization": ""})
                     assert rsp_content["code"] == result["code"]
@@ -739,7 +739,7 @@ class TestRegister(object):
                 else:
                     assert rsp_content
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -758,29 +758,29 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": '46001123456789', "phone": '13511221056', "code_token": '123456789',
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep2: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep3: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response code: {}".format(rsp.status_code))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '授权非法' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -797,18 +797,18 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: register."):
                 params = {"code_type": 0, "phone": '13511221057', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 register_result = make_register(self.httpclient, 1, '1.0', '123456789', '46001123456789', 0,
                                                 '13511221057', '123456', get_timestamp(), self.logger)
-                allure.attach("register_result result", register_result)
+                allure.attach("register_result result", str(register_result))
                 self.logger.info("register_result result: {0}".format(register_result))
                 if not register_result:
                     assert False
                 self.httpclient.update_header({"authorization": register_result["token"]})
                 logout_result = logout(self.httpclient, register_result["user_info"]["member_id"],
                                        get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
                 self.httpclient.update_header({"authorization": ""})
 
@@ -816,28 +816,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": '46001123456789', "phone": '13511221057', "code_token": '123456789',
                         "sms_code": "123556", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '授权非法' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -854,31 +854,31 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: register."):
                 params = {"code_type": 0, "phone": '13511221058', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 register_result = make_register(self.httpclient, 1, '1.0', '123456789', '46001123456789', 0,
                                                 '13511221058', '123456', get_timestamp(), self.logger)
-                allure.attach("register_result result", register_result)
+                allure.attach("register_result result", str(register_result))
                 self.logger.info("register_result result: {0}".format(register_result))
                 if not register_result:
                     assert False
                 self.httpclient.update_header({"authorization": register_result["token"]})
                 logout_result = logout(self.httpclient, register_result["user_info"]["member_id"],
                                        get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
                 self.httpclient.update_header({"authorization": ""})
 
             with allure.step("teststep2: get msg code."):
                 params = {"code_type": 0, "phone": "13511221058", "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 assert not code_token
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -916,11 +916,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": "13511221110", "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -929,27 +929,27 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": '46001123456789', "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result['msg'] in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -984,11 +984,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token1 = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token1)
+                allure.attach("getmsgcode result", str(code_token1))
                 self.logger.info("getmsgcode result: {0}".format(code_token1))
                 if not code_token1:
                     assert False
@@ -997,27 +997,27 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": '46001123456789', "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1052,11 +1052,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                            self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1065,28 +1065,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": '46001123456789', "phone": phone, "code_token": code_token,
                         "sms_code": sms_code, "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1111,11 +1111,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1124,23 +1124,23 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": '123456789',
                         "imei": '46001123456789', "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": timestamp}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result["code"]
                 assert result["msg"] in rsp_content["message"]
@@ -1149,11 +1149,11 @@ class TestRegister(object):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                 logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                        get_timestamp(), self.logger)
-                allure.attach("logout result：", logout_result)
+                allure.attach("logout result：", str(logout_result))
                 self.logger.info("logout result: {}".format(logout_result))
                 self.httpclient.update_header({"authorization": ""})
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1196,11 +1196,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": phone, "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1209,22 +1209,22 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": phone, "code_token": code_token,
                         "sms_code": "123456", "timestamp": timestamp}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == result["status"]
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
@@ -1232,7 +1232,7 @@ class TestRegister(object):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content["result"]["user_info"]["member_id"],
                                                    get_timestamp(), self.logger)
-                            allure.attach("logout result：", logout_result)
+                            allure.attach("logout result：", str(logout_result))
                             self.logger.info("logout result: {}".format(logout_result))
                             self.httpclient.update_header({"authorization": ""})
                     assert rsp_content["code"] == result["code"]
@@ -1240,7 +1240,7 @@ class TestRegister(object):
                 else:
                     assert rsp_content
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1257,11 +1257,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221096', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1270,28 +1270,28 @@ class TestRegister(object):
                 json = {"client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": '13511221096', "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] != 1
                 assert len(rsp_content["message"]) > 0
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1308,11 +1308,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221097', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1321,28 +1321,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "device_token": "123456789",
                         "imei": "460011234567890", "phone": '13511221097', "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert 'client_version不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1359,11 +1359,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221098', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1372,28 +1372,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1",
                         "imei": "460011234567890", "phone": '13511221098', "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert 'device_token不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1410,11 +1410,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221099', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1423,28 +1423,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "phone": '13511221099', "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert 'imei不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1461,11 +1461,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221100', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1474,28 +1474,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "code_token": code_token,
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1512,11 +1512,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221101', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1525,28 +1525,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": '13511221101',
                         "sms_code": "123456", "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1563,11 +1563,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221102', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1576,28 +1576,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": '13511221102', "code_token": code_token,
                         "timestamp": get_timestamp()}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -1614,11 +1614,11 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get msg code."):
                 params = {"code_type": 0, "phone": '13511221103', "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", params)
+                allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
                                           self.logger)
-                allure.attach("getmsgcode result", code_token)
+                allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
                 if not code_token:
                     assert False
@@ -1627,28 +1627,28 @@ class TestRegister(object):
                 json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": '13511221103', "code_token": code_token,
                         "sms_code": "123456"}
-                allure.attach("params value", json)
+                allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
 
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body.decode()))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.body: {}".format(rsp.request.body.decode()))
 
             with allure.step("teststep4: assert the response code and content"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '不能为空' in rsp_content["message"]
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
