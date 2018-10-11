@@ -11,18 +11,16 @@ def get_timestamp():
     return round(time.time())
 
 
-def get_images(files, package_name='img'):
+def get_image_path(file, package_name='img'):
     """ 获取所有文件files的绝对路径，返回文件路径字符串列表。
     
-    :param files: 文件名列表，如['img1.jpg', 'img2.bmp']
+    :param file: 文件名列表，如'img1.jpg'
     :param package_name: 文件存放的包路径，如 'img'
     :rtype: 字符串列表
     """
-    abs_files = []
-    for file in files:
-        root_path = os.path.dirname(os.path.split(os.path.abspath(__file__))[0])
-        file_path = os.path.join(root_path, package_name)
-        abs_files.append(os.path.join(file_path, file))
+    root_path = os.path.dirname(os.path.split(os.path.abspath(__file__))[0])
+    file_path = os.path.join(root_path, package_name)
+    abs_files = os.path.join(file_path, file)
     return abs_files
 
 
@@ -123,9 +121,9 @@ class HTTPClient(object):
     
 
 if __name__ == "__main__":
-    files = get_images(['Kaola.jpg'])
+    files = get_image_path('Kaola.jpg')
     print(files)
-    print(encode_image(files))
+    print(encode_image([files]))
     
     # print("\n start")
     # client = HTTPClient('http://192.168.0.105:9088')
