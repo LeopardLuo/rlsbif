@@ -87,18 +87,17 @@ class HTTPClient(object):
         """ 增加HTTP header的内容，如果要删除字段就设置相应的字段内容为None。"""
         self.__session.headers.update(headers)
     
-    def get(self, uri, data=None, headers=None):
+    def get(self, uri, params=None, headers=None):
         """ 实现requests.get功能。
         
         :param uri: GET请求的uri，不包括主机名和端口，如/api/Theme/GetTheme
-        :param data: GET请求url上面的参数配置， dict类型，可选。
+        :param params: GET请求url上面的参数配置， dict类型，可选。
         :param headers: GET请求的HTTP头的配置，dict类型，可选。
         
         :rtype: response对象。
         """
         url = self.__baseurl + uri
-        print(url)
-        return self.__session.get(url, data=data, headers=headers)
+        return self.__session.get(url, params=params, headers=headers)
 #         status_code = rsp.status_code
 #         rsp_data = rsp.json()
 #         rsp_header = rsp.headers
