@@ -123,6 +123,7 @@ dist
 build
 report
 demo
+img
 .pytest_cache
 testcases/.pytest_cache
 

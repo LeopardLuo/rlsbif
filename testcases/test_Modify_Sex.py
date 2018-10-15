@@ -26,45 +26,57 @@ class TestModifySex(object):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
                 cls.URI = cls.config.getItem('uri', 'ModifySex')
-                allure.attach("uri", cls.URI)
+                allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
                 sv_protocol = cls.config.getItem('server', 'protocol')
                 sv_host = cls.config.getItem('server', 'host')
                 sv_port = cls.config.getItem('server', 'port')
                 baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, sv_port)
-                allure.attach("baseurl", baseurl)
+                allure.attach("baseurl", str(baseurl))
                 cls.logger.info("baseurl: " + baseurl)
                 cls.httpclient = HTTPClient(baseurl)
+            with allure.step("初始化数据库连接。"):
+                db_user = cls.config.getItem('db', 'db_user')
+                db_password = cls.config.getItem('db', 'db_password')
+                db_host = cls.config.getItem('db', 'db_host')
+                db_database = cls.config.getItem('db', 'db_database')
+                db_port = int(cls.config.getItem('db', 'db_port'))
+                allure.attach("db_params",
+                              "{0}, {1}, {2}, {3}, {4}".format(db_user, db_password, db_host, db_database, db_port))
+                cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
+                                "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
+                cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
 
             with allure.step("delete insert user info"):
                 table = 'mem_member'
                 condition = ("phone", "1351122%")
-                allure.attach("table name", table)
+                allure.attach("table name", str(table))
                 cls.logger.info("table: {0}".format(table))
                 delete_result = cls.mysql.execute_delete_condition(table, condition)
-                allure.attach("delete result", delete_result)
+                allure.attach("delete result", str(delete_result))
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": "13511222121", "sms_code": "123456",
                         "timestamp": get_timestamp()}
-                allure.attach("register params value", json)
+                allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
                 register_result = make_register(cls.httpclient, json['client_type'], json['client_version'],
                                        json['device_token'], json['imei'], json['code_type'],
                                         json['phone'], json['sms_code'], json['timestamp'], cls.logger)
-                allure.attach("register result", register_result)
+                allure.attach("register result", str(register_result))
                 cls.logger.info("register result: {0}".format(register_result))
                 cls.token = register_result['token']
-                cls.member_id = register_result['member_id']
+                cls.member_id = register_result['user_info']['member_id']
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
             assert False
-        cls.logger.info("*** End setup class ***")
-        cls.logger.info("")
+        finally:
+            cls.logger.info("*** End setup class ***")
+            cls.logger.info("")
 
     @allure.step("+++ teardown class +++")
     def teardown_class(cls):
@@ -73,7 +85,8 @@ class TestModifySex(object):
         with allure.step("user logout."):
             cls.httpclient.update_header({"authorization": cls.token})
             logout_result = logout(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-            allure.attach("logout result", logout_result)
+            cls.httpclient.update_header({"authorization": None})
+            allure.attach("logout result", str(logout_result))
             cls.logger.info("logout result: {0}".format(logout_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
@@ -92,37 +105,36 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": 2, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == 1
-                assert len(rsp_content["Message"]) == 0
+                assert rsp_content["code"] == 1
+                assert '修改性别成功' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
                 assert info['sex'] == 2
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -134,13 +146,11 @@ class TestModifySex(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-108-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"msg": "", "code": ""}), (1.0, {"msg": "", "code": ""}),
-                              ('中', {"msg": "", "code": ""}), ('*', {"msg": "", "code": ""}),
-                              ('1中', {"msg": "", "code": ""}), ('1*', {"msg": "", "code": ""}),
-                              (' ', {"msg": "", "code": ""}), ('', {"msg": "", "code": ""})],
-                             ids=["token(超长值)", "token(小数)", "token(中文)",
-                                  "token(特殊字符)", "token(数字中文)",
-                                  "token(数字特殊字符)", "token(空格)", "token(空)"])
+                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
+                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
+                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             ids=["token(超长值)", "token(小数)", "token(特殊字符)",
+                                  "token(数字特殊字符)", "token(空)"])
     def test_108002_token_wrong(self, token, result):
         """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-108-002).
         :param token: token parameter value.
@@ -151,36 +161,37 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": 2, "timestamp": get_timestamp()}
                 headers = {"authorization": token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 401
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == result['code']
-                assert rsp_content["Message"] == result['msg']
+                assert rsp_content["code"] == result['code']
+                assert result['msg'] in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
+                self.httpclient.update_header({"authorization": self.token})
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -192,13 +203,19 @@ class TestModifySex(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-108-003")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"msg": "", "code": ""}), (1.0, {"msg": "", "code": ""}),
-                              ('中', {"msg": "", "code": ""}), ('*', {"msg": "", "code": ""}),
-                              ('1中', {"msg": "", "code": ""}), ('1*', {"msg": "", "code": ""}),
-                              (' ', {"msg": "", "code": ""}), ('', {"msg": "", "code": ""})],
+                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              ('中', {"status": 400, "code": 0, "msg": ""}),
+                              ('*', {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', {"status": 400, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 0, "msg": ""}),
+                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
-                                  "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)"])
+                                  "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
+                                  "member_id(0)", "member_id(超大)"])
     def test_108003_member_id_wrong(self, member_id, result):
         """ Test wrong member_id values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-108-003).
         :param member_id: member_id parameter value.
@@ -209,36 +226,38 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": member_id, "sex": 1, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == result['code']
-                assert rsp_content["Message"] == result['msg']
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content["message"]
+                else:
+                    assert rsp_content
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -250,9 +269,8 @@ class TestModifySex(object):
     @allure.story("正确sex值")
     @allure.testcase("FT-HTJK-108-004")
     @pytest.mark.parametrize("sex, result",
-                             [(1, {"msg": "", "code": "1"}), (2, {"msg": "", "code": "1"}),
-                              (3, {"msg": "", "code": "1"})],
-                             ids=["sex(1)", "sex(2)", "sex(3)"])
+                             [(1, {"code": 1, "msg": "修改性别成功"}), (2, {"code": 1, "msg": "修改性别成功"})],
+                             ids=["sex(1)", "sex(2)"])
     def test_108004_sex_correct(self, sex, result):
         """ Test correct sex values (1/2/3）(FT-HTJK-108-004).
         :param sex: sex parameter value.
@@ -263,37 +281,36 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": sex, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == result['code']
-                assert rsp_content["Message"] == result['msg']
+                assert rsp_content["code"] == result['code']
+                assert result['msg'] in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
                 assert info['sex'] == sex
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -305,18 +322,21 @@ class TestModifySex(object):
     @allure.story("错误sex值")
     @allure.testcase("FT-HTJK-108-005")
     @pytest.mark.parametrize("sex, result",
-                             [(-1, {"msg": "", "code": ""}), (0, {"msg": "", "code": ""}),
-                              (4, {"msg": "", "code": ""}), (-2147483649, {"msg": "", "code": ""}),
-                              (2147483648, {"msg": "", "code": ""}), (1.0, {"msg": "", "code": ""}),
-                              ('a', {"msg": "", "code": ""}), ('中', {"msg": "", "code": ""}),
-                              ('*', {"msg": "", "code": ""}), ('1a', {"msg": "", "code": ""}),
-                              ('1中', {"msg": "", "code": ""}), ('1*', {"msg": "", "code": ""}),
-                              (' ', {"msg": "", "code": ""}), ('', {"msg": "", "code": ""})],
-                             ids=["sex(1)", "sex(0)", "sex(4)", "sex(-2147483649)", "sex(2147483648)",
+                             [(-1, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
+                              (0, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
+                              (3, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
+                              (4, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
+                              (-2147483649, {"status": 400, "code": 0, "msg": ""}),
+                              (2147483648, {"status": 400, "code": 0, "msg": ""}), (1.0, {"status": 400, "code": 0, "msg": ""}),
+                              ('a', {"status": 400, "code": 0, "msg": ""}), ('中', {"status": 400, "code": 0, "msg": ""}),
+                              ('*', {"status": 400, "code": 0, "msg": ""}), ('1a', {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', {"status": 400, "code": 0, "msg": ""}), ('1*', {"status": 400, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""})],
+                             ids=["sex(1)", "sex(0)", "sex(3)", "sex(4)", "sex(-2147483649)", "sex(2147483648)",
                                   "sex(1.0)", "sex(字母)", "sex(中文)", "sex(特殊字符)", "sex(数字字母)",
                                   "sex(数字中文)", "sex(数字特殊字符)", "sex(空格)", "sex(空)"])
     def test_108005_sex_wrong(self, sex, result):
-        """ Test sex with wrong values (-1、0、4、-2147483649、2147483648、小数、字母、中文、特殊字符、数字字母、
+        """ Test sex with wrong values (-1、0、3、4、-2147483649、2147483648、小数、字母、中文、特殊字符、数字字母、
             数字中文、数字特殊字符、空格、空）(FT-HTJK-108-005).
         :param sex: sex parameter value.
         :param result: expect result.
@@ -326,36 +346,38 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": sex, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == result['code']
-                assert rsp_content["Message"] == result['msg']
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content["message"]
+                else:
+                    assert rsp_content
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -366,50 +388,50 @@ class TestModifySex(object):
     @allure.severity("critical")
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-108-006")
-    @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 1000, {"msg": "", "code": "1"}),
-                              (get_timestamp() + 1000, {"msg": "", "code": "1"})],
+    @pytest.mark.parametrize("sex, timestamp, result",
+                             [(1, get_timestamp() - 10000, {"code": 1, "msg": "修改性别成功"}),
+                              (2, get_timestamp() + 1000, {"code": 1, "msg": "修改性别成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
-    def test_108006_timestamp_correct(self, timestamp, result):
+    def test_108006_timestamp_correct(self, sex, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-108-006).
+        :param sex: sex parameter value.
         :param timestamp: timestamp parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_108006_timestamp_correct ({0}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "sex": 1, "timestamp": timestamp}
+                json = {"member_id": self.member_id, "sex": sex, "timestamp": timestamp}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 200)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == result['code']
-                assert rsp_content["Message"] == result['msg']
+                assert rsp_content["code"] == result['code']
+                assert result['msg'] in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -421,15 +443,20 @@ class TestModifySex(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-108-007")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"msg": "", "code": ""}), (9223372036854775807, {"msg": "", "code": ""}),
-                              (0, {"msg": "", "code": ""}), (-1, {"msg": "", "code": ""}),
-                              (-9223372036854775809, {"msg": "", "code": ""}),
-                              (9223372036854775808, {"msg": "", "code": ""}),
-                              (1.0, {"msg": "", "code": ""}), ('a', {"msg": "", "code": ""}),
-                              ('中', {"msg": "", "code": ""}), ('*', {"msg": "", "code": ""}),
-                              ('1a', {"msg": "", "code": ""}), ('1中', {"msg": "", "code": ""}),
-                              ('1*', {"msg": "", "code": ""}), (' ', {"msg": "", "code": ""}),
-                              ('', {"msg": "", "code": ""})],
+                             [(1, {"status": 200, "code": 0, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 0, "msg": ""}), (-1, {"status": 200, "code": 0, "msg": ""}),
+                              (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
+                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              ('a', {"status": 400, "code": 0, "msg": ""}),
+                              ('中', {"status": 400, "code": 0, "msg": ""}),
+                              ('*', {"status": 400, "code": 0, "msg": ""}),
+                              ('1a', {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', {"status": 400, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}),
+                              ('', {"status": 400, "code": 0, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)", "timestamp(0)", "timestamp(-1)",
                                   "timestamp(超小值)", "timestamp(超大值)", "timestamp(小数)",
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
@@ -446,36 +473,38 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": 1, "timestamp": timestamp}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] == result['code']
-                assert rsp_content["Message"] == result['msg']
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content["message"]
+                else:
+                    assert rsp_content
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -492,37 +521,38 @@ class TestModifySex(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": 2, "timestamp": get_timestamp()}
-                headers = {"authorization": ""}
-                allure.attach("params value", (json, headers))
+                headers = {"authorization": None}
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 401
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] != 1
-                assert len(rsp_content["Message"]) > 0
+                assert rsp_content["code"] == 0
+                assert '未登录或登录已过期' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
+                self.httpclient.update_header({"authorization": self.token})
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -540,36 +570,35 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"sex": 2, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] != 1
-                assert len(rsp_content["Message"]) > 0
+                assert rsp_content["code"] == 0
+                assert '' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -587,36 +616,35 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] != 1
-                assert len(rsp_content["Message"]) > 0
+                assert rsp_content["code"] == 0
+                assert rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -634,36 +662,35 @@ class TestModifySex(object):
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "sex": 1}
                 headers = {"authorization": self.token}
-                allure.attach("params value", (json, headers))
+                allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
 
             with allure.step("teststep2: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", rsp.request.headers)
-                allure.attach("request.body", rsp.request.body.decode())
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep3: assert the response code"):
-                allure.attach("Expect response code：", 400)
-                allure.attach("Actual response code：", rsp.status_code)
+                allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["Code"] != 1
-                assert len(rsp_content["Message"]) > 0
+                assert rsp_content["code"] == 0
+                assert 'timestamp不能为空' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", info)
+                allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
         except Exception as e:
-            allure.attach("Exception: ", e)
+            allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
@@ -673,5 +700,5 @@ class TestModifySex(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-v', '-k', '108001', 'test_Modify_Sex.py'])
-    # pytest.main(['-v', 'test_Modify_Sex.py::TestModifySex::test_108001_modify_sex_correct'])
+    pytest.main(['-s', 'test_Modify_Sex.py'])
+    # pytest.main(['-s', 'test_Modify_Sex.py::TestModifySex::test_108011_no_timestamp'])
