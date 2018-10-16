@@ -699,15 +699,17 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
     uri = ConfigParse().getItem("uri", "UserIdentity")
     if not timestamp:
         timestamp = get_timestamp()
-    json = {"member_id": member_id, "identity_card_face": identity_card_face, "identity_card_emblem": identity_card_emblem,
-            "face_picture": face_picture, "timestamp": timestamp}
-    allure.attach("request params", str(json))
-    logger and logger.info("UserIdentity json: {}".format(json))
-    rsp = httpclient.post(uri=uri, json=json)
+    params = {"member_id": member_id, "timestamp": get_timestamp()}
+    files = {"identity_card_face": open(get_image_path(identity_card_face), 'rb'),
+             "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb'),
+             "face_picture": open(get_image_path(face_picture), 'rb')}
+    allure.attach("request params", str(params))
+    logger and logger.info("UserIdentity json: {}".format(params))
+    rsp = httpclient.post(uri, data=params, files=files)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", str(rsp.request.body))
-    logger and logger.info("request.body: {}".format(rsp.request.body))
+    allure.attach("request.files", str(files))
+    logger and logger.info("request.files: {}".format(files))
     status_code = rsp.status_code
     allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
@@ -790,11 +792,12 @@ def identity_other(httpclient, member_id, features_name, face_picture, community
     uri = ConfigParse().getItem("uri", "IdentityOther")
     if not timestamp:
         timestamp = get_timestamp()
-    json = {"member_id": member_id, "features_name": features_name, "face_picture": face_picture,
-            "community_picture": community_picture, "timestamp": timestamp}
-    allure.attach("request params", str(json))
-    logger and logger.info("IdentityOther json: {}".format(json))
-    rsp = httpclient.post(uri=uri, json=json)
+    params = {"member_id": member_id, "features_name": features_name, "timestamp": timestamp}
+    files = {"face_picture": open(get_image_path(face_picture), 'rb'),
+             "community_picture": open(get_image_path(community_picture), 'rb')}
+    allure.attach("request params", str(params))
+    logger and logger.info("IdentityOther json: {}".format(params))
+    rsp = httpclient.post(uri, data=params, files=files)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))

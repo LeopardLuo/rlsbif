@@ -326,7 +326,7 @@ class TestModifyNickName(object):
     @allure.testcase("FT-HTJK-107-005")
     @pytest.mark.parametrize("nickname, result",
                              [('123', {"code": 0, "msg": "昵称的长度为4到10"}),('1' * 11, {"code": 0, "msg": "昵称的长度为4到10"}),
-                              ('     ', {"code": 1, "msg": "昵称的长度为4到10"}), ('', {"code": 1, "msg": "昵称的长度为4到10"})],
+                              ('     ', {"code": 0, "msg": "昵称的长度为4到10"}), ('', {"code": 0, "msg": "昵称的长度为4到10"})],
                              ids=["nickname(超短值)", "nickname(超长值)","nickname(空格)", "nickname(空)"])
     def test_107005_nickname_wrong(self, nickname, result):
         """ Test wrong nickname values (小数、超长值）(FT-HTJK-107-005).
