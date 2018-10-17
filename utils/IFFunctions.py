@@ -750,11 +750,11 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
     data = {"member_id": member_id, "page_index": page_index, "page_size": page_size, "timestamp": timestamp, "orderby": orderby}
     allure.attach("request params", str(data))
     logger and logger.info("GetIdentityOtherList json: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", str(rsp.request.body))
-    logger and logger.info("request.body: {}".format(rsp.request.body))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
     status_code = rsp.status_code
     allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
@@ -770,7 +770,7 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
     logger and logger.info("---- end get_identity_other_list ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["result"]
+        return rsp_content["result"]['data']
     else:
         return {}
 
@@ -800,8 +800,8 @@ def identity_other(httpclient, member_id, features_name, face_picture, community
     rsp = httpclient.post(uri, data=params, files=files)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
-    allure.attach("request.body", str(rsp.request.body))
-    logger and logger.info("request.body: {}".format(rsp.request.body))
+    allure.attach("request.files", str(files))
+    logger and logger.info("request.files: {}".format(files))
     status_code = rsp.status_code
     allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))

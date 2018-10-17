@@ -139,8 +139,10 @@ class MysqlClient(object):
         try:
             cd = "%s='%s'" % (condition[0], condition[1])
             sql = "SELECT * FROM {0} WHERE {1}".format(table, cd)
+            print(sql)
             self.__cursor.execute(sql)
-            return self.__cursor.fetchall()
+            result = list(self.__cursor.fetchall())
+            return result
         except mysql.connector.Error as err:
             print("Failed to select table: {}".format(err))
             return None

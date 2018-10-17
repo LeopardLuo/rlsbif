@@ -97,6 +97,15 @@ class TestGetIdentityList(object):
             cls.httpclient.update_header({"authorization": None})
             allure.attach("logout result", str(logout_result))
             cls.logger.info("logout result: {0}".format(logout_result))
+        with allure.step("teststep: delete user identity record"):
+            table = 'mem_features'
+            condition = ("member_id", cls.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            select_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(select_result))
+            cls.logger.info("delete result: {0}".format(select_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -116,6 +125,80 @@ class TestGetIdentityList(object):
                 self.httpclient.update_header(headers)
                 identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg', 'relate_com.jpg',
                                                 get_timestamp(), self.logger)
+                allure.attach("identity_result", "{0}".format(identity_result1))
+                self.logger.info("identity_result: {0}".format(identity_result1))
+                identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
+                                                  'relate_com.jpg',
+                                                  get_timestamp(), self.logger)
+                allure.attach("identity_result", "{0}".format(identity_result2))
+                self.logger.info("identity_result: {0}".format(identity_result2))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "page_index": 0, "page_size": 1, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep3: requests http post."):
+                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert rsp_content['result']['data']
+                assert rsp_content['result']['page']['page_index'] == 0
+                assert rsp_content['result']['page']['page_size'] == 1
+                assert rsp_content['result']['page']['total_count'] == 2
+                assert rsp_content['result']['page']['total_page'] == 2
+                assert rsp_content['result']['page']['has_next_page']
+                assert not rsp_content['result']['page']['has_previous_page']
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("delete database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                select_result = self.mysql.execute_select_condition(table, condition)
+                for member in select_result:
+                    if member[2] != '本人':
+                        condition = ("features_id", member[0])
+                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                        self.logger.info("")
+                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                        delete_result = self.mysql.execute_delete_condition(table, condition)
+                        allure.attach("delete result", str(delete_result))
+                        self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_116001_relatives_2page_1index ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("2页获取2页")
+    @allure.testcase("FT-HTJK-116-002")
+    def test_116002_relatives_2page_2index(self):
+        """ Test get list 2 index in 2 pages(FT-HTJK-116-002)."""
+        self.logger.info(".... Start test_116002_relatives_2page_2index ....")
+        try:
+            with allure.step("teststep1: identity other."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'relate_com.jpg',
+                                                  get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result1))
                 self.logger.info("identity_result: {0}".format(identity_result1))
                 identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
@@ -150,67 +233,6 @@ class TestGetIdentityList(object):
                 assert not rsp_content['message']
                 assert rsp_content['result']['data']
                 assert rsp_content['result']['page']['page_index'] == 1
-                assert rsp_content['result']['page']['page_size'] == 2
-                assert rsp_content['result']['page']['total_count'] == 2
-                assert rsp_content['result']['page']['total_page'] == 2
-                assert rsp_content['result']['page']['has_next_page']
-                assert not rsp_content['result']['page']['has_previous_page']
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_116001_relatives_2page_1index ....")
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("2页获取2页")
-    @allure.testcase("FT-HTJK-116-002")
-    def test_116002_relatives_2page_2index(self):
-        """ Test get list 2 index in 2 pages(FT-HTJK-116-002)."""
-        self.logger.info(".... Start test_116002_relatives_2page_2index ....")
-        try:
-            with allure.step("teststep1: identity other."):
-                headers = {"authorization": self.token}
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result1))
-                self.logger.info("identity_result: {0}".format(identity_result1))
-                identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
-                                                  'relate_com.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result2))
-                self.logger.info("identity_result: {0}".format(identity_result2))
-
-            with allure.step("teststep2: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 2, "page_size": 1, "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep3: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep4: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert rsp_content['result']['data']
-                assert rsp_content['result']['page']['page_index'] == 2
                 assert rsp_content['result']['page']['page_size'] == 1
                 assert rsp_content['result']['page']['total_count'] == 2
                 assert rsp_content['result']['page']['total_page'] == 2
@@ -222,6 +244,19 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("delete database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                select_result = self.mysql.execute_select_condition(table, condition)
+                for member in select_result:
+                    if member[2] != '本人':
+                        condition = ("features_id", member[0])
+                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                        self.logger.info("")
+                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                        delete_result = self.mysql.execute_delete_condition(table, condition)
+                        allure.attach("delete result", str(delete_result))
+                        self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_116002_relatives_2page_2index ....")
             self.logger.info("")
 
@@ -233,7 +268,7 @@ class TestGetIdentityList(object):
         self.logger.info(".... Start test_116003_relatives_list_empty ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "page_index": 0, "page_size": 2, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
@@ -257,7 +292,7 @@ class TestGetIdentityList(object):
                 assert rsp_content["code"] == 1
                 assert not rsp_content['message']
                 assert not rsp_content['result']['data']
-                assert rsp_content['result']['page']['page_index'] == 1
+                assert rsp_content['result']['page']['page_index'] == 0
                 assert rsp_content['result']['page']['page_size'] == 2
                 assert rsp_content['result']['page']['total_count'] == 0
                 assert rsp_content['result']['page']['total_page'] == 0
@@ -386,8 +421,6 @@ class TestGetIdentityList(object):
     @allure.testcase("FT-HTJK-116-006")
     @pytest.mark.parametrize("page_index, result",
                              [(-1, {"status": 200, "code": 0, "msg": "not valid"}),
-                              (0, {"status": 200, "code": 0, "msg": "not valid"}),
-                              (5, {"status": 200, "code": 0, "msg": "not valid"}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -399,7 +432,7 @@ class TestGetIdentityList(object):
                               ('1*', {"status": 400, "code": 0, "msg": "not valid"}),
                               (' ', {"status": 400, "code": 0, "msg": "not valid"}),
                               ('', {"status": 400, "code": 0, "msg": "not valid"})],
-                             ids=["page_index(-1)", "page_index(0)", "page_index(5)",
+                             ids=["page_index(-1)",
                                   "page_index(-2147483649)", "page_index(2147483648)", "page_index(小数)",
                                   "page_index(字母)", "page_index(中文)", "page_index(特殊字符)",
                                   "page_index(数字字母)", "page_index(数字中文)",
@@ -1043,4 +1076,4 @@ class TestGetIdentityList(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_Identity_GetList.py'])
-    # pytest.main(['-s', 'test_Identity_GetList.py::TestGetIdentityList::test_116018_no_timestamp'])
+    # pytest.main(['-s', 'test_Identity_GetList.py::TestGetIdentityList::test_116003_relatives_list_empty'])
