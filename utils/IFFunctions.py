@@ -934,7 +934,7 @@ def get_myservice_order_list(httpclient, member_id, page_index, page_size, state
             "orderby": orderby, "search": search, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("GetMyServiceOrderList json: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))
@@ -947,16 +947,16 @@ def get_myservice_order_list(httpclient, member_id, page_index, page_size, state
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end get_myservice_order_list ----")
         logger and logger.info("")
-        return {}
+        return []
     rsp_content = rsp.json()
     allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_myservice_order_list ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["result"]
+        return rsp_content["result"]['data']
     else:
-        return {}
+        return []
 
 
 @allure.step("Suggestion-Feedback")
@@ -1021,7 +1021,7 @@ def get_application_list(httpclient, page_index, page_size, orderby=None, timest
     data = {"page_index": page_index, "page_size": page_size, "orderby": orderby, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("GetApplicationList json: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))
@@ -1034,16 +1034,16 @@ def get_application_list(httpclient, page_index, page_size, orderby=None, timest
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end get_application_list ----")
         logger and logger.info("")
-        return {}
+        return []
     rsp_content = rsp.json()
     allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end get_application_list ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["result"]
+        return rsp_content["result"]['data']
     else:
-        return {}
+        return []
 
 
 @allure.step("Get-Recognized-Record-List")
@@ -1104,7 +1104,7 @@ def h5_get_business_token(httpclient, member_id, timestamp=None, logger=None):
     """
     logger and logger.info("")
     logger and logger.info("---- start h5_get_business_token ----")
-    uri = ConfigParse().getItem("uri", "H5GetAuthentication")
+    uri = ConfigParse().getItem("uri", "H5GetBusinessToken")
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "timestamp": timestamp}
@@ -1130,7 +1130,7 @@ def h5_get_business_token(httpclient, member_id, timestamp=None, logger=None):
     logger and logger.info("---- end h5_get_business_token ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["Result"]
+        return rsp_content["result"]
     else:
         return {}
 
@@ -1154,7 +1154,7 @@ def bs_get_user_info(httpclient, system_id, member_id, business_token, timestamp
     data = {"system_id": system_id, "member_id": member_id, "business_token": business_token, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("BSGetUserInfo json: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))
@@ -1174,7 +1174,7 @@ def bs_get_user_info(httpclient, system_id, member_id, business_token, timestamp
     logger and logger.info("---- end bs_get_user_info ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["Result"]
+        return rsp_content["result"]
     else:
         return {}
 
@@ -1206,7 +1206,7 @@ def bs_create_service_order(httpclient, system_id, business_order_id, member_id,
     if not timestamp:
         timestamp = get_timestamp()
     json = {"system_id": system_id, "business_order_id": business_order_id, "member_id": member_id, "system_code": system_code,
-            "features_id": features_id, "devices_ids": devices_ids, "verify_condition_type": verify_condition_type,
+            "features_id": features_id, "device_ids": devices_ids, "verify_condition_type": verify_condition_type,
             "begin_time": begin_time, "end_time": end_time, "in_count": in_count, "service_unit": service_unit,
             "service_address": service_address, "timestamp": timestamp}
     allure.attach("request params", str(json))
@@ -1231,7 +1231,7 @@ def bs_create_service_order(httpclient, system_id, business_order_id, member_id,
     logger and logger.info("---- end bs_create_service_order ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["Result"]
+        return rsp_content["result"]
     else:
         return {}
 
@@ -1262,7 +1262,7 @@ def bs_update_service_order(httpclient, system_id, service_order_id, system_code
     if not timestamp:
         timestamp = get_timestamp()
     json = {"system_id": system_id, "service_order_id": service_order_id, "system_code": system_code, "features_id": features_id,
-            "devices_id": devices_id, "verify_condition_type": verify_condition_type, "begin_time": begin_time,
+            "device_id": devices_id, "verify_condition_type": verify_condition_type, "begin_time": begin_time,
             "end_time": end_time, "in_count": in_count, "service_unit": service_unit, "service_address": service_address, "timestamp": timestamp}
     allure.attach("request params", str(json))
     logger and logger.info("BSUpdateServiceOrder json: {}".format(json))
@@ -1374,7 +1374,7 @@ def bs_get_service_order_status(httpclient, system_id, service_order_id, system_
     logger and logger.info("---- end bs_get_service_order_status ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["Result"]
+        return rsp_content["result"]
     else:
         return {}
 
@@ -1421,7 +1421,7 @@ def bs_get_service_order_records(httpclient, system_id, service_order_id, system
     logger and logger.info("---- end bs_get_service_order_records ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["Result"]
+        return rsp_content["result"]
     else:
         return {}
 
