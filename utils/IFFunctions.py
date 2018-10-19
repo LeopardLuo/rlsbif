@@ -1180,7 +1180,7 @@ def bs_get_user_info(httpclient, system_id, member_id, business_token, timestamp
 
 
 @allure.step("BS-Create-Service-Order")
-def bs_create_service_order(httpclient, system_id, business_order_id, member_id, system_code, features_id, devices_ids,
+def bs_create_service_order(httpclient, system_id, business_order_id, member_id, system_code, features_id, device_ids,
                             verify_condition_type, begin_time, end_time, in_count, service_unit, service_address, timestamp=None, logger=None):
     """ Business system submit service order to server.
     :param httpclient: http request client.
@@ -1206,7 +1206,7 @@ def bs_create_service_order(httpclient, system_id, business_order_id, member_id,
     if not timestamp:
         timestamp = get_timestamp()
     json = {"system_id": system_id, "business_order_id": business_order_id, "member_id": member_id, "system_code": system_code,
-            "features_id": features_id, "devices_ids": devices_ids, "verify_condition_type": verify_condition_type,
+            "features_id": features_id, "device_ids": device_ids, "verify_condition_type": verify_condition_type,
             "begin_time": begin_time, "end_time": end_time, "in_count": in_count, "service_unit": service_unit,
             "service_address": service_address, "timestamp": timestamp}
     allure.attach("request params", str(json))
@@ -1231,7 +1231,7 @@ def bs_create_service_order(httpclient, system_id, business_order_id, member_id,
     logger and logger.info("---- end bs_create_service_order ----")
     logger and logger.info("")
     if rsp_content["code"] == 1:
-        return rsp_content["Result"]
+        return rsp_content["result"]
     else:
         return {}
 
