@@ -124,6 +124,7 @@ build
 report
 demo
 img
+img/*
 .pytest_cache
 testcases/.pytest_cache
 
