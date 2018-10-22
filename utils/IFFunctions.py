@@ -1104,7 +1104,7 @@ def h5_get_business_token(httpclient, member_id, timestamp=None, logger=None):
     """
     logger and logger.info("")
     logger and logger.info("---- start h5_get_business_token ----")
-    uri = ConfigParse().getItem("uri", "H5GetBusinessToken")
+    uri = ConfigParse().getItem("uri", "H5GetAuthentication")
     if not timestamp:
         timestamp = get_timestamp()
     json = {"member_id": member_id, "timestamp": timestamp}
@@ -1354,7 +1354,7 @@ def bs_get_service_order_status(httpclient, system_id, service_order_id, system_
     data = {"system_id": system_id, "service_order_id": service_order_id, "system_code": system_code, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("BSServiceOrderStatus data: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))
@@ -1401,7 +1401,7 @@ def bs_get_service_order_records(httpclient, system_id, service_order_id, system
             "page_size": page_size, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("BSServiceOrderRecord data: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))

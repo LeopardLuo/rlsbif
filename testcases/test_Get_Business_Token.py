@@ -25,7 +25,7 @@ class TestGetBusinessToken(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'H5GetBusinessToken')
+                cls.URI = cls.config.getItem('uri', 'H5GetAuthentication')
                 allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
@@ -691,5 +691,5 @@ class TestGetBusinessToken(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Get_Business_Token.py'])
-    # pytest.main(['-s', 'test_Get_Business_Token.py::TestGetBusinessToken::test_123009_no_timestamp'])
+    # pytest.main(['-s', 'test_Get_Business_Token.py'])
+    pytest.main(['-s', 'test_Get_Business_Token.py::TestGetBusinessToken::test_123001_get_business_token_correct'])
