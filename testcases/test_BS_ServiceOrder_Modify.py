@@ -170,7 +170,7 @@ class TestModifyServiceOrder(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         with allure.step("teststep: create service orders"):
-            order_result = bs_create_service_order(self.httpclient, self.system_id, str(random.randint(1000, 100000)),
+            order_result = h5_create_service_order(self.httpclient, self.system_id, str(random.randint(1000, 100000)),
                                                    self.member_id,
                                                    self.system_code, self.features_id, self.devices_ids, 3,
                                                    get_timestamp(), 9999999999, 10, 'testunit',

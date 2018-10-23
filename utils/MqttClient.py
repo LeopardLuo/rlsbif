@@ -103,16 +103,16 @@ class MqttClient(object):
         self.__client.on_subscribe = self.__on_subscribe
         self.__client.on_unsubscribe = self.__on_unsubscribe
         self.__client.connect(self.__host, self.__port, self.__keepalive)
+        self.msgs = []
 
     @property
     def rcv_msg(self):
         """ 获取所有消息队列里面接收到的消息。
         :type: 接收的消息列表。
         """
-        msgs = []
         while not self.__rcv_msg.empty():
-            msgs.append(self.__rcv_msg.get())
-        return msgs
+            self.msgs.append(self.__rcv_msg.get())
+        return self.msgs
 
     def loopstart(self):
         """ 开始MQTT客户端接收消息的循环进程。"""

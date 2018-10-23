@@ -132,7 +132,7 @@ class TestGetServiceOrderStatus(object):
                         cls.features_id = item['features_id']
 
             with allure.step("teststep: create service orders"):
-                order_result = bs_create_service_order(cls.httpclient, cls.system_id,
+                order_result = h5_create_service_order(cls.httpclient, cls.system_id,
                                                        str(random.randint(1000, 100000)),
                                                        cls.member_id,
                                                        cls.system_code, cls.features_id, cls.devices_ids, 3,
@@ -719,5 +719,5 @@ class TestGetServiceOrderStatus(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_BS_ServiceOrder_Get_Status.py'])
-    # pytest.main(['-s', 'test_BS_ServiceOrder_Get_Status.py::TestGetServiceOrderStatus::test_204015_no_timestamp'])
+    # pytest.main(['-s', 'test_BS_ServiceOrder_Get_Status.py'])
+    pytest.main(['-s', 'test_BS_ServiceOrder_Get_Status.py::TestGetServiceOrderStatus::test_204001_get_service_order_status_correct'])

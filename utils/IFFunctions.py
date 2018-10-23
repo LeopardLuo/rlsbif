@@ -1179,8 +1179,8 @@ def bs_get_user_info(httpclient, system_id, member_id, business_token, timestamp
         return {}
 
 
-@allure.step("BS-Create-Service-Order")
-def bs_create_service_order(httpclient, system_id, business_order_id, member_id, system_code, features_id, device_ids,
+@allure.step("H5-Create-Service-Order")
+def h5_create_service_order(httpclient, system_id, business_order_id, member_id, system_code, features_id, device_ids,
                             verify_condition_type, begin_time, end_time, in_count, service_unit, service_address, timestamp=None, logger=None):
     """ Business system submit service order to server.
     :param httpclient: http request client.
@@ -1202,10 +1202,66 @@ def bs_create_service_order(httpclient, system_id, business_order_id, member_id,
     """
     logger and logger.info("")
     logger and logger.info("---- start bs_create_service_order ----")
-    uri = ConfigParse().getItem("uri", "BSCreateServiceOrder")
+    uri = ConfigParse().getItem("uri", "H5CreateServiceOrder")
     if not timestamp:
         timestamp = get_timestamp()
     json = {"system_id": system_id, "business_order_id": business_order_id, "member_id": member_id, "system_code": system_code,
+            "features_id": features_id, "device_ids": device_ids, "verify_condition_type": verify_condition_type,
+            "begin_time": begin_time, "end_time": end_time, "in_count": in_count, "service_unit": service_unit,
+            "service_address": service_address, "timestamp": timestamp}
+    allure.attach("request params", str(json))
+    logger and logger.info("BSCreateServiceOrder json: {}".format(json))
+    rsp = httpclient.post(uri=uri, json=json)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end bs_create_service_order ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end bs_create_service_order ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return rsp_content["result"]
+    else:
+        return {}
+
+
+@allure.step("BS-Create-Service-Order")
+def bs_create_service_order(httpclient, system_id, business_order_id, system_code, features_id, device_ids,
+                            verify_condition_type, begin_time, end_time, in_count, service_unit, service_address, timestamp=None, logger=None):
+    """ Business system submit service order to server.
+    :param httpclient: http request client.
+    :param system_id: interface defined parameter system_id long type.
+    :param business_order_id: interface defined parameter business_order_id string type.
+    :param system_code: interface defined parameter system_code string type.
+    :param features_id: interface defined parameter features_id long type.
+    :param devices_ids: interface defined parameter devices_ids string array type.
+    :param verify_condition_type: interface defined parameter verify_condition_type int type.
+    :param begin_time: interface defined parameter begin_time long type, optional.
+    :param end_time: interface defined parameter end_time long type, optional.
+    :param in_count: interface defined parameter in_count int type, optional.
+    :param service_unit: interface defined parameter service_unit string type.
+    :param service_address: interface defined parameter service_address string type.
+    :param timestamp: interface defined parameter Timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return service order dict successfully, {} failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start bs_create_service_order ----")
+    uri = ConfigParse().getItem("uri", "BSCreateServiceOrder")
+    if not timestamp:
+        timestamp = get_timestamp()
+    json = {"system_id": system_id, "business_order_id": business_order_id, "system_code": system_code,
             "features_id": features_id, "device_ids": device_ids, "verify_condition_type": verify_condition_type,
             "begin_time": begin_time, "end_time": end_time, "in_count": in_count, "service_unit": service_unit,
             "service_address": service_address, "timestamp": timestamp}
@@ -1427,7 +1483,7 @@ def bs_get_service_order_records(httpclient, system_id, service_order_id, system
 
 
 @allure.step("IOT-Subscribe-Msg")
-def __subscribe_msg(ProductKey, DeviceName, DeviceSecret, topic, qos, queue):
+def subscribe_msg(ProductKey, DeviceName, DeviceSecret, topic, qos, queue):
     """ Tool function for mqtt subscribe message.
     :param ProductKey: ali iot platform productkey string type.
     :param DeviceName: ali iot platform devicename string type.
@@ -1457,7 +1513,7 @@ def iot_subscribe_message(ProductKey, DeviceName, DeviceSecret, topic, qos, time
     :rtype return dict of payload message, or {} failed.
     """
     queue = Queue()
-    t1 = threading.Thread(target=__subscribe_msg, args=(ProductKey, DeviceName, DeviceSecret, topic, qos, queue))
+    t1 = threading.Thread(target=subscribe_msg, args=(ProductKey, DeviceName, DeviceSecret, topic, qos, queue))
     t1.start()
     start_time = int(time.time())
     sleep(5)

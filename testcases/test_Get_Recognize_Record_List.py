@@ -49,6 +49,18 @@ class TestGetRecognizeRecordList(object):
                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
 
+            with allure.step("初始化MQTT客户端"):
+                cls.devicename = cls.config.getItem('device', 'd1_devicename')
+                cls.secret = cls.config.getItem('device', 'd1_secret')
+                cls.productkey = cls.config.getItem('device', 'd1_productkey')
+                cls.tp = cls.config.getItem('iot', 'ServiceOrderPush')
+                allure.attach("device params", str((cls.devicename, cls.secret, cls.productkey)))
+                cls.logger.info("device params: {}".format((cls.devicename, cls.secret, cls.productkey)))
+                params = AliParam(ProductKey=cls.productkey, DeviceName=cls.devicename,
+                                  DeviceSecret=cls.secret)
+                clientid, username, password, hostname = params.get_param()
+                cls.mqttclient = MqttClient(hostname, clientid, username, password)
+
             with allure.step("delete insert user info"):
                 table = 'mem_member'
                 condition = ("phone", "1351122%")
@@ -109,8 +121,8 @@ class TestGetRecognizeRecordList(object):
                 cls.system_code = select_result[0][2]
 
             with allure.step("teststep: get devices id"):
-                table = 'bus_device'
-                condition = ("system_id", cls.system_id)
+                table = 'iot_releationship'
+                condition = ("iot_device_name", cls.devicename)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 cls.logger.info("")
                 cls.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -118,8 +130,9 @@ class TestGetRecognizeRecordList(object):
                 allure.attach("query result", str(select_result))
                 cls.logger.info("query result: {0}".format(select_result))
                 cls.devices_ids = []
-                for device in select_result:
-                    cls.devices_ids.append(device[0])
+                if select_result:
+                    cls.device_id = select_result[0][0]
+                    cls.devices_ids.append(select_result[0][0])
 
             with allure.step("teststep: get features id by user info."):
                 user_info = bs_get_user_info(cls.httpclient, cls.system_id, cls.member_id, business_token,
@@ -132,7 +145,7 @@ class TestGetRecognizeRecordList(object):
                         cls.features_id = item['features_id']
 
             with allure.step("teststep: create service orders"):
-                order_result = bs_create_service_order(cls.httpclient, cls.system_id,
+                order_result = h5_create_service_order(cls.httpclient, cls.system_id,
                                                        str(random.randint(1000, 100000)),
                                                        cls.member_id,
                                                        cls.system_code, cls.features_id, cls.devices_ids, 3,
@@ -141,6 +154,37 @@ class TestGetRecognizeRecordList(object):
                 allure.attach("order list", str(order_result))
                 cls.logger.info("order list: {0}".format(order_result))
                 cls.service_order_id = order_result['service_order_id']
+
+            with allure.step("teststep2: publish service order report."):
+                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
+                in_payload = {
+                    "action_id": "100",
+                    "data": {
+                        "service_order_id": str(cls.service_order_id),
+                        "device_id": str(cls.device_id),
+                        "in_out": "1",
+                        "exrea": "",
+                    },
+                    "timestamp": str(get_timestamp())
+                }
+                cls.logger.info("topic: {0}".format(topic))
+                cls.logger.info("in payload: {0}".format(in_payload))
+                cls.mqttclient.publish(topic, str(in_payload), 1)
+                sleep(5)
+                out_payload = {
+                    "action_id": "100",
+                    "data": {
+                        "service_order_id": str(cls.service_order_id),
+                        "device_id": str(cls.device_id),
+                        "in_out": "0",
+                        "exrea": "",
+                    },
+                    "timestamp": str(get_timestamp())
+                }
+                cls.logger.info("out payload: {0}".format(out_payload))
+                cls.mqttclient.publish(topic, str(out_payload), 1)
+                cls.mqttclient.close()
+                sleep(10)
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -194,18 +238,12 @@ class TestGetRecognizeRecordList(object):
         cls.logger.info("")
 
     @allure.severity("blocker")
-    @allure.story("正确获取识别记录")
+    @allure.story("正确获取识别记录第1页")
     @allure.testcase("FT-HTJK-122-001")
     def test_122001_get_recognize_record_correct(self):
         """ Test get recognize record with correct parameters(FT-HTJK-122-001)."""
         self.logger.info(".... Start test_122001_get_recognize_record_correct ....")
         try:
-            with allure.step("teststep1: service order report."):
-                topic = "/pk/{0}/ServiceOrderReport".format(device_name)
-                payload = {"member_id": self.member_id, "page_index": 0, "page_size": 1, "timestamp": get_timestamp()}
-                allure.attach("params value", "{0}".format(params))
-                self.logger.info("data: {0}".format(params))
-
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "page_index": 0, "page_size": 1, "timestamp": get_timestamp()}
                 allure.attach("params value", "{0}".format(params))
@@ -230,8 +268,13 @@ class TestGetRecognizeRecordList(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
                 assert not rsp_content['message']
+                assert len(rsp_content['result']['data']) == 1
                 assert rsp_content['result']['page']['page_index'] == 0
                 assert rsp_content['result']['page']['page_size'] == 1
+                assert rsp_content['result']['page']['total_count'] == 2
+                assert rsp_content['result']['page']['total_page'] == 2
+                assert rsp_content['result']['page']['has_next_page']
+                assert not rsp_content['result']['page']['has_previous_page']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -239,6 +282,53 @@ class TestGetRecognizeRecordList(object):
             assert False
         finally:
             self.logger.info(".... End test_122001_get_recognize_record_correct ....")
+            self.logger.info("")
+
+    @allure.severity("blocker")
+    @allure.story("正确获取识别记录第2页")
+    @allure.testcase("FT-HTJK-122-002")
+    def test_122002_get_recognize_record_correct(self):
+        """ Test get recognize record with correct parameters(FT-HTJK-122-002)."""
+        self.logger.info(".... Start test_122002_get_recognize_record_correct ....")
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1, "timestamp": get_timestamp()}
+                allure.attach("params value", "{0}".format(params))
+                self.logger.info("data: {0}".format(params))
+
+            with allure.step("teststep2: requests http get."):
+                self.httpclient.update_header({"authorization": self.token})
+                rsp = self.httpclient.get(self.URI, params=params)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert len(rsp_content['result']['data']) == 1
+                assert rsp_content['result']['page']['page_index'] == 1
+                assert rsp_content['result']['page']['page_size'] == 1
+                assert rsp_content['result']['page']['total_count'] == 2
+                assert rsp_content['result']['page']['total_page'] == 2
+                assert not rsp_content['result']['page']['has_next_page']
+                assert rsp_content['result']['page']['has_previous_page']
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_122002_get_recognize_record_correct ....")
             self.logger.info("")
 
     @allure.severity("critical")
@@ -1212,4 +1302,4 @@ class TestGetRecognizeRecordList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_Get_Recognize_Record_List.py'])
-    pytest.main(['-s', 'test_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
+    pytest.main(['-s', 'test_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122002_get_recognize_record_correct'])

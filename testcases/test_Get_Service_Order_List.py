@@ -133,7 +133,7 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep: create service orders"):
                 cls.service_orders = []
                 for features_id in cls.features_ids:
-                    order_result = bs_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)), cls.member_id,
+                    order_result = h5_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)), cls.member_id,
                                         cls.system_code, features_id, cls.devices_ids, 3, get_timestamp(), 9999999999, 10, 'testunit',
                                         'dept1', get_timestamp(), cls.logger)
                     cls.service_orders.append(order_result['service_order_id'])

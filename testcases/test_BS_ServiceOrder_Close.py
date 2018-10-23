@@ -170,7 +170,7 @@ class TestCloseServiceOrder(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         with allure.step("teststep: create service orders"):
-            order_result = bs_create_service_order(self.httpclient, self.system_id, str(random.randint(1000, 100000)),
+            order_result = h5_create_service_order(self.httpclient, self.system_id, str(random.randint(1000, 100000)),
                                                    self.member_id,
                                                    self.system_code, self.features_id, self.devices_ids, 3,
                                                    get_timestamp(), 9999999999, 10, 'testunit',
@@ -1026,5 +1026,5 @@ class TestCloseServiceOrder(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_BS_ServiceOrder_Close.py'])
-    # pytest.main(['-s', 'test_BS_ServiceOrder_Close.py::TestCloseServiceOrder::test_203013_no_timestamp'])
+    # pytest.main(['-s', 'test_BS_ServiceOrder_Close.py'])
+    pytest.main(['-s', 'test_BS_ServiceOrder_Close.py::TestCloseServiceOrder::test_203001_cancel_service_order_correct'])
