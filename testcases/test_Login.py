@@ -138,9 +138,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -199,9 +199,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post login first time."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -287,9 +287,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -363,9 +363,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", str(result['status']))
@@ -438,9 +438,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -506,9 +506,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -583,9 +583,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -651,9 +651,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -719,9 +719,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -793,9 +793,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -854,9 +854,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -907,9 +907,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -960,9 +960,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -1034,9 +1034,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1107,9 +1107,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1180,9 +1180,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1247,9 +1247,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Expect response code：", '200')
@@ -1327,9 +1327,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1390,9 +1390,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1451,9 +1451,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1512,9 +1512,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1573,9 +1573,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1634,9 +1634,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1695,9 +1695,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1756,9 +1756,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -1817,9 +1817,9 @@ class TestLogin(object):
             with allure.step("teststep3: requests http post."):
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body.decode()))
+                allure.attach("request.body", str(rsp.request.body))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body.decode()))
+                self.logger.info("request.body: {}".format(rsp.request.body))
 
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
+import json
 from time import sleep
 from queue import Queue
 import threading
@@ -1482,6 +1483,53 @@ def bs_get_service_order_records(httpclient, system_id, service_order_id, system
         return {}
 
 
+@allure.step("BS-Service-Order-GenFeatureId")
+def bs_service_order_gen_featureid(httpclient, system_id, system_code, name, photo, member_id=None, timestamp=None, logger=None):
+    """ Business system generate feature id by upload picture.
+    :param httpclient: http request client.
+    :param system_id: interface defined parameter system_id long type.
+    :param member_id: interface defined parameter member_id long type.
+    :param system_code: interface defined parameter system_code string type.
+    :param name: interface defined parameter name string type.
+    :param photo: interface defined parameter photo string type.
+    :param timestamp: interface defined parameter timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return True successfully, False failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start bs_service_order_gen_featureid ----")
+    uri = ConfigParse().getItem("uri", "BSGenFeatureId")
+    if not timestamp:
+        timestamp = get_timestamp()
+    data = {"system_id": system_id, "member_id": member_id, "system_code": system_code, "name": name, "timestamp": timestamp}
+    files = {"photo": open(get_image_path(photo), 'rb')}
+    allure.attach("request params", str(data))
+    logger and logger.info("BSCancelServiceOrder json: {}".format(data))
+    rsp = httpclient.post(uri=uri, data=data, files=files)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end bs_close_service_order ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end bs_service_order_gen_featureid ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return rsp_content['result']
+    else:
+        return {}
+
+
 @allure.step("IOT-Subscribe-Msg")
 def subscribe_msg(ProductKey, DeviceName, DeviceSecret, topic, qos, queue):
     """ Tool function for mqtt subscribe message.
@@ -1532,22 +1580,90 @@ def iot_subscribe_message(ProductKey, DeviceName, DeviceSecret, topic, qos, time
     return msg.payload
 
 
-@allure.step("IOT-Publish-Message")
-def iot_publish_message(ProductKey, DeviceName, DeviceSecret, topic, payload, qos):
+@allure.step("IOT-Publish-ServiceOrderReport")
+def iot_publish_ServiceOrderReport(mqttclient, productkey, devicename, service_order_id, device_id, in_out=1, qos=1, exrea="", logger=None):
     """ Publish iot message.
-    :param ProductKey: ali iot platform productkey string type.
-    :param DeviceName: ali iot platform devicename string type.
-    :param DeviceSecret: ali iot platform devicesecret string type.
-    :param topic: publish topic string type.
-    :param payload: publish payload dict type.
+    :param mqttclient: mqtt client.
+    :param productkey: ali iot platform productkey string type.
+    :param devicename: ali iot platform devicename string type.
+    :param service_order_id: publish payload service_order_id.
+    :param device_id: publish payload device_id.
+    :param in_out: publish payload in_out.
+    :param exrea: publish payload exrea.
     :param qos: publish topic's qos int type.
     :rtype return None.
     """
-    params = AliParam(ProductKey=ProductKey, DeviceName=DeviceName, DeviceSecret=DeviceSecret)
-    clientid, username, password, hostname = params.get_param()
-    authconfig = {'username': username, 'password': password}
-    publish_single(topic, payload, qos, hostname=hostname, client_id=clientid,
-                   auth=authconfig)
+    logger and logger.info("")
+    logger and logger.info("---- start iot_publish_ServiceOrderReport ----")
+    tname = ConfigParse().getItem("iot", "ServiceOrderReport")
+    topic = "/{0}/{1}/{2}".format(productkey, devicename, tname)
+    payload = {
+        "action_id": "100",
+        "data": {
+            "service_order_id": str(service_order_id),
+            "device_id": str(device_id),
+            "in_out": str(in_out),
+            "exrea": exrea,
+        },
+        "timestamp": str(get_timestamp())
+    }
+    logger and logger.info("topic: {0}".format(topic))
+    logger and logger.info("in payload: {0}".format(payload))
+    logger and logger.info("qos: {0}".format(qos))
+    mqttclient.publish(topic, str(payload), qos)
+    logger and logger.info("---- end iot_publish_ServiceOrderReport ----")
+    logger and logger.info("")
+
+
+@allure.step("IOT-Publish-SyncTime")
+def iot_publish_SyncTime(mqttclient, productkey, devicename, qos=1, data="", timeout=60, logger=None):
+    """ Publish iot message.
+    :param mqttclient: mqtt client.
+    :param productkey: ali iot platform productkey string type.
+    :param devicename: ali iot platform devicename string type.
+    :param data: publish payload exrea.
+    :param qos: publish topic's qos int type.
+    :param timeout: subscribe mqtt message timeout.
+    :param logger: logger.
+    :rtype return None.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start iot_publish_SyncTime ----")
+    upstr = ConfigParse().getItem("iot", "TimeUp")
+    downstr = ConfigParse().getItem("iot", "TimeDown")
+    req_topic = "/{0}/{1}/{2}".format(productkey, devicename, upstr)
+    rsp_topic = "/{0}/{1}/{2}".format(productkey, devicename, downstr)
+    req_payload = {
+        "action_id": "104",
+        "data": data,
+        "timestamp": str(get_timestamp())
+    }
+    logger and logger.info("request topic: {0}".format(req_topic))
+    logger and logger.info("request payload: {0}".format(req_payload))
+    logger and logger.info("response topic: {0}".format(rsp_topic))
+    mqttclient.subscribe(rsp_topic, qos)
+    mqttclient.loopstart()
+    mqttclient.publish(req_topic, str(req_payload), qos)
+    start_time = int(time.time())
+    end_time = int(time.time())
+    during = end_time - start_time
+    while not mqttclient.rcv_msg and during < timeout:
+        sleep(5)
+        end_time = int(time.time())
+        during = end_time - start_time
+    mqttclient.loopstop()
+    mqttclient.unsubscribe(rsp_topic)
+    if mqttclient.rcv_msg:
+        msg = mqttclient.rcv_msg.pop()
+        payload = json.loads(msg.payload, encoding='utf-8')
+        logger and logger.info("message payload: {}".format(payload))
+        logger and logger.info("---- end iot_publish_SyncTime ----")
+        logger and logger.info("")
+        return payload
+    else:
+        logger and logger.info("---- end iot_publish_SyncTime ----")
+        logger and logger.info("")
+        return {}
 
 
 @allure.step("Register Function")
