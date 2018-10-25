@@ -102,7 +102,9 @@ class MysqlClient(object):
         try:
             sql = "SELECT * FROM %s" % (table)
             self.__cursor.execute(sql)
-            return self.__cursor.fetchall()
+            result = self.__cursor.fetchall()
+            self.__cnx.commit()
+            return result
         except mysql.connector.Error as err:
             print("Failed to execute SQL: {}".format(err))
             return None
@@ -142,6 +144,7 @@ class MysqlClient(object):
             print(sql)
             self.__cursor.execute(sql)
             result = list(self.__cursor.fetchall())
+            self.__cnx.commit()
             return result
         except mysql.connector.Error as err:
             print("Failed to select table: {}".format(err))
