@@ -97,7 +97,13 @@ class TestLogin(object):
         self.logger.info("")
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
-        self.logger.info("Add some datas to database.")
+        with allure.step("delete mem_member_login"):
+            table = 'mem_member_login'
+            allure.attach("table name and condition", "{0}".format(table))
+            self.logger.info("delele records of table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_all(table)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
         self.logger.info("=== End setup method ===")
         self.logger.info("")
 
@@ -106,7 +112,6 @@ class TestLogin(object):
         self.logger.info("")
         self.logger.info("=== Start teardown method ===")
         self.logger.info(method.__name__)
-        self.logger.info("do some database clean operation.")
         self.logger.info("=== End teardown method ===")
         self.logger.info("")
 
@@ -162,6 +167,19 @@ class TestLogin(object):
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("Logout result：", str(logout_result))
                 self.logger.info("Logout result：{0}".format(logout_result))
+
+            with allure.step("teststep7: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
+                assert select_result[0][1] == json['phone']
+                assert select_result[0][3] == json['device_token']
+                assert select_result[0][6] == json['imei']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -311,6 +329,16 @@ class TestLogin(object):
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("Logout result：", str(logout_result))
                 self.logger.info("Logout result：{0}".format(logout_result))
+
+            with allure.step("teststep7: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -390,6 +418,16 @@ class TestLogin(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -462,6 +500,16 @@ class TestLogin(object):
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("Logout result：", str(logout_result))
                 self.logger.info("Logout result：{0}".format(logout_result))
+
+            with allure.step("teststep7: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -532,6 +580,16 @@ class TestLogin(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -607,6 +665,16 @@ class TestLogin(object):
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("Logout result：", str(logout_result))
                 self.logger.info("Logout result：{0}".format(logout_result))
+
+            with allure.step("teststep7: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -620,7 +688,7 @@ class TestLogin(object):
     @allure.story("错误device_token值")
     @allure.testcase("FT-HTJK-103-008")
     @pytest.mark.parametrize("device_token, result",
-                             [('1' * 256, {"code": 0, "msg": ""}),
+                             [('1' * 1001, {"code": 0, "msg": ""}),
                               (' ', {"code": 0, "msg": "不能为空"}), ('', {"code": 0, "msg": "不能为空"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_103008_devicetoken_wrong(self, device_token, result):
@@ -675,6 +743,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -744,6 +822,16 @@ class TestLogin(object):
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("Logout result：", str(logout_result))
                 self.logger.info("Logout result：{0}".format(logout_result))
+
+            with allure.step("teststep7: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -817,6 +905,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -870,6 +968,16 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -923,6 +1031,16 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert rsp_content["Message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -976,6 +1094,16 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1058,6 +1186,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1131,6 +1269,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1204,6 +1352,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1271,6 +1429,16 @@ class TestLogin(object):
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("Logout result：", str(logout_result))
                 self.logger.info("Logout result：{0}".format(logout_result))
+
+            with allure.step("teststep7: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1353,6 +1521,16 @@ class TestLogin(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1414,6 +1592,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'client_type值非法' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1475,6 +1663,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'client_version' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1536,6 +1734,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'device_token' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1597,6 +1805,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'imei' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1658,6 +1876,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'phone' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1719,6 +1947,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert '验证码不正确' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1780,6 +2018,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'code_token' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1841,6 +2089,16 @@ class TestLogin(object):
                             self.logger.info("Logout result：{0}".format(logout_result))
                 assert rsp_content["code"] == 0
                 assert 'timestamp' in rsp_content["message"]
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_login'
+                allure.attach("table name and condition", "{0}".format(table))
+                self.logger.info("")
+                self.logger.info("table: {0}".format(table))
+                select_result = self.mysql.execute_select_all(table)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1853,4 +2111,4 @@ class TestLogin(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Login.py'])
-    pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103001_login_correct'])
+    pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103003_clienttype_correct'])
