@@ -1245,5 +1245,5 @@ class TestModifyHomeAddress(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Modify_HomeAddress.py'])
-    # pytest.main(['-s', 'test_Modify_HomeAddress.py::TestModifyHomeAddress::test_110020_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
+    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110001_modify_home_address_correct'])

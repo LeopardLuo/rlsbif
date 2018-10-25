@@ -633,5 +633,5 @@ class TestGetMsgCode(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_GetMsgCode.py'])
-    # pytest.main(['-s', 'test_GetMsgCode.py::TestGetMsgCode::test_101005_phone_has_registered'])
+    # pytest.main(['-s', 'test_APP_GetMsgCode.py'])
+    pytest.main(['-s', 'test_APP_GetMsgCode.py::TestGetMsgCode::test_101001_get_correct_msg_code'])

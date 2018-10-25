@@ -12,8 +12,8 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("获取关联人列表")
-class TestGetIdentityList(object):
+@allure.feature("用户身份认证")
+class TestIdentityUser(object):
 
     @allure.step("+++ setup class +++")
     def setup_class(cls):
@@ -25,7 +25,7 @@ class TestGetIdentityList(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'GetIdentityOtherList')
+                cls.URI = cls.config.getItem('uri', 'UserIdentity')
                 allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
@@ -59,7 +59,7 @@ class TestGetIdentityList(object):
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222181", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511222161", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
@@ -70,15 +70,6 @@ class TestGetIdentityList(object):
                 cls.logger.info("register result: {0}".format(register_result))
                 cls.token = register_result['token']
                 cls.member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep1: identity user."):
-                headers = {"authorization": cls.token}
-                cls.httpclient.update_header(headers)
-                identity_result = user_identity(cls.httpclient, cls.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), cls.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                cls.logger.info("identity_result: {0}".format(identity_result))
-                assert identity_result
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -97,15 +88,6 @@ class TestGetIdentityList(object):
             cls.httpclient.update_header({"authorization": None})
             allure.attach("logout result", str(logout_result))
             cls.logger.info("logout result: {0}".format(logout_result))
-        with allure.step("teststep: delete user identity record"):
-            table = 'mem_features'
-            condition = ("member_id", cls.member_id)
-            allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            cls.logger.info("")
-            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            select_result = cls.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(select_result))
-            cls.logger.info("delete result: {0}".format(select_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -113,171 +95,30 @@ class TestGetIdentityList(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
-    @allure.severity("critical")
-    @allure.story("2页获取1页")
-    @allure.testcase("FT-HTJK-116-001")
-    def test_116001_relatives_2page_1index(self):
-        """ Test get list 1 index in 2 pages(FT-HTJK-116-001)."""
-        self.logger.info(".... Start test_116001_relatives_2page_1index ....")
-        try:
-            with allure.step("teststep1: identity other."):
-                headers = {"authorization": self.token}
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg', 'relate_com.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result1))
-                self.logger.info("identity_result: {0}".format(identity_result1))
-                identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
-                                                  'relate_com.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result2))
-                self.logger.info("identity_result: {0}".format(identity_result2))
-
-            with allure.step("teststep2: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 0, "page_size": 1, "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep3: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep4: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert rsp_content['result']['data']
-                assert rsp_content['result']['page']['page_index'] == 0
-                assert rsp_content['result']['page']['page_size'] == 1
-                assert rsp_content['result']['page']['total_count'] == 2
-                assert rsp_content['result']['page']['total_page'] == 2
-                assert rsp_content['result']['page']['has_next_page']
-                assert not rsp_content['result']['page']['has_previous_page']
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            with allure.step("delete database records"):
-                table = 'mem_features'
-                condition = ("member_id", self.member_id)
-                select_result = self.mysql.execute_select_condition(table, condition)
-                for member in select_result:
-                    if member[2] != '本人':
-                        condition = ("features_id", member[0])
-                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                        self.logger.info("")
-                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                        delete_result = self.mysql.execute_delete_condition(table, condition)
-                        allure.attach("delete result", str(delete_result))
-                        self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_116001_relatives_2page_1index ....")
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("2页获取2页")
-    @allure.testcase("FT-HTJK-116-002")
-    def test_116002_relatives_2page_2index(self):
-        """ Test get list 2 index in 2 pages(FT-HTJK-116-002)."""
-        self.logger.info(".... Start test_116002_relatives_2page_2index ....")
-        try:
-            with allure.step("teststep1: identity other."):
-                headers = {"authorization": self.token}
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result1))
-                self.logger.info("identity_result: {0}".format(identity_result1))
-                identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
-                                                  'relate_com.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result2))
-                self.logger.info("identity_result: {0}".format(identity_result2))
-
-            with allure.step("teststep2: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1, "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep3: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep4: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert rsp_content['result']['data']
-                assert rsp_content['result']['page']['page_index'] == 1
-                assert rsp_content['result']['page']['page_size'] == 1
-                assert rsp_content['result']['page']['total_count'] == 2
-                assert rsp_content['result']['page']['total_page'] == 2
-                assert not rsp_content['result']['page']['has_next_page']
-                assert rsp_content['result']['page']['has_previous_page']
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            with allure.step("delete database records"):
-                table = 'mem_features'
-                condition = ("member_id", self.member_id)
-                select_result = self.mysql.execute_select_condition(table, condition)
-                for member in select_result:
-                    if member[2] != '本人':
-                        condition = ("features_id", member[0])
-                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                        self.logger.info("")
-                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                        delete_result = self.mysql.execute_delete_condition(table, condition)
-                        allure.attach("delete result", str(delete_result))
-                        self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_116002_relatives_2page_2index ....")
-            self.logger.info("")
-
     @allure.severity("blocker")
-    @allure.story("关联人列表空")
-    @allure.testcase("FT-HTJK-116-003")
-    def test_116003_relatives_list_empty(self):
-        """ Test identity relatives by correct parameters(FT-HTJK-116-003)."""
-        self.logger.info(".... Start test_116003_relatives_list_empty ....")
+    @allure.story("身份认证成功")
+    @allure.testcase("FT-HTJK-115-001")
+    def test_115001_identity_user_correct(self):
+        """ Test identity user by correct parameters(FT-HTJK-115-001)."""
+        self.logger.info(".... Start test_115001_identity_user_correct ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 0, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -290,51 +131,48 @@ class TestGetIdentityList(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert not rsp_content['result']['data']
-                assert rsp_content['result']['page']['page_index'] == 0
-                assert rsp_content['result']['page']['page_size'] == 2
-                assert rsp_content['result']['page']['total_count'] == 0
-                assert rsp_content['result']['page']['total_page'] == 0
-                assert not rsp_content['result']['page']['has_next_page']
-                assert not rsp_content['result']['page']['has_previous_page']
+                assert '认证通过' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116003_relatives_list_empty ....")
+            self.logger.info(".... End test_115001_identity_user_correct ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误token值")
-    @allure.testcase("FT-HTJK-116-004")
+    @allure.testcase("FT-HTJK-115-002")
     @pytest.mark.parametrize("token, result",
                              [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
                               ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
                               ('', {"code": 0, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
-    def test_116004_token_wrong(self, token, result):
-        """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-116-004).
+    def test_115002_token_wrong(self, token, result):
+        """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-115-002).
         :param token: token parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_116004_token_wrong ({}) ....".format(token))
+        self.logger.info(".... Start test_115002_token_wrong ({}) ....".format(token))
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
+                allure.attach("request.files", str(files))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
+                self.logger.info("request.files: {}".format(files))
 
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -353,12 +191,12 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116004_token_wrong ({}) ....".format(token))
+            self.logger.info(".... End test_115002_token_wrong ({}) ....".format(token))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误member_id值")
-    @allure.testcase("FT-HTJK-116-005")
+    @allure.testcase("FT-HTJK-115-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
                               (1.0, {"status": 400, "code": 0, "msg": ""}),
@@ -373,25 +211,29 @@ class TestGetIdentityList(object):
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
                                   "member_id(0)", "member_id(超大)"])
-    def test_116005_member_id_wrong(self, member_id, result):
-        """ Test wrong member_id values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-116-005).
+    def test_115003_member_id_wrong(self, member_id, result):
+        """ Test wrong member_id values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-115-003).
         :param member_id: member_id parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_116005_member_id_wrong ({}) ....".format(member_id))
+        self.logger.info(".... Start test_115003_member_id_wrong ({}) ....".format(member_id))
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": member_id, "page_index": 1, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"member_id": member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
+                allure.attach("request.files", str(files))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
+                self.logger.info("request.files: {}".format(files))
 
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -413,219 +255,43 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116005_member_id_wrong ({}) ....".format(member_id))
+            self.logger.info(".... End test_115003_member_id_wrong ({}) ....".format(member_id))
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("错误page_index值")
-    @allure.testcase("FT-HTJK-116-006")
-    @pytest.mark.parametrize("page_index, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "not valid"}),
-                              (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
-                              (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
-                              (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('a', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('中', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('*', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('1a', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('1中', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('1*', {"status": 400, "code": 0, "msg": "not valid"}),
-                              (' ', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('', {"status": 400, "code": 0, "msg": "not valid"})],
-                             ids=["page_index(-1)",
-                                  "page_index(-2147483649)", "page_index(2147483648)", "page_index(小数)",
-                                  "page_index(字母)", "page_index(中文)", "page_index(特殊字符)",
-                                  "page_index(数字字母)", "page_index(数字中文)",
-                                  "page_index(数字特殊字符)", "page_index(空格)", "page_index(空)"])
-    def test_116006_page_index_wrong(self, page_index, result):
-        """ Test wrong page_index values (-1、0、5、-2147483649、2147483648、1.0、字母、中文、特殊字符、数字字母、
-        数字中文、数字特殊字符、空格、空）(FT-HTJK-116-006).
-        :param page_index: page_index parameter value.
+    @allure.story("identity_card_face支持的图片类型")
+    @allure.testcase("FT-HTJK-115-004")
+    @pytest.mark.parametrize("identity_card_face, result",
+                             [("fore2.png", {"code": 1, "msg": "认证通过"}),
+                              ("fore2.jpg", {"code": 1, "msg": "认证通过"}),
+                              ("fore2.jpeg", {"code": 1, "msg": "认证通过"}),
+                              ("fore2.tif", {"code": 1, "msg": "认证通过"}),
+                              ("fore2.bmp", {"code": 1, "msg": "认证通过"}), ],
+                             ids=["identity_card_face(png)", "identity_card_face(jpg)", "identity_card_face(jpeg)",
+                                  "identity_card_face(tif)", "identity_card_face(bmp)"])
+    def test_115004_identity_card_face_type_correct(self, identity_card_face, result):
+        """ Test correct identity_card_face image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-115-004).
+        :param identity_card_face: identity_card_face parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_116006_page_index_wrong ({}) ....".format(page_index))
+        self.logger.info(".... Start test_115004_identity_card_face_type_correct ({}) ....".format(identity_card_face))
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": page_index, "page_size": 1, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path(identity_card_face), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
+                allure.attach("request.files", str(files))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == result['status']
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_116006_page_index_wrong ({}) ....".format(page_index))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("正确page_size值")
-    @allure.testcase("FT-HTJK-116-007")
-    @pytest.mark.parametrize("page_size, result",
-                             [(1, {"status": 200, "code": 1, "msg": ""}),
-                              (2147483647, {"status": 200, "code": 1, "msg": ""})],
-                             ids=["page_size(最小值)", "page_size(最大值)"])
-    def test_116007_page_size_correct(self, page_size, result):
-        """ Test correct page_size values (最小值,最大值）(FT-HTJK-116-007).
-        :param page_size: page_size parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_116007_page_size_correct ({}) ....".format(page_size))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": page_size,
-                          "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == result['status']
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_116007_page_size_correct ({}) ....".format(page_size))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("错误page_size值")
-    @allure.testcase("FT-HTJK-116-008")
-    @pytest.mark.parametrize("page_size, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "not valid"}),
-                              (0, {"status": 200, "code": 0, "msg": "not valid"}),
-                              (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
-                              (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
-                              (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('a', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('中', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('*', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('1a', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('1中', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('1*', {"status": 400, "code": 0, "msg": "not valid"}),
-                              (' ', {"status": 400, "code": 0, "msg": "not valid"}),
-                              ('', {"status": 400, "code": 0, "msg": "not valid"})],
-                             ids=["page_size(-1)", "page_size(0)",
-                                  "page_size(-2147483649)", "page_size(2147483648)", "page_size(小数)",
-                                  "page_size(字母)", "page_size(中文)", "page_size(特殊字符)",
-                                  "page_size(数字字母)", "page_size(数字中文)",
-                                  "page_size(数字特殊字符)", "page_size(空格)", "page_size(空)"])
-    def test_116008_page_size_wrong(self, page_size, result):
-        """ Test wrong page_size values (-1、0、-2147483649、2147483648、1.0、字母、中文、特殊字符、数字字母、
-        数字中文、数字特殊字符、空格、空）(FT-HTJK-116-006).
-        :param page_size: page_size parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_116008_page_size_wrong ({}) ....".format(page_size))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": page_size,
-                          "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == result['status']
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_116008_page_size_wrong ({}) ....".format(page_size))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("正确timestamp值")
-    @allure.testcase("FT-HTJK-116-009")
-    @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": ""}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": ""})],
-                             ids=["timestamp(最小值)", "timestamp(最大值)"])
-    def test_116009_timestamp_correct(self, timestamp, result):
-        """ Test correct timestamp values (最小值、最大值）(FT-HTJK-116-009).
-        :param timestamp: timestamp parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_116009_timestamp_correct ({}) ....".format(timestamp))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1,
-                          "timestamp": timestamp}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
+                self.logger.info("request.files: {}".format(files))
 
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -647,12 +313,366 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116009_timestamp_correct ({}) ....".format(timestamp))
+            self.logger.info(".... End test_115004_identity_card_face_type_correct ({}) ....".format(identity_card_face))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("identity_card_face不支持的文件类型")
+    @allure.testcase("FT-HTJK-115-005")
+    @pytest.mark.parametrize("identity_card_face, result",
+                             [("fore2.gif", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("fore1.PNG", {"code": 0, "msg": "认证不通过"}), ],
+                             ids=["identity_card_face(gif)", "identity_card_face(xlsx)", "identity_card_face(txt)",
+                                  "identity_card_face(mp4)", "identity_card_face(other)"])
+    def test_115005_identity_card_face_type_wrong(self, identity_card_face, result):
+        """ Test wrong identity_card_face image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-115-005).
+        :param identity_card_face: identity_card_face parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_115005_identity_card_face_type_wrong ({}) ....".format(identity_card_face))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path(identity_card_face), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.files", str(files))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.files: {}".format(files))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(
+                ".... End test_115005_identity_card_face_type_wrong ({}) ....".format(identity_card_face))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("identity_card_emblem支持的图片类型")
+    @allure.testcase("FT-HTJK-115-006")
+    @pytest.mark.parametrize("identity_card_emblem, result",
+                             [("back2.png", {"code": 1, "msg": "认证通过"}),
+                              ("back2.jpg", {"code": 1, "msg": "认证通过"}),
+                              ("back2.jpeg", {"code": 1, "msg": "认证通过"}),
+                              ("back2.tif", {"code": 1, "msg": "认证通过"}),
+                              ("back2.bmp", {"code": 1, "msg": "认证通过"}), ],
+                             ids=["identity_card_emblem(png)", "identity_card_emblem(jpg)", "identity_card_emblem(jpeg)",
+                                  "identity_card_emblem(tif)", "identity_card_emblem(bmp)"])
+    def test_115006_identity_card_emblem_type_correct(self, identity_card_emblem, result):
+        """ Test correct identity_card_emblem image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-115-006).
+        :param identity_card_emblem: identity_card_emblem parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_115006_identity_card_emblem_type_correct ({}) ....".format(identity_card_emblem))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.files", str(files))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.files: {}".format(files))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(
+                ".... End test_115006_identity_card_emblem_type_correct ({}) ....".format(identity_card_emblem))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("identity_card_emblem不支持的文件类型")
+    @allure.testcase("FT-HTJK-115-007")
+    @pytest.mark.parametrize("identity_card_emblem, result",
+                             [("back2.gif", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
+                              ("a1.jpeg", {"code": 0, "msg": "认证不通过"}), ],
+                             ids=["identity_card_emblem(gif)", "identity_card_emblem(xlsx)", "identity_card_emblem(txt)",
+                                  "identity_card_emblem(mp4)", "identity_card_emblem(other)"])
+    def test_115007_identity_card_emblem_type_wrong(self, identity_card_emblem, result):
+        """ Test wrong identity_card_emblem image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-115-007).
+        :param identity_card_emblem: identity_card_emblem parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_115007_identity_card_emblem_type_wrong ({}) ....".format(identity_card_emblem))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.files", str(files))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.files: {}".format(files))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(
+                ".... End test_115007_identity_card_emblem_type_wrong ({}) ....".format(identity_card_emblem))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("face_picture支持的图片类型")
+    @allure.testcase("FT-HTJK-115-008")
+    @pytest.mark.parametrize("face_picture, result",
+                             [("face2.png", {"code": 1, "msg": "认证通过"}),
+                              ("face2.jpg", {"code": 1, "msg": "认证通过"}),
+                              ("face2.jpeg", {"code": 1, "msg": "认证通过"}),
+                              ("face2.tif", {"code": 1, "msg": "认证通过"}),
+                              ("face2.bmp", {"code": 1, "msg": "认证通过"}), ],
+                             ids=["face_picture(png)", "face_picture(jpg)",
+                                  "face_picture(jpeg)",
+                                  "face_picture(tif)", "face_picture(bmp)"])
+    def test_115008_face_picture_type_correct(self, face_picture, result):
+        """ Test correct face_picture image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-115-008).
+        :param face_picture: face_picture parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(
+            ".... Start test_115008_face_picture_type_correct ({}) ....".format(face_picture))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path(face_picture), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.files", str(files))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.files: {}".format(files))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(
+                ".... End test_115008_face_picture_type_correct ({}) ....".format(face_picture))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("face_picture不支持的文件类型")
+    @allure.testcase("FT-HTJK-115-009")
+    @pytest.mark.parametrize("face_picture, result",
+                             [("face2.gif", {"code": 0, "msg": "自拍照片不合格"}),
+                              ("case.xlsx", {"code": 0, "msg": "自拍照片不合格"}),
+                              ("temp.txt", {"code": 0, "msg": "自拍照片不合格"}),
+                              ("hb.mp4", {"code": 0, "msg": "自拍照片不合格"}),
+                              ("a1.jpeg", {"code": 0, "msg": "认证不通过"}), ],
+                             ids=["face_picture(gif)", "face_picture(xlsx)", "face_picture(txt)",
+                                  "face_picture(mp4)", "face_picture(other)"])
+    def test_115009_face_picture_type_wrong(self, face_picture, result):
+        """ Test wrong face_picture image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-115-009).
+        :param face_picture: face_picture parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(
+            ".... Start test_115009_face_picture_type_wrong ({}) ....".format(face_picture))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path(face_picture), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.files", str(files))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.files: {}".format(files))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(
+                ".... End test_115009_face_picture_type_wrong ({}) ....".format(face_picture))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("正确timestamp值")
+    @allure.testcase("FT-HTJK-115-010")
+    @pytest.mark.parametrize("timestamp, result",
+                             [(get_timestamp() - 10000, {"code": 1, "msg": "认证通过"}),
+                              (get_timestamp() + 1000, {"code": 1, "msg": "认证通过"})],
+                             ids=["timestamp(最小值)", "timestamp(最大值)"])
+    def test_115010_timestamp_correct(self, timestamp, result):
+        """ Test correct timestamp values (最小值、最大值）(FT-HTJK-115-010).
+        :param timestamp: timestamp parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(
+            ".... Start test_115010_timestamp_correct ({}) ....".format(timestamp))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "timestamp": timestamp}
+                headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.files", str(files))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.files: {}".format(files))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(
+                ".... End test_115010_timestamp_correct ({}) ....".format(timestamp))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误timestamp值")
-    @allure.testcase("FT-HTJK-116-010")
+    @allure.testcase("FT-HTJK-115-011")
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
@@ -674,27 +694,31 @@ class TestGetIdentityList(object):
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
                                   "timestamp(数字中文)",
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
-    def test_116010_timestamp_wrong(self, timestamp, result):
+    def test_115011_timestamp_wrong(self, timestamp, result):
         """ Test wrong timestamp values (1、9223372036854775807、0、-1、-9223372036854775809、9223372036854775808、1.0、
-            字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-116-010).
+            字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-115-011).
         :param timestamp: timestamp parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_116010_timestamp_wrong ({}) ....".format(timestamp))
+        self.logger.info(
+            ".... Start test_115011_timestamp_wrong ({}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1,
-                          "timestamp": timestamp}
+                params = {"member_id": self.member_id, "timestamp": timestamp}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
+                allure.attach("request.files", str(files))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
+                self.logger.info("request.files: {}".format(files))
 
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
@@ -716,141 +740,34 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116010_timestamp_wrong ({}) ....".format(timestamp))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("正确orderby值")
-    @allure.testcase("FT-HTJK-116-011")
-    @pytest.mark.parametrize("orderby, result",
-                             [('asc', {"code": 1, "msg": ""}),
-                              ('desc', {"code": 1, "msg": ""})],
-                             ids=["orderby(最小值)", "orderby(最大值)"])
-    def test_116011_orderby_correct(self, orderby, result):
-        """ Test correct orderby values (最小值、最大值）(FT-HTJK-116-011).
-        :param orderby: orderby parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_116011_orderby_correct ({}) ....".format(orderby))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1, "orderby": orderby,
-                          "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_116011_orderby_correct ({}) ....".format(orderby))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("错误orderby值")
-    @allure.testcase("FT-HTJK-116-012")
-    @pytest.mark.parametrize("orderby, result",
-                             [(0, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              (1, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('a' * 300, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              (1.0, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('a', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('中', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('*', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('1a', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('1中', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('1*', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              (' ', {"status": 200, "code": 1, "msg": ""}),
-                              ('', {"status": 200, "code": 1, "msg": ""})],
-                             ids=["orderby(0)", "orderby(1)", "orderby(超长值)", "orderby(1.0)",
-                                  "orderby(字母)", "orderby(中文)", "orderby(特殊字符)", "orderby(数字字母)",
-                                  "orderby(数字中文)", "orderby(数字特殊字符)", "orderby(空格)", "orderby(空)", ])
-    def test_116012_orderby_wrong(self, orderby, result):
-        """ Test wrong orderby values (0、1、超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-116-012).
-        :param orderby: orderby parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_116012_orderby_wrong ({}) ....".format(orderby))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1, "orderby": orderby,
-                          "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_116012_orderby_wrong ({}) ....".format(orderby))
+            self.logger.info(
+                ".... End test_115011_timestamp_wrong ({}) ....".format(timestamp))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少token参数")
-    @allure.testcase("FT-HTJK-116-013")
-    def test_116013_no_token(self):
-        """ Test get identity list without token(FT-HTJK-116-013)."""
-        self.logger.info(".... Start test_116013_no_token ....")
+    @allure.testcase("FT-HTJK-115-012")
+    def test_115012_no_token(self):
+        """ Test modify head image without token(FT-HTJK-115-012)."""
+        self.logger.info(".... Start test_115012_no_token ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": None}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -870,27 +787,33 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116013_no_token ....")
+            self.logger.info(".... End test_115012_no_token ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少member_id参数")
-    @allure.testcase("FT-HTJK-116-014")
-    def test_116014_no_member_id(self):
-        """ Test get identity list without member_id(FT-HTJK-116-014)."""
-        self.logger.info(".... Start test_116014_no_member_id ....")
+    @allure.testcase("FT-HTJK-115-013")
+    def test_115013_no_member_id(self):
+        """ Test modify head image without member_id(FT-HTJK-115-013)."""
+        self.logger.info(".... Start test_115013_no_member_id ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"page_index": 1, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -910,27 +833,32 @@ class TestGetIdentityList(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116014_no_member_id ....")
+            self.logger.info(".... End test_115013_no_member_id ....")
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少page_index参数")
-    @allure.testcase("FT-HTJK-116-015")
-    def test_116015_no_page_index(self):
-        """ Test get identity list without page_index(FT-HTJK-116-015)."""
-        self.logger.info(".... Start test_116015_no_page_index ....")
+    @allure.story("缺少identity_card_face参数")
+    @allure.testcase("FT-HTJK-115-014")
+    def test_115014_no_identity_card_face(self):
+        """ Test modify head image without identity_card_face(FT-HTJK-115-014)."""
+        self.logger.info(".... Start test_115014_no_identity_card_face ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_size": 2, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -943,34 +871,39 @@ class TestGetIdentityList(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
+                assert 'identity_card_face不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116015_no_page_index ....")
+            self.logger.info(".... End test_115014_no_identity_card_face ....")
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少page_size参数")
-    @allure.testcase("FT-HTJK-116-016")
-    def test_116016_no_page_size(self):
-        """ Test get identity list without page_size(FT-HTJK-116-016)."""
-        self.logger.info(".... Start test_116016_no_page_size ....")
+    @allure.story("缺少identity_card_emblem参数")
+    @allure.testcase("FT-HTJK-115-015")
+    def test_115015_no_identity_card_emblem(self):
+        """ Test modify head image without identity_card_emblem(FT-HTJK-115-015)."""
+        self.logger.info(".... Start test_115015_no_identity_card_emblem ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -983,34 +916,39 @@ class TestGetIdentityList(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
+                assert '保存身份证国徽面照片失败' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116016_no_page_size ....")
+            self.logger.info(".... End test_115015_no_identity_card_emblem ....")
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少orderby参数")
-    @allure.testcase("FT-HTJK-116-017")
-    def test_116017_no_orderby(self):
-        """ Test get identity list without orderby(FT-HTJK-116-017)."""
-        self.logger.info(".... Start test_116017_no_orderby ....")
+    @allure.story("缺少face_picture参数")
+    @allure.testcase("FT-HTJK-115-016")
+    def test_115016_no_face_picture(self):
+        """ Test modify head image without face_picture(FT-HTJK-115-016)."""
+        self.logger.info(".... Start test_115016_no_face_picture ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1, "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -1022,35 +960,41 @@ class TestGetIdentityList(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert '' in rsp_content['message']
+                assert rsp_content["code"] == 0
+                assert 'face_picture不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116017_no_orderby ....")
+            self.logger.info(".... End test_115016_no_face_picture ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少timestamp参数")
-    @allure.testcase("FT-HTJK-116-018")
-    def test_116018_no_timestamp(self):
-        """ Test get identity list without timestamp(FT-HTJK-116-018)."""
-        self.logger.info(".... Start test_116018_no_timestamp ....")
+    @allure.testcase("FT-HTJK-115-017")
+    def test_115017_no_timestamp(self):
+        """ Test modify head image without timestamp(FT-HTJK-115-017)."""
+        self.logger.info(".... Start test_115017_no_timestamp ....")
         try:
             with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "page_index": 1, "page_size": 1}
+                params = {"member_id": self.member_id}
                 headers = {"authorization": self.token}
+                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
+                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb'),
+                         "face_picture": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
             with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep3: assert the response code"):
@@ -1063,17 +1007,17 @@ class TestGetIdentityList(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
+                assert 'timestamp不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_116018_no_timestamp ....")
+            self.logger.info(".... End test_115017_no_timestamp ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Identity_GetList.py'])
-    # pytest.main(['-s', 'test_Identity_GetList.py::TestGetIdentityList::test_116003_relatives_list_empty'])
+    # pytest.main(['-s', 'test_APP_Identity_User.py'])
+    pytest.main(['-s', 'test_APP_Identity_User.py::TestIdentityUser::test_115001_identity_user_correct'])

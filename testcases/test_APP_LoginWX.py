@@ -92,47 +92,47 @@ class TestWXLogin(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
-    @allure.severity("critical")
-    @allure.story("登录成功")
-    @allure.testcase("FT-HTJK-104-001")
-    def test_104001_WXlogin_correct(self):
-        """ Test wx login by correct parameters(FT-HTJK-104-001)."""
-        self.logger.info(".... Start test_104001_WXlogin_correct ....")
-        try:
-            with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
-                        "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe", "timestamp": get_timestamp()}
-                allure.attach("params value", str(json))
-                self.logger.info("params: {0}".format(json))
-
-            with allure.step("teststep2: requests http post."):
-                rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body))
-
-            with allure.step("teststep4: assert the response code"):
-                allure.attach("Expect response code：", '200')
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert '' in rsp_content["message"]
-                assert rsp_content["result"]["token"]
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_104001_WXlogin_correct ....")
-            self.logger.info("")
+    # @allure.severity("critical")
+    # @allure.story("登录成功")
+    # @allure.testcase("FT-HTJK-104-001")
+    # def test_104001_WXlogin_correct(self):
+    #     """ Test wx login by correct parameters(FT-HTJK-104-001)."""
+    #     self.logger.info(".... Start test_104001_WXlogin_correct ....")
+    #     try:
+    #         with allure.step("teststep1: get parameters."):
+    #             json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+    #                     "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe", "timestamp": get_timestamp()}
+    #             allure.attach("params value", str(json))
+    #             self.logger.info("params: {0}".format(json))
+    #
+    #         with allure.step("teststep2: requests http post."):
+    #             rsp = self.httpclient.post(self.URI, json=json)
+    #             allure.attach("request.headers", str(rsp.request.headers))
+    #             allure.attach("request.body", str(rsp.request.body))
+    #             self.logger.info("request.headers: {}".format(rsp.request.headers))
+    #             self.logger.info("request.body: {}".format(rsp.request.body))
+    #
+    #         with allure.step("teststep4: assert the response code"):
+    #             allure.attach("Expect response code：", '200')
+    #             allure.attach("Actual response code：", str(rsp.status_code))
+    #             self.logger.info("Actual response code：{0}".format(rsp.status_code))
+    #             assert rsp.status_code == 200
+    #             rsp_content = rsp.json()
+    #
+    #         with allure.step("teststep5: assert the response content"):
+    #             allure.attach("response content：", str(rsp_content))
+    #             self.logger.info("response content: {}".format(rsp_content))
+    #             assert rsp_content["code"] == 1
+    #             assert '' in rsp_content["message"]
+    #             assert rsp_content["result"]["token"]
+    #     except Exception as e:
+    #         allure.attach("Exception: ", "{}".format(e))
+    #         self.logger.error("Error: exception occur: ")
+    #         self.logger.error(e)
+    #         assert False
+    #     finally:
+    #         self.logger.info(".... End test_104001_WXlogin_correct ....")
+    #         self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误client_type值")
@@ -761,5 +761,5 @@ class TestWXLogin(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_LoginWX.py'])
-    pytest.main(['-s', 'test_LoginWX.py::TestWXLogin::test_104001_WXlogin_correct'])
+    # pytest.main(['-s', 'test_APP_LoginWX.py'])
+    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104003_clienttype_wrong'])

@@ -1022,5 +1022,5 @@ class TestModifyPhoneCheckPhone(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_Modify_Phone_CheckPhone.py'])
-    pytest.main(['-s', 'test_Modify_Phone_CheckPhone.py::TestModifyPhoneCheckPhone::test_111001_check_phone_correct'])
+    # pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py'])
+    pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py::TestModifyPhoneCheckPhone::test_111001_check_phone_correct'])

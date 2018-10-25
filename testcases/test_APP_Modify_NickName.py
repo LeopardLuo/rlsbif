@@ -692,5 +692,5 @@ class TestModifyNickName(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Modify_NickName.py'])
-    # pytest.main(['-s', 'test_Modify_NickName.py::TestModifyNickName::test_107011_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Modify_NickName.py'])
+    pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107001_modify_nickname_correct'])

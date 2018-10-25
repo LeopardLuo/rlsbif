@@ -1517,7 +1517,6 @@ class TestModifyPhone(object):
             self.logger.info("")
 
 
-
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Modify_Phone.py'])
-    # pytest.main(['-s', 'test_Modify_Phone.py::TestModifyPhone::test_112017_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Modify_Phone.py'])
+    pytest.main(['-s', 'test_APP_Modify_Phone.py::TestModifyPhone::test_112001_modify_phone_correct'])

@@ -1062,5 +1062,5 @@ class TestDeleteRelatives(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Identity_Relatives_Delete.py'])
-    # pytest.main(['-s', 'test_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118004_features_id_wrong'])
+    # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118001_relatives_delete_correct'])

@@ -1852,5 +1852,5 @@ class TestLogin(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Login.py'])
-    # pytest.main(['-s', 'test_Login.py::TestLogin::test_103026_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Login.py'])
+    pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103001_login_correct'])

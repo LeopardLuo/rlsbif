@@ -127,6 +127,7 @@ img
 img/*
 .pytest_cache
 testcases/.pytest_cache
+allure-report
 
 # My configurations:
 db.ini

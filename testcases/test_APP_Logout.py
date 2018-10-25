@@ -731,5 +731,5 @@ class TestLogout(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Logout.py'])
-    # pytest.main(['-s', 'test_Logout.py::TestLogout::test_105009_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Logout.py'])
+    pytest.main(['-s', 'test_APP_Logout.py::TestLogout::test_105001_logout_correct'])
