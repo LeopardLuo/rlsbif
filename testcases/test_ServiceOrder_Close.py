@@ -102,13 +102,13 @@ class TestServiceOrderClose(object):
             in_count = 4
             verify_condition_type = 2
             device_ids = ["23912662580592640"]
-            close_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
+            create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                   member_id, system_code, features_id, device_ids,
                                                                   verify_condition_type, begin_time, end_time,
                                                                   in_count, service_unit, service_address,
                                                                   logger=self.logger)
-            if close_service_order_result:
-                self.service_order_id = close_service_order_result["service_order_id"]
+            if create_service_order_result:
+                self.service_order_id = create_service_order_result["service_order_id"]
                 self.logger.info("service order id:" + str(self.service_order_id))
             else:
                 self.logger.info("create service order failed.")
