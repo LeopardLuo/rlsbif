@@ -244,6 +244,17 @@ class TestGetApplicationList(object):
                 assert rsp_content['result']['page']['page_size'] == 10
                 assert not rsp_content['result']['page']['has_next_page']
                 assert not rsp_content['result']['page']['has_previous_page']
+
+            with allure.step("teststep6: query database records"):
+                table = 'bus_system'
+                condition = ("system_name", 'TestSystem')
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 2
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -996,4 +1007,4 @@ class TestGetApplicationList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_ApplicationList.py'])
-    pytest.main(['-s', 'test_APP_Get_ApplicationList.py::TestGetApplicationList::test_121001_get_0index_without_login'])
+    pytest.main(['-s', 'test_APP_Get_ApplicationList.py::TestGetApplicationList::test_121003_get_multidata_without_login'])

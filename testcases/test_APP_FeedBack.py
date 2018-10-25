@@ -57,14 +57,6 @@ class TestFeedBack(object):
                 allure.attach("delete result", str(delete_result))
                 cls.logger.info("delete result: {0}".format(delete_result))
 
-            with allure.step("delete feedback"):
-                table = 'sys_feedback'
-                allure.attach("table name", str(table))
-                cls.logger.info("table: {0}".format(table))
-                delete_result = cls.mysql.execute_delete_all(table)
-                allure.attach("delete result", str(delete_result))
-                cls.logger.info("delete result: {0}".format(delete_result))
-
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
                         "imei": "460011234567890", "phone": "13511222202", "sms_code": "123456",
@@ -103,6 +95,21 @@ class TestFeedBack(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
+    @allure.step("+++ setup method +++")
+    def setup_method(self, method):
+        self.logger.info("")
+        self.logger.info("=== Start setup method ===")
+        self.logger.info(method.__name__)
+        with allure.step("delete feedback"):
+            table = 'sys_feedback'
+            allure.attach("table name", str(table))
+            self.logger.info("delele records of table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_all(table)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        self.logger.info("=== End setup method ===")
+        self.logger.info("")
+
     @allure.severity("blocker")
     @allure.story("提交意见成功")
     @allure.testcase("FT-HTJK-120-001")
@@ -138,7 +145,7 @@ class TestFeedBack(object):
                 assert rsp_content["code"] == 1
                 assert '保存反馈意见成功' in rsp_content["message"]
 
-            with allure.step("teststep6: query database records"):
+            with allure.step("teststep5: query database records"):
                 table = 'sys_feedback'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -148,6 +155,7 @@ class TestFeedBack(object):
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
+                assert (get_timestamp() - select_result[0][5]) < 60
                 match_list = list(filter(lambda x: x[2] == '意见反馈', select_result))
                 self.logger.info("match list: {}".format(match_list))
                 assert match_list
@@ -203,6 +211,17 @@ class TestFeedBack(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -269,6 +288,17 @@ class TestFeedBack(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -328,6 +358,17 @@ class TestFeedBack(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -382,6 +423,17 @@ class TestFeedBack(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -435,6 +487,17 @@ class TestFeedBack(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -454,7 +517,7 @@ class TestFeedBack(object):
                               (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.0, {"status": 200, "code": 0, "msg": "is invalid"}),
+                              (1.5, {"status": 200, "code": 0, "msg": "is invalid"}),
                               ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -506,6 +569,17 @@ class TestFeedBack(object):
                     assert result['msg'] in rsp_content["message"]
                 else:
                     assert rsp_content
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -549,6 +623,17 @@ class TestFeedBack(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '未登录或登录已过期' in rsp_content["message"]
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -592,6 +677,17 @@ class TestFeedBack(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '授权非法' in rsp_content["message"]
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -635,6 +731,17 @@ class TestFeedBack(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content["message"]
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -678,6 +785,17 @@ class TestFeedBack(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content["message"]
+
+            with allure.step("teststep5: query database records"):
+                table = 'sys_feedback'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -690,4 +808,4 @@ class TestFeedBack(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_FeedBack.py'])
-    pytest.main(['-s', 'test_APP_FeedBack.py::TestFeedBack::test_120001_submit_suggestion_correct'])
+    pytest.main(['-s', 'test_APP_FeedBack.py::TestFeedBack::test_120003_member_id_wrong'])

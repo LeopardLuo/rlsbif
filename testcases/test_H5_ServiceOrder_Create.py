@@ -200,6 +200,18 @@ class TestCreateServiceOrder(object):
                 self.logger.info("service order list: {0}".format(order_list))
                 allure.attach("service order list", str(order_list))
                 assert len(order_list) == 1
+                assert order_list[0]['system_id'] == datas['system_id']
+                assert order_list[0]['business_order_id'] == datas['business_order_id']
+                assert order_list[0]['features_id'] == datas['features_id']
+                assert order_list[0]['features_name'] == '本人'
+                assert order_list[0]['service_unit'] == datas['service_unit']
+                assert order_list[0]['service_address'] == datas['service_address']
+                assert order_list[0]['begin_time'] == datas['begin_time']
+                assert order_list[0]['end_time'] == datas['end_time']
+                assert order_list[0]['in_count'] == datas['in_count']
+                assert order_list[0]['verify_condition_type'] == datas['verify_condition_type']
+                assert order_list[0]['already_count'] == 0
+                assert order_list[0]['state'] == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

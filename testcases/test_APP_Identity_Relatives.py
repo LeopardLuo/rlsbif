@@ -95,6 +95,38 @@ class TestIdentityRelatives(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
+    @allure.step("+++ teardown method +++")
+    def teardown_method(self, method):
+        self.logger.info("")
+        self.logger.info("=== Start teardown method ===")
+        self.logger.info(method.__name__)
+        with allure.step("delete mem_features"):
+            table = 'mem_features'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("delele records of table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete mem_member_identity"):
+            table = 'mem_member_identity'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("delele records of table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete mem_member_identity_other"):
+            table = 'mem_member_identity_other'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("delele records of table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        self.logger.info("=== End teardown method ===")
+        self.logger.info("")
+
     @allure.severity("blocker")
     @allure.story("认证成功")
     @allure.testcase("FT-HTJK-117-001")
@@ -139,6 +171,18 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
                 assert '关联成功' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
+                assert select_result[0][2] == params['features_name']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -185,6 +229,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -245,6 +300,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -318,6 +384,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -384,6 +461,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -447,6 +535,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -514,6 +613,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -581,6 +691,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -648,6 +769,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -715,6 +847,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -767,6 +910,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -819,6 +973,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -871,6 +1036,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -934,6 +1110,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1015,6 +1202,17 @@ class TestIdentityRelatives(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1066,6 +1264,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '未登录或登录已过期' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1117,6 +1326,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '授权非法' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1168,6 +1388,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1218,6 +1449,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '保存家人失败' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1268,6 +1510,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '保存家人失败' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1319,6 +1572,17 @@ class TestIdentityRelatives(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '保存家人失败' in rsp_content['message']
+
+            with allure.step("teststep6: query database records"):
+                table = 'mem_member_identity_other'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1331,4 +1595,4 @@ class TestIdentityRelatives(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
-    pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117001_identity_relatives_correct'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117006_features_name_wrong'])
