@@ -47,7 +47,46 @@ class TestServiceOrderPush(object):
                                                                                          cls.password, cls.hostname))
                 cls.mqtt_client = MqttClient(host=cls.hostname, client_id=cls.clientid, username=cls.username,
                                              password=cls.password)
-
+            with allure.step("初始化数据库连接"):
+                db_user = cls.config.getItem('db', 'db_user')
+                db_password = cls.config.getItem('db', 'db_password')
+                db_host = cls.config.getItem('db', 'db_host')
+                db_database = cls.config.getItem('db', 'db_database')
+                db_port = int(cls.config.getItem('db', 'db_port'))
+                allure.attach("db_params",
+                              "{0}, {1}, {2}, {3}, {4}".format(db_user, db_password, db_host, db_database, db_port))
+                cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
+                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
+                cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
+            with allure.step("注册用户，生成member_id"):
+                code_type = 2
+                client_type = 2
+                client_version = "v1"
+                device_token = "138001380001234"
+                imei = "138001380001234"
+                phone = "13800138000"
+                sms_code = "123456"
+                login_result = make_login(cls.httpclient, code_type, client_type, client_version, device_token, imei,
+                                          phone, sms_code,logger=cls.logger)
+                if login_result == {}:
+                    cls.logger.error("user login failed!")
+                    assert False
+                cls.member_id = login_result["user_info"]["member_id"]
+                cls.token = login_result['token']
+            with allure.step("进行身份认证，获取feature_id"):
+                headers = {"authorization": cls.token}
+                identity_card_face = "D:\\test_photo\\fore2.jpg"
+                identity_card_emblem = "D:\\test_photo\\back2.jpg"
+                face_picture = "D:\\test_photo\\face2.jpg"
+                cls.httpclient.update_header(headers)
+                user_identity_result = user_identity(cls.httpclient, cls.member_id, identity_card_face, identity_card_emblem,
+                                                     face_picture, logger=cls.logger)
+                if not user_identity_result:
+                    cls.logger.error("user identity failed!")
+                    assert False
+                table_name = "mem_features"
+                condition = ("member_id",cls.member_id)
+                cls.features_id = cls.mysql.execute_select_condition(table_name,condition)[0][0]
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -59,10 +98,28 @@ class TestServiceOrderPush(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
+        with allure.step("delete member"):
+            member_table = "mem_member"
+            mem_condition = ("member_id",cls.member_id)
+            allure.attach("table name", str(member_table))
+            cls.logger.info("table: {0}".format(member_table))
+            mem_delete_result = cls.mysql.execute_delete_condition(member_table, mem_condition)
+            allure.attach("delete result", str(mem_delete_result))
+            cls.logger.info("delete result: {0}".format(mem_delete_result))
+        with allure.step("delete feature"):
+            features_table = "mem_features"
+            features_condition = ("features_id",cls.features_id)
+            allure.attach("table name", str(features_table))
+            cls.logger.info("table: {0}".format(features_table))
+            features_delete_result = cls.mysql.execute_delete_condition(features_table, features_condition)
+            allure.attach("delete result", str(features_delete_result))
+            cls.logger.info("delete result: {0}".format(features_delete_result))
         if hasattr(cls, 'mqtt_client'):
             cls.mqtt_client.close()
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
+        if hasattr(cls, "mysql"):
+            cls.mysql.close()
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
@@ -71,17 +128,6 @@ class TestServiceOrderPush(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         self.logger.info("Add some datas to database.")
-        with allure.step("初始化数据库连接"):
-            db_user = self.config.getItem('db', 'db_user')
-            db_password = self.config.getItem('db', 'db_password')
-            db_host = self.config.getItem('db', 'db_host')
-            db_database = self.config.getItem('db', 'db_database')
-            db_port = int(self.config.getItem('db', 'db_port'))
-            allure.attach("db_params",
-                          "{0}, {1}, {2}, {3}, {4}".format(db_user, db_password, db_host, db_database, db_port))
-            self.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
-                            "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
-            self.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
         self.logger.info("=== End setup method ===")
         self.logger.info("")
 
@@ -92,14 +138,12 @@ class TestServiceOrderPush(object):
         self.logger.info("do some database clean operation.")
         with allure.step("delete service order"):
             table = 'bus_service_order'
-            condition = ("member_id", "23834536681144320")
+            condition = ("member_id", self.member_id)
             allure.attach("table name", str(table))
             self.logger.info("table: {0}".format(table))
             delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
-        if hasattr(self, "mysql"):
-            self.mysql.close()
         self.logger.info("=== End teardown method ===")
         self.logger.info("")
 
@@ -124,8 +168,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通AI产品部4"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -194,8 +238,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通AI产品部4"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -264,8 +308,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通AI产品部4"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -298,7 +342,7 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 feature_in_payload = msg_payload_dict["data"]["feature"]
                 table_name = "mem_features"
-                condition = ("features_id", "23854189239205888")
+                condition = ("features_id", self.features_id)
                 feature = self.mysql.execute_select_condition(table_name, condition)[0][6]
                 allure.attach("Expect feature:", feature)
                 allure.attach("Actual feature:", feature_in_payload)
@@ -337,8 +381,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通AI产品部4"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -371,7 +415,7 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 feature_type_payload_payload = msg_payload_dict["data"]["feature_type"]
                 table_name = "mem_features"
-                condition = ("features_id", "23854189239205888")
+                condition = ("features_id", self.features_id)
                 feature_type = self.mysql.execute_select_condition(table_name, condition)[0][4]
                 allure.attach("Expect feature type:", feature_type)
                 allure.attach("Actual feature type:", feature_type_payload_payload)
@@ -410,8 +454,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通AI产品部4"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -480,8 +524,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -550,8 +594,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = 1539843055
@@ -620,8 +664,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -700,8 +744,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -780,8 +824,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -860,8 +904,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -930,8 +974,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -1005,8 +1049,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -1081,8 +1125,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -1157,8 +1201,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
@@ -1227,8 +1271,8 @@ class TestServiceOrderPush(object):
                     random_num += ch
                 business_order_id = str(get_timestamp()) + random_num
                 system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = 23834536681144320
-                features_id = 23854189239205888
+                member_id = self.member_id
+                features_id = self.features_id
                 service_unit = "慧睿思通公共技术平台部"
                 service_address = "广州番禺区北大街"
                 begin_time = get_timestamp() + 300
