@@ -17,4 +17,4 @@ print(pPath)
 if __name__ == '__main__':
     os.system("del /s /q /f report\\*.txt")
     os.system("del /s /q /f report\\*.xml")
-    pytest.main(['-s', 'testcases/test_Get_Recognize_Record_List.py', '--alluredir', 'report'])
+    pytest.main(['-s', 'testcases/', '--alluredir', 'report'])
