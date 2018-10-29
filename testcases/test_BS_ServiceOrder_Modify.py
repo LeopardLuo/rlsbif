@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("修改服务单")
+@allure.feature("业务系统-修改服务单")
 class TestModifyServiceOrder(object):
 
     @allure.step("+++ setup class +++")

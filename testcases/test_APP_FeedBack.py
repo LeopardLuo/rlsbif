@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("意见反馈")
+@allure.feature("APP-意见反馈")
 class TestFeedBack(object):
 
     @allure.step("+++ setup class +++")

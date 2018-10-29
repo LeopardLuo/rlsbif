@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("业务系统上传照片获得特征ID")
+@allure.feature("业务系统-上传照片获得特征ID")
 class TestBSGenFeatureId(object):
 
     @allure.step("+++ setup class +++")

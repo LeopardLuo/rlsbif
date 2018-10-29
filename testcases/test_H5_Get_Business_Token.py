@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("获取业务系统授权")
+@allure.feature("H5-获取业务系统授权")
 class TestGetBusinessToken(object):
 
     @allure.step("+++ setup class +++")

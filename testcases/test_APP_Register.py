@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("注册-完成注册")
+@allure.feature("APP-注册-完成注册")
 class TestRegister(object):
 
     @allure.step("+++ setup class +++")

@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("修改用户性别")
+@allure.feature("APP-修改用户性别")
 class TestModifySex(object):
 
     @allure.step("+++ setup class +++")

@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("关联人身份认证")
+@allure.feature("APP-关联人身份认证")
 class TestIdentityRelatives(object):
 
     @allure.step("+++ setup class +++")

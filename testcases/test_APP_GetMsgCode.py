@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("注册-获取验证码")
+@allure.feature("APP-注册-获取验证码")
 class TestGetMsgCode(object):
 
     def setup_class(cls):

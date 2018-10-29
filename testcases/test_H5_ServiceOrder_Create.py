@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("创建服务单H5")
+@allure.feature("H5-创建服务单")
 class TestCreateServiceOrder(object):
 
     @allure.step("+++ setup class +++")

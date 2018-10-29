@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("修改头像")
+@allure.feature("APP-修改头像")
 class TestModifyHeadImage(object):
 
     @allure.step("+++ setup class +++")

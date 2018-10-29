@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("登录-手机号")
+@allure.feature("APP-登录-手机号")
 class TestLogin(object):
 
     @allure.step("+++ setup class +++")

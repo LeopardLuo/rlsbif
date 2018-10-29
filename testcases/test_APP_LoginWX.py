@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("登录-微信授权")
+@allure.feature("APP-登录-微信授权")
 class TestWXLogin(object):
 
     @allure.step("+++ setup class +++")

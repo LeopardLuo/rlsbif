@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("拉取服务单状态")
+@allure.feature("业务系统-拉取服务单状态")
 class TestGetServiceOrderStatus(object):
 
     @allure.step("+++ setup class +++")

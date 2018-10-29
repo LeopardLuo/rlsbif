@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("删除关联人")
+@allure.feature("APP-删除关联人")
 class TestDeleteRelatives(object):
 
     @allure.step("+++ setup class +++")

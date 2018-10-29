@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("关闭服务单")
+@allure.feature("业务系统-关闭服务单")
 class TestCloseServiceOrder(object):
 
     @allure.step("+++ setup class +++")

@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("退出登录")
+@allure.feature("APP-退出登录")
 class TestLogout(object):
 
     @allure.step("+++ setup class +++")

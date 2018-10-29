@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("业务系统获取用户列表")
+@allure.feature("业务系统-获取用户列表")
 class TestBSCetUserInfo(object):
 
     @allure.step("+++ setup class +++")

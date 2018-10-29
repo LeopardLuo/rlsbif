@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("修改手机号")
+@allure.feature("APP-修改手机号")
 class TestModifyPhone(object):
 
     @allure.step("+++ setup class +++")

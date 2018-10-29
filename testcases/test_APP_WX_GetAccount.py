@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("获取关联微信账号")
+@allure.feature("APP-获取第三方关联微信账号")
 class TestGetWXAcount(object):
 
     @allure.step("+++ setup class +++")

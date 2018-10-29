@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("获取识别记录")
+@allure.feature("APP-获取识别记录")
 class TestGetRecognizeRecordList(object):
 
     @allure.step("+++ setup class +++")

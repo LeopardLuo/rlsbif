@@ -12,7 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("关联第三方登录授权账号")
+@allure.feature("APP-关联第三方登录授权账号")
 class TestRelateWXAccount(object):
 
     @allure.step("+++ setup class +++")
