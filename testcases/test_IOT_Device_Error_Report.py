@@ -16,7 +16,7 @@ import json
 import datetime
 
 
-@allure.feature("设备错误上报")
+@allure.feature("IOT-设备错误上报")
 class TestDeviceErrorReport(object):
 
     @allure.step("+++ setup class +++")
@@ -36,6 +36,8 @@ class TestDeviceErrorReport(object):
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
+                allure.attach("mqtt_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid, cls.username,cls.password, cls.hostname))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid, cls.username,
                                                                                          cls.password, cls.hostname))
@@ -136,16 +138,16 @@ class TestDeviceErrorReport(object):
                         assert False
                     query_result = self.mysql.execute_select_condition(table, condition)
                 device_error_log = query_result[0]
-                allure.attach("device_error_log", device_error_log)
+                allure.attach("device_error_log", str(device_error_log))
                 self.logger.info("device_error_log:{0}".format(device_error_log))
             with allure.step("teststep4:assert device error log."):
                 device_id_in_error_log = device_error_log[2]
-                allure.attach("Expect device id:", self.device_id)
-                allure.attach("Actual device id:",device_id_in_error_log)
+                allure.attach("Expect device id:", str(self.device_id))
+                allure.attach("Actual device id:",str(device_id_in_error_log))
                 self.logger.info("Actual device id:{0}".format(device_id_in_error_log))
                 log_content = device_error_log[5]
                 allure.attach("Expect log content:", str(send_payload))
-                allure.attach("Actual log content:", log_content)
+                allure.attach("Actual log content:", str(log_content))
                 self.logger.info("Actual log content:{0}".format(log_content))
                 assert self.device_id == str(device_id_in_error_log)
                 assert str(send_payload) == log_content
@@ -190,11 +192,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == result
         except Exception as e:
@@ -239,11 +241,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == result
         except Exception as e:
@@ -296,16 +298,16 @@ class TestDeviceErrorReport(object):
                         assert False
                     query_result = self.mysql.execute_select_condition(table, condition)
                 device_error_log = query_result[0]
-                allure.attach("device_error_log", device_error_log)
+                allure.attach("device_error_log", str(device_error_log))
                 self.logger.info("device_error_log:{0}".format(device_error_log))
             with allure.step("teststep4:assert device error log."):
                 device_id_in_error_log = device_error_log[2]
-                allure.attach("Expect device id:", self.device_id)
-                allure.attach("Actual device id:", device_id_in_error_log)
+                allure.attach("Expect device id:", str(self.device_id))
+                allure.attach("Actual device id:", str(device_id_in_error_log))
                 self.logger.info("Actual device id:{0}".format(device_id_in_error_log))
                 log_content = device_error_log[5]
                 allure.attach("Expect log content:", str(send_payload))
-                allure.attach("Actual log content:", log_content)
+                allure.attach("Actual log content:", str(log_content))
                 self.logger.info("Actual log content:{0}".format(log_content))
                 assert self.device_id == str(device_id_in_error_log)
                 assert str(send_payload) == log_content
@@ -347,11 +349,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == result
         except Exception as e:
@@ -401,16 +403,16 @@ class TestDeviceErrorReport(object):
                         assert False
                     query_result = self.mysql.execute_select_condition(table, condition)
                 device_error_log = query_result[0]
-                allure.attach("device_error_log", device_error_log)
+                allure.attach("device_error_log", str(device_error_log))
                 self.logger.info("device_error_log:{0}".format(device_error_log))
             with allure.step("teststep4:assert device error log."):
                 device_id_in_error_log = device_error_log[2]
-                allure.attach("Expect device id:", self.device_id)
-                allure.attach("Actual device id:", device_id_in_error_log)
+                allure.attach("Expect device id:", str(self.device_id))
+                allure.attach("Actual device id:", str(device_id_in_error_log))
                 self.logger.info("Actual device id:{0}".format(device_id_in_error_log))
                 log_content = device_error_log[5]
                 allure.attach("Expect log content:", str(send_payload))
-                allure.attach("Actual log content:", log_content)
+                allure.attach("Actual log content:", str(log_content))
                 self.logger.info("Actual log content:{0}".format(log_content))
                 assert self.device_id == str(device_id_in_error_log)
                 assert str(send_payload) == log_content
@@ -458,11 +460,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == result
         except Exception as e:
@@ -500,11 +502,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == []
         except Exception as e:
@@ -541,11 +543,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == []
         except Exception as e:
@@ -582,11 +584,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == []
         except Exception as e:
@@ -623,11 +625,11 @@ class TestDeviceErrorReport(object):
                 table = "bus_device_log"
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("device_error_log", query_result)
+                allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
-                allure.attach("Expect count of error log:", 0)
-                allure.attach("Actual count of error log:", len(query_result))
+                allure.attach("Expect count of error log:", "0")
+                allure.attach("Actual count of error log:", str(len(query_result)))
                 self.logger.info("Actual count of error log:{0}".format(len(query_result)))
                 assert query_result == []
         except Exception as e:
@@ -641,4 +643,4 @@ class TestDeviceErrorReport(object):
             self.logger.info("")
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Device_Error_Report.py'])
+    pytest.main(['-s', 'test_IOT_Device_Error_Report.py'])

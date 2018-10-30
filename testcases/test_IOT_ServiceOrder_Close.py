@@ -16,7 +16,7 @@ import json
 import datetime
 
 
-@allure.feature("服务单关闭")
+@allure.feature("IoT-服务单关闭")
 class TestServiceOrderClose(object):
 
     @allure.step("+++ setup class +++")
@@ -43,6 +43,8 @@ class TestServiceOrderClose(object):
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
+                allure.attach("mqtt_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid, cls.username, cls.password, cls.hostname))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid, cls.username,
                                                                                          cls.password, cls.hostname))
@@ -225,8 +227,8 @@ class TestServiceOrderClose(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
-                allure.attach("Expect action id:", result)
-                allure.attach("Actual action id:", action_id)
+                allure.attach("Expect action id:", str(result))
+                allure.attach("Actual action id:", str(action_id))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 assert action_id == result
@@ -281,8 +283,8 @@ class TestServiceOrderClose(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 service_order_id_payload = msg_payload_dict["data"]["service_order_id"]
-                allure.attach("Expect service_order_id:", self.service_order_id)
-                allure.attach("Actual service_order_id:", service_order_id_payload)
+                allure.attach("Expect service_order_id:", str(self.service_order_id))
+                allure.attach("Actual service_order_id:", str(service_order_id_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual service_order_id:{0}".format(service_order_id_payload))
                 assert int(service_order_id_payload) == self.service_order_id
@@ -338,8 +340,8 @@ class TestServiceOrderClose(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 timestamp_payload = msg_payload_dict["timestamp"]
-                allure.attach("Expect timestamp:", timestamp)
-                allure.attach("Actual timestamp:", timestamp_payload)
+                allure.attach("Expect timestamp:", str(timestamp))
+                allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
                 assert int(timestamp_payload) <= timestamp+5
@@ -356,4 +358,4 @@ class TestServiceOrderClose(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_ServiceOrder_Close.py'])
+    pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])

@@ -35,6 +35,8 @@ class TestTimeSynchronizationRequest(object):
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
+                allure.attach("mqtt_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid, cls.username, cls.password, cls.hostname))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid, cls.username,
                                                                                          cls.password, cls.hostname))
@@ -109,9 +111,9 @@ class TestTimeSynchronizationRequest(object):
                 timestamp_payload = msg_payload_dict["timestamp"]
                 local_timestamp = get_timestamp()
                 allure.attach("Expect action id:", "204")
-                allure.attach("Actual action id:", action_id)
-                allure.attach("Expect timestamp:", local_timestamp)
-                allure.attach("Actual timestamp:", timestamp_payload)
+                allure.attach("Actual action id:", str(action_id))
+                allure.attach("Expect timestamp:", str(local_timestamp))
+                allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
@@ -163,8 +165,8 @@ class TestTimeSynchronizationRequest(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client.rcv_msg
-                allure.attach("Expect payload:", result)
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str(result))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == result
         except Exception as e:
@@ -219,9 +221,9 @@ class TestTimeSynchronizationRequest(object):
                 timestamp_payload = msg_payload_dict["timestamp"]
                 local_timestamp = get_timestamp()
                 allure.attach("Expect action id:", "204")
-                allure.attach("Actual action id:", action_id)
-                allure.attach("Expect timestamp:", local_timestamp)
-                allure.attach("Actual timestamp:", timestamp_payload)
+                allure.attach("Actual action id:", str(action_id))
+                allure.attach("Expect timestamp:", str(local_timestamp))
+                allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
@@ -276,8 +278,8 @@ class TestTimeSynchronizationRequest(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client.rcv_msg
-                allure.attach("Expect payload:", result)
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str(result))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == result
         except Exception as e:
@@ -322,8 +324,8 @@ class TestTimeSynchronizationRequest(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client.rcv_msg
-                allure.attach("Expect payload:", [])
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str([]))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == []
         except Exception as e:
@@ -368,8 +370,8 @@ class TestTimeSynchronizationRequest(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client.rcv_msg
-                allure.attach("Expect payload:", [])
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str([]))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == []
         except Exception as e:
@@ -387,4 +389,4 @@ class TestTimeSynchronizationRequest(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Time_Synchronization_Request.py'])
+    pytest.main(['-s', 'test_IOT_Time_Synchronization_Request.py'])
