@@ -78,9 +78,9 @@ class TestServiceOrderReport(object):
                 cls.token = login_result['token']
             with allure.step("进行身份认证，获取feature_id"):
                 headers = {"authorization": cls.token}
-                identity_card_face = "D:\\test_photo\\fore2.jpg"
-                identity_card_emblem = "D:\\test_photo\\back2.jpg"
-                face_picture = "D:\\test_photo\\face2.jpg"
+                identity_card_face = "fore2.jpg"
+                identity_card_emblem = "back2.jpg"
+                face_picture = "face2.jpg"
                 cls.httpclient.update_header(headers)
                 user_identity_result = user_identity(cls.httpclient, cls.member_id, identity_card_face,
                                                      identity_card_emblem,
@@ -1058,3 +1058,4 @@ class TestServiceOrderReport(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003054_report_service_order_status'])

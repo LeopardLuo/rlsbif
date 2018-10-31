@@ -16,7 +16,7 @@ import json
 import datetime
 
 
-@allure.feature("特征同步上报")
+@allure.feature("IOT-特征同步上报")
 class TestFeatureDataSyncReport(object):
 
     @allure.step("+++ setup class +++")

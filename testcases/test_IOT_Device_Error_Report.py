@@ -644,3 +644,4 @@ class TestDeviceErrorReport(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_Device_Error_Report.py'])
+    # pytest.main(['-s', 'test_IOT_Device_Error_Report.py::TestDeviceErrorReport::test_003082_device_error_report'])
