@@ -42,14 +42,14 @@ class Logger(object):
         sh.setFormatter(fmt)
         sh.setLevel(clevel)
         # config file log handler
-        fh = logging.handlers.RotatingFileHandler(logfile,'a',20000000,3,)
-        fh.setFormatter(fmt)
-        fh.setLevel(flevel)
+        self.fh = logging.handlers.RotatingFileHandler(logfile,'a',20000000,3,)
+        self.fh.setFormatter(fmt)
+        self.fh.setLevel(flevel)
 
         if not self.logger.handlers:
             self.logger.addHandler(sh)
-            self.logger.addHandler(fh)
-    
+            self.logger.addHandler(self.fh)
+
     def debug(self, msg):
         self.logger.debug(msg)
         
@@ -70,6 +70,9 @@ class Logger(object):
         set_color(color)
         self.logger.critical(msg)
         set_color()
+
+    def close(self):
+        self.fh.close()
     
 
 def getLogger(name):
