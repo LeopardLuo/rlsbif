@@ -16,7 +16,7 @@ import json
 import datetime
 
 
-@allure.feature("服务单下发")
+@allure.feature("Iot-服务单下发")
 class TestServiceOrderPush(object):
     @allure.step("+++ setup class +++")
     def setup_class(cls):
@@ -42,6 +42,8 @@ class TestServiceOrderPush(object):
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
+                allure.attach("mqtt_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid, cls.username, cls.password, cls.hostname))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid, cls.username,
                                                                                          cls.password, cls.hostname))
@@ -152,9 +154,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-001")
     def test_003001_get_payload_action_id(self):
         self.logger.info(".... test_003001_get_payload_action_id ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -202,18 +204,18 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 allure.attach("Expect action id:", '201')
-                allure.attach("Actual action id:", action_id)
+                allure.attach("Actual action id:", str(action_id))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 assert action_id == "201"
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info(".... End test_003001_get_payload_action_id ....")
             self.logger.info("")
 
@@ -222,9 +224,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-002")
     def test_003002_get_payload_service_order_id(self):
         self.logger.info(".... test_003002_get_payload_service_order_id ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -271,19 +273,19 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 service_order_id_payload = msg_payload_dict["data"]["service_order_id"]
-                allure.attach("Expect service order id:", service_order_id)
-                allure.attach("Actual service order id:", service_order_id_payload)
+                allure.attach("Expect service order id:", str(service_order_id))
+                allure.attach("Actual service order id:", str(service_order_id_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual service order id:{0}".format(service_order_id_payload))
                 assert service_order_id_payload == str(service_order_id)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info(".... End test_003002_get_payload_service_order_id ....")
             self.logger.info("")
 
@@ -292,9 +294,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-003")
     def test_003003_get_payload_feature(self):
         self.logger.info(".... test_003003_get_payload_feature ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -344,19 +346,19 @@ class TestServiceOrderPush(object):
                 table_name = "mem_features"
                 condition = ("features_id", self.features_id)
                 feature = self.mysql.execute_select_condition(table_name, condition)[0][6]
-                allure.attach("Expect feature:", feature)
-                allure.attach("Actual feature:", feature_in_payload)
+                allure.attach("Expect feature:", str(feature))
+                allure.attach("Actual feature:", str(feature_in_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual feature:{0}".format(feature_in_payload))
                 assert feature_in_payload == feature
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info(".... End test_003003_get_payload_feature ....")
             self.logger.info("")
 
@@ -365,9 +367,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-004")
     def test_003004_get_payload_feature_type(self):
         self.logger.info(".... test_003004_get_payload_feature_type ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -417,19 +419,19 @@ class TestServiceOrderPush(object):
                 table_name = "mem_features"
                 condition = ("features_id", self.features_id)
                 feature_type = self.mysql.execute_select_condition(table_name, condition)[0][4]
-                allure.attach("Expect feature type:", feature_type)
-                allure.attach("Actual feature type:", feature_type_payload_payload)
+                allure.attach("Expect feature type:", str(feature_type))
+                allure.attach("Actual feature type:", str(feature_type_payload_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual feature type:{0}".format(feature_type_payload_payload))
                 assert feature_type_payload_payload == str(feature_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_003004_get_payload_feature_type ....")
             self.logger.info("")
 
@@ -438,9 +440,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-005")
     def test_003005_get_payload_verify_condition_type(self):
         self.logger.info(".... test_003005_get_payload_verify_condition_type ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -487,19 +489,19 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_003005_get_payload_verify_condition_type ....")
             self.logger.info("")
 
@@ -508,9 +510,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-006")
     def test_003006_get_payload_begin_time(self):
         self.logger.info(".... test_003006_get_payload_begin_time ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -557,19 +559,19 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
-                allure.attach("Expect begin time:", begin_time)
-                allure.attach("Actual begin time:", begin_time_payload)
+                allure.attach("Expect begin time:", str(begin_time))
+                allure.attach("Actual begin time:", str(begin_time_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time:{0}".format(begin_time_payload))
                 assert begin_time_payload == str(begin_time)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_003006_get_payload_begin_time ....")
             self.logger.info("")
 
@@ -578,9 +580,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-007")
     def test_003007_get_payload_end_time(self):
         self.logger.info(".... test_003007_get_payload_end_time ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -627,19 +629,19 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 end_time_payload = msg_payload_dict["data"]["end_time"]
-                allure.attach("Expect end time:", end_time)
-                allure.attach("Actual end time:", end_time_payload)
+                allure.attach("Expect end time:", str(end_time))
+                allure.attach("Actual end time:", str(end_time_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual end time:{0}".format(end_time_payload))
                 assert end_time_payload == str(end_time)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_003007_get_payload_end_time ....")
             self.logger.info("")
 
@@ -648,9 +650,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-008")
     def test_003008_get_payload_begin_time_and_end_time_1(self):
         self.logger.info("....test_get_payload_begin_time_and_end_time_1 ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -699,12 +701,12 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect begin time stamp:", begin_time)
-                allure.attach("Actual begin time stamp:", begin_time_payload)
-                allure.attach("Expect end time stamp:", end_time)
-                allure.attach("Actual end time stamp:", end_time_payload)
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect begin time stamp:", str(begin_time))
+                allure.attach("Actual begin time stamp:", str(begin_time_payload))
+                allure.attach("Expect end time stamp:", str(end_time))
+                allure.attach("Actual end time stamp:", str(end_time_payload))
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
@@ -712,14 +714,14 @@ class TestServiceOrderPush(object):
                 assert begin_time_payload == str(begin_time)
                 assert end_time_payload == str(end_time)
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_begin_time_and_end_time_1 ....")
             self.logger.info("")
 
@@ -728,9 +730,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-009")
     def test_003009_get_payload_begin_time_and_end_time_2(self):
         self.logger.info("....test_get_payload_begin_time_and_end_time_2 ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -779,12 +781,12 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect begin time stamp:", begin_time)
-                allure.attach("Actual begin time stamp:", begin_time_payload)
-                allure.attach("Expect end time stamp:", end_time)
-                allure.attach("Actual end time stamp:", end_time_payload)
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect begin time stamp:", str(begin_time))
+                allure.attach("Actual begin time stamp:", str(begin_time_payload))
+                allure.attach("Expect end time stamp:", str(end_time))
+                allure.attach("Actual end time stamp:", str(end_time_payload))
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
@@ -792,14 +794,14 @@ class TestServiceOrderPush(object):
                 assert begin_time_payload == str(begin_time)
                 assert end_time_payload == str(end_time)
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_begin_time_and_end_time_2 ....")
             self.logger.info("")
 
@@ -808,9 +810,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-010")
     def test_003010_get_payload_begin_time_and_end_time_3(self):
         self.logger.info("....test_get_payload_begin_time_and_end_time_3 ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -859,12 +861,12 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect begin time stamp:", begin_time)
-                allure.attach("Actual begin time stamp:", begin_time_payload)
-                allure.attach("Expect end time stamp:", end_time)
-                allure.attach("Actual end time stamp:", end_time_payload)
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect begin time stamp:", str(begin_time))
+                allure.attach("Actual begin time stamp:", str(begin_time_payload))
+                allure.attach("Expect end time stamp:", str(end_time))
+                allure.attach("Actual end time stamp:", str(end_time_payload))
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
@@ -872,14 +874,14 @@ class TestServiceOrderPush(object):
                 assert begin_time_payload == str(begin_time)
                 assert end_time_payload == str(end_time)
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_begin_time_and_end_time_3 ....")
             self.logger.info("")
 
@@ -888,9 +890,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-011")
     def test_003011_get_payload_in_count(self):
         self.logger.info("....test_get_payload_in_count ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -937,19 +939,19 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = msg_payload_dict["data"]["in_count"]
-                allure.attach("Expect in count:", in_count)
-                allure.attach("Actual in count:", in_count_payload)
+                allure.attach("Expect in count:", str(in_count))
+                allure.attach("Actual in count:", str(in_count_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 assert in_count_payload == str(in_count)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_in_count ....")
             self.logger.info("")
 
@@ -958,9 +960,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-012")
     def test_003012_get_payload_in_count_1(self):
         self.logger.info("....test_get_payload_in_count_1 ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -1008,23 +1010,23 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = msg_payload_dict["data"]["in_count"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect in count:", in_count)
-                allure.attach("Actual in count:", in_count_payload)
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect in count:", str(in_count))
+                allure.attach("Actual in count:", str(in_count_payload))
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert in_count_payload == str(0)
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_in_count_1 ....")
             self.logger.info("")
 
@@ -1033,9 +1035,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-013")
     def test_003013_get_payload_in_count_2(self):
         self.logger.info("....test_get_payload_in_count_2 ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -1083,24 +1085,24 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = int(msg_payload_dict["data"]["in_count"])
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect in count:", in_count)
-                allure.attach("Actual in count:", in_count_payload)
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect in count:", str(in_count))
+                allure.attach("Actual in count:", str(in_count_payload))
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert in_count_payload == in_count
                 assert in_count > 0
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_in_count_2 ....")
             self.logger.info("")
 
@@ -1109,9 +1111,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-014")
     def test_003013_get_payload_in_count_3(self):
         self.logger.info("....test_get_payload_in_count_2 ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -1159,24 +1161,24 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = int(msg_payload_dict["data"]["in_count"])
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                allure.attach("Expect in count:", in_count)
-                allure.attach("Actual in count:", in_count_payload)
-                allure.attach("Expect verify condition type:", verify_condition_type)
-                allure.attach("Actual verify condition type:", verify_condition_type_payload)
+                allure.attach("Expect in count:", str(in_count))
+                allure.attach("Actual in count:", str(in_count_payload))
+                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Actual verify condition type:",str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert in_count_payload == in_count
                 assert in_count > 0
                 assert verify_condition_type_payload == str(verify_condition_type)
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_in_count_3 ....")
             self.logger.info("")
 
@@ -1185,9 +1187,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-015")
     def test_003015_get_payload_exrea(self):
         self.logger.info("....test_get_payload_exrea ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -1235,18 +1237,18 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 exrea_payload = msg_payload_dict["data"]["exrea"]
                 allure.attach("Expect exrea:", "")
-                allure.attach("Actual exrea:", exrea_payload)
+                allure.attach("Actual exrea:", str(exrea_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual exrea:{0}".format(exrea_payload))
                 assert exrea_payload is not None
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_exrea ....")
             self.logger.info("")
 
@@ -1255,9 +1257,9 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-016")
     def test_003016_get_payload_timestamp(self):
         self.logger.info("....test_get_payload_timestamp ....")
+        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
-                topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
@@ -1307,22 +1309,22 @@ class TestServiceOrderPush(object):
                 table_name = "bus_service_order"
                 condition = ("service_order_id", service_order_id)
                 timestamp = self.mysql.execute_select_condition(table_name, condition)[0][16]
-                allure.attach("Expect timestamp:", timestamp)
-                allure.attach("Actual timestamp:", timestamp_payload)
+                allure.attach("Expect timestamp:", str(timestamp))
+                allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
                 assert timestamp_payload <= timestamp + 5
-                self.mqtt_client.unsubscribe(topic)
-                self.mqtt_client.loopstop()
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
             self.logger.error(e)
             assert False
         finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
             self.logger.info("....End test_get_payload_timestamp ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_ServiceOrder_Push.py'])
+    pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])

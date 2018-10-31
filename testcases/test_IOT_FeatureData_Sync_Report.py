@@ -36,6 +36,8 @@ class TestFeatureDataSyncReport(object):
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
+                allure.attach("mqtt_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid, cls.username, cls.password, cls.hostname))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid, cls.username,
                                                                                          cls.password, cls.hostname))
@@ -49,6 +51,8 @@ class TestFeatureDataSyncReport(object):
                 cls.params2 = AliParam(ProductKey=cls.ProductKey2, DeviceName=cls.DeviceName2,
                                       DeviceSecret=cls.DeviceSecret2)
                 cls.clientid2, cls.username2, cls.password2, cls.hostname2 = cls.params2.get_param()
+                allure.attach("mqtt2_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid2, cls.username2, cls.password2, cls.hostname2))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid2, cls.username2,
                                                                                          cls.password2, cls.hostname2))
@@ -131,9 +135,9 @@ class TestFeatureDataSyncReport(object):
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
                 allure.attach("Expect action id:", "205")
-                allure.attach("Actual action id:", action_id)
-                allure.attach("Expect feature_info:", send_payload["data"]["feature_info"])
-                allure.attach("Actual feature_info:", feature_info_payload)
+                allure.attach("Actual action id:", str(action_id))
+                allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
+                allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
@@ -194,8 +198,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", result)
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str(result))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == result
         except Exception as e:
@@ -254,8 +258,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", result)
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str(result))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == result
         except Exception as e:
@@ -316,9 +320,9 @@ class TestFeatureDataSyncReport(object):
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
                 allure.attach("Expect action id:", "205")
-                allure.attach("Actual action id:", action_id)
-                allure.attach("Expect feature_info:", send_payload["data"]["feature_info"])
-                allure.attach("Actual feature_info:", feature_info_payload)
+                allure.attach("Actual action id:", str(action_id))
+                allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
+                allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
@@ -377,8 +381,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", result)
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str(result))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == result
         except Exception as e:
@@ -439,9 +443,9 @@ class TestFeatureDataSyncReport(object):
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
                 allure.attach("Expect action id:", "205")
-                allure.attach("Actual action id:", action_id)
-                allure.attach("Expect feature_info:", send_payload["data"]["feature_info"])
-                allure.attach("Actual feature_info:", feature_info_payload)
+                allure.attach("Actual action id:", str(action_id))
+                allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
+                allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
@@ -505,8 +509,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", result)
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str(result))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == result
         except Exception as e:
@@ -558,8 +562,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", [])
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str([]))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == []
         except Exception as e:
@@ -610,8 +614,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", [])
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str([]))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == []
         except Exception as e:
@@ -662,8 +666,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", [])
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str([]))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == []
         except Exception as e:
@@ -714,8 +718,8 @@ class TestFeatureDataSyncReport(object):
                     if during > 60:
                         break
                 mqtt_msg = self.mqtt_client2.rcv_msg
-                allure.attach("Expect payload:", [])
-                allure.attach("Actual payload:", mqtt_msg)
+                allure.attach("Expect payload:", str([]))
+                allure.attach("Actual payload:", str(mqtt_msg))
                 self.logger.info("Actual payload:{0}".format(mqtt_msg))
                 assert mqtt_msg == []
         except Exception as e:
@@ -733,4 +737,4 @@ class TestFeatureDataSyncReport(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_FeatureData_Sync_Report.py'])
+    pytest.main(['-s', 'test_IOT_FeatureData_Sync_Report.py'])

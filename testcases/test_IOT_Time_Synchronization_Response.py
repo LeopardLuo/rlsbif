@@ -35,6 +35,8 @@ class TestTimeSynchronizationResponse(object):
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
+                allure.attach("mqtt_params",
+                              "{0}, {1}, {2}, {3}".format(cls.clientid, cls.username, cls.password, cls.hostname))
                 cls.logger.info(
                     "client_id: {0}, username: {1}, password: {2}, hostname: {3}".format(cls.clientid, cls.username,
                                                                                          cls.password, cls.hostname))
@@ -106,7 +108,7 @@ class TestTimeSynchronizationResponse(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 allure.attach("Expect action id:", "204")
-                allure.attach("Actual action id:", action_id)
+                allure.attach("Actual action id:", str(action_id))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 assert action_id == "204"
@@ -155,8 +157,8 @@ class TestTimeSynchronizationResponse(object):
                 msg_payload_dict = json.loads(msg_payload)
                 timestamp_payload = msg_payload_dict["timestamp"]
                 local_timestamp = get_timestamp()
-                allure.attach("Expect timestamp:", local_timestamp)
-                allure.attach("Actual timestamp:", timestamp_payload)
+                allure.attach("Expect timestamp:", str(local_timestamp))
+                allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(timestamp_payload))
                 assert int(timestamp_payload) == local_timestamp
@@ -173,4 +175,4 @@ class TestTimeSynchronizationResponse(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_Time_Synchronization_Response.py'])
+    pytest.main(['-s', 'test_IOT_Time_Synchronization_Response.py'])
