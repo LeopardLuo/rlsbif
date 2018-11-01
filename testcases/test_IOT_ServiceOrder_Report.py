@@ -40,6 +40,7 @@ class TestServiceOrderReport(object):
                 cls.ProductKey = cls.config.getItem("device", "d3_productkey")
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
+                cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -150,7 +151,7 @@ class TestServiceOrderReport(object):
             end_time = get_timestamp() + 3000
             in_count = random.randint(1,20)
             verify_condition_type = 3
-            device_ids = ["23912662580592640"]
+            device_ids = [self.device_id]
             create_service_order_result = h5_create_service_order(self.httpclient, self.system_id, business_order_id,
                                                                   member_id, self.system_code, features_id, device_ids,
                                                                   verify_condition_type, begin_time, end_time,
@@ -213,7 +214,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": in_out,
                                          "exrea": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
@@ -288,7 +289,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": action_id,
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
@@ -349,7 +350,7 @@ class TestServiceOrderReport(object):
                 self.mqtt_client.loopstart()
             with allure.step("teststep2: get the count of records from db before report service order status"):
                 table_name = "mem_order_record"
-                condition = ("device_id", "23912662580592640")
+                condition = ("device_id", self.device_id)
                 count_of_records_before_report = len(self.mysql.execute_select_condition(table_name, condition))
                 allure.attach("count_of_records_before_report", str(count_of_records_before_report))
                 self.logger.info("count_of_records_before_report:{0}".format(count_of_records_before_report))
@@ -357,7 +358,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": service_order_id,
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
@@ -459,7 +460,7 @@ class TestServiceOrderReport(object):
                                   "in_out(中文)", "in_out(字母)", "in_out(特殊字符)", "in_out(数字字母)",
                                   "in_out(数字中文)","in_out(数字特殊字符)", "in_out(空格)", "in_out(空)"])
     def test_003058_report_service_order_status_incorrect_in_out(self, in_out, result):
-        self.logger.info(".... test_003057_report_service_order_status_incorrect_device_id ....")
+        self.logger.info(".... test_003058_report_service_order_status_incorrect_in_out ....")
         topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: start mqtt_client."):
@@ -468,7 +469,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": in_out,
                                          "exrea": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
@@ -528,7 +529,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": exrea}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
@@ -603,7 +604,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": exrea}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
@@ -662,7 +663,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": ""}, "timestamp": timestamp}
                 allure.attach("params value", str(send_payload))
@@ -740,7 +741,7 @@ class TestServiceOrderReport(object):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": ""}, "timestamp": timestamp}
                 allure.attach("params value", str(send_payload))
@@ -795,7 +796,7 @@ class TestServiceOrderReport(object):
             with allure.step("teststep2:report service order status"):
                 self.logger.info("report service order status.")
                 send_payload = {"data": {"service_order_id": str(self.service_order_id),
-                                         "device_id": "23912662580592640",
+                                         "device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": ""}, "timestamp": get_timestamp()}
                 allure.attach("params value", str(send_payload))
@@ -849,14 +850,14 @@ class TestServiceOrderReport(object):
                 self.mqtt_client.loopstart()
             with allure.step("teststep2: get the count of records from db before report service order status"):
                 table_name = "mem_order_record"
-                condition = ("device_id", "23912662580592640")
+                condition = ("device_id", self.device_id)
                 count_of_records_before_report = len(self.mysql.execute_select_condition(table_name, condition))
                 allure.attach("count_of_records_before_report", str(count_of_records_before_report))
                 self.logger.info("count_of_records_before_report:{0}".format(count_of_records_before_report))
             with allure.step("teststep3:report service order status"):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
-                                "data": {"device_id": "23912662580592640",
+                                "data": {"device_id": self.device_id,
                                          "in_out": 1,
                                          "exrea": ""}, "timestamp": get_timestamp()}
                 allure.attach("params value", str(send_payload))
@@ -953,7 +954,7 @@ class TestServiceOrderReport(object):
             with allure.step("teststep2:report service order status"):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
-                                "data": {"device_id": "23912662580592640",
+                                "data": {"device_id": self.device_id,
                                          "service_order_id": str(self.service_order_id),
                                          "in_out": 1,
                                          },
@@ -1010,7 +1011,7 @@ class TestServiceOrderReport(object):
             with allure.step("teststep2:report service order status"):
                 self.logger.info("report service order status.")
                 send_payload = {"action_id": "100",
-                                "data": {"device_id": "23912662580592640",
+                                "data": {"device_id": self.device_id,
                                          "service_order_id": str(self.service_order_id),
                                          "in_out": 1,
                                          "exrea":""}

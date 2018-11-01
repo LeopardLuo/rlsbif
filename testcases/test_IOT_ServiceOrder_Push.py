@@ -39,6 +39,7 @@ class TestServiceOrderPush(object):
                 cls.ProductKey = cls.config.getItem("device", "d3_productkey")
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
+                cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -178,7 +179,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -248,7 +249,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -318,7 +319,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -391,7 +392,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -464,7 +465,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -534,7 +535,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -604,7 +605,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 4
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -674,7 +675,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 0
                 verify_condition_type = 1
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -754,7 +755,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 2
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -834,7 +835,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 2
                 verify_condition_type = 3
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -914,7 +915,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 5
                 verify_condition_type = 3
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -984,7 +985,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 0
                 verify_condition_type = 1
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -1059,7 +1060,7 @@ class TestServiceOrderPush(object):
                 end_time = 9999999999
                 in_count = 2
                 verify_condition_type = 2
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -1135,7 +1136,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 2
                 verify_condition_type = 3
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -1211,7 +1212,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 0
                 verify_condition_type = 1
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,
@@ -1281,7 +1282,7 @@ class TestServiceOrderPush(object):
                 end_time = get_timestamp() + 3000
                 in_count = 0
                 verify_condition_type = 1
-                device_ids = ["23912662580592640"]
+                device_ids = [self.device_id]
                 create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
                                                                       member_id, system_code, features_id, device_ids,
                                                                       verify_condition_type, begin_time, end_time,

@@ -22,7 +22,6 @@ class TestFeatureDataSyncReport(object):
     @allure.step("+++ setup class +++")
     def setup_class(cls):
         cls.logger = Logger()
-        cls.device_id = "23912662580592640"
         cls.logger.info("")
         cls.logger.info("*** The setup class method.")
         try:
@@ -33,6 +32,7 @@ class TestFeatureDataSyncReport(object):
                 cls.ProductKey = cls.config.getItem("device", "d3_productkey")
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
+                cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -48,6 +48,7 @@ class TestFeatureDataSyncReport(object):
                 cls.ProductKey2 = cls.config.getItem("device", "d2_productkey")
                 cls.DeviceName2 = cls.config.getItem("device", "d2_devicename")
                 cls.DeviceSecret2 = cls.config.getItem("device", "d2_secret")
+                cls.device_id2 = cls.DeviceName2[cls.DeviceName2.rfind("_") + 1:]
                 cls.params2 = AliParam(ProductKey=cls.ProductKey2, DeviceName=cls.DeviceName2,
                                       DeviceSecret=cls.DeviceSecret2)
                 cls.clientid2, cls.username2, cls.password2, cls.hostname2 = cls.params2.get_param()

@@ -22,7 +22,6 @@ class TestDeviceErrorReport(object):
     @allure.step("+++ setup class +++")
     def setup_class(cls):
         cls.logger = Logger()
-        cls.device_id = "23912662580592640"
         cls.logger.info("")
         cls.logger.info("*** The setup class method.")
         try:
@@ -33,6 +32,7 @@ class TestDeviceErrorReport(object):
                 cls.ProductKey = cls.config.getItem("device", "d3_productkey")
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
+                cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_")+1:]
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -129,7 +129,7 @@ class TestDeviceErrorReport(object):
                 condition = ("log_type","error")
                 query_result = self.mysql.execute_select_condition(table,condition)
                 start_time = datetime.datetime.now()
-                if not query_result:
+                while not query_result:
                     time.sleep(5)
                     end_time = datetime.datetime.now()
                     during = end_time - start_time
@@ -289,7 +289,7 @@ class TestDeviceErrorReport(object):
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
                 start_time = datetime.datetime.now()
-                if not query_result:
+                while not query_result:
                     time.sleep(5)
                     end_time = datetime.datetime.now()
                     during = end_time - start_time
@@ -394,7 +394,7 @@ class TestDeviceErrorReport(object):
                 condition = ("log_type", "error")
                 query_result = self.mysql.execute_select_condition(table, condition)
                 start_time = datetime.datetime.now()
-                if not query_result:
+                while not query_result:
                     time.sleep(5)
                     end_time = datetime.datetime.now()
                     during = end_time - start_time
@@ -643,5 +643,5 @@ class TestDeviceErrorReport(object):
             self.logger.info("")
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_IOT_Device_Error_Report.py'])
-    # pytest.main(['-s', 'test_IOT_Device_Error_Report.py::TestDeviceErrorReport::test_003082_device_error_report'])
+    # pytest.main(['-s', 'test_IOT_Device_Error_Report.py'])
+    pytest.main(['-s', 'test_IOT_Device_Error_Report.py::TestDeviceErrorReport::test_003082_device_error_report'])
