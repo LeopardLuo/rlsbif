@@ -1933,6 +1933,62 @@ def iot_publish_ServiceOrderReport(mqttclient, productkey, devicename, service_o
     logger and logger.info("")
 
 
+@allure.step("IOT-Publish-DeviceErrorReport")
+def iot_publish_DeviceErrorReport(mqttclient, productkey, devicename, device_id, error_info="", qos=1, logger=None):
+    """ Publish iot message.
+    :param mqttclient: mqtt client.
+    :param productkey: ali iot platform productkey string type.
+    :param devicename: ali iot platform devicename string type.
+    :param device_id: publish payload device_id.
+    :param error_info: publish payload error_info.
+    :param qos: publish topic's qos int type.
+    :rtype return None.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start iot_publish_DeviceErrorReport ----")
+    tname = ConfigParse().getItem("iot", "Error")
+    topic = "/{0}/{1}/{2}".format(productkey, devicename, tname)
+    payload = {"action_id": "102",
+               "data": {
+                   "device_id": device_id,
+                   "error_info": error_info},
+               "timestamp": str(get_timestamp())}
+    logger and logger.info("topic: {0}".format(topic))
+    logger and logger.info("in payload: {0}".format(payload))
+    logger and logger.info("qos: {0}".format(qos))
+    mqttclient.publish(topic, str(payload), qos)
+    logger and logger.info("---- end iot_publish_DeviceErrorReport ----")
+    logger and logger.info("")
+
+
+@allure.step("IOT-Publish-SyncFeatureData")
+def iot_publish_SyncFeatureData(mqttclient, productkey, devicename, device_id, feature_info, qos=1, logger=None):
+    """ Publish iot message.
+    :param mqttclient: mqtt client.
+    :param productkey: ali iot platform productkey string type.
+    :param devicename: ali iot platform devicename string type.
+    :param device_id: publish payload device_id.
+    :param feature_info: publish payload feature_info.
+    :param qos: publish topic's qos int type.
+    :rtype return None.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start iot_publish_SyncFeatureData ----")
+    tname = ConfigParse().getItem("iot", "SyncFeatureDataUp")
+    topic = "/{0}/{1}/{2}".format(productkey, devicename, tname)
+    payload = {"action_id": "105",
+               "data": {
+                   "device_id": device_id,
+                   "feature_info": feature_info},
+               "timestamp": str(get_timestamp())}
+    logger and logger.info("topic: {0}".format(topic))
+    logger and logger.info("in payload: {0}".format(payload))
+    logger and logger.info("qos: {0}".format(qos))
+    mqttclient.publish(topic, str(payload), qos)
+    logger and logger.info("---- end iot_publish_SyncFeatureData ----")
+    logger and logger.info("")
+
+
 @allure.step("IOT-Publish-SyncTime")
 def iot_publish_SyncTime(mqttclient, productkey, devicename, qos=1, data="", timeout=60, logger=None):
     """ Publish iot message.
