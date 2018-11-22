@@ -135,17 +135,27 @@ class TestIdentityRelatives(object):
         self.logger.info(".... Start test_117001_identity_relatives_correct ....")
         try:
             with allure.step("teststep1: identity user."):
-                headers = {"authorization": self.token}
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                with allure.step("teststep: user feature."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                     get_timestamp(), self.logger)
+                    allure.attach("upload user feature result", "{0}".format(identity_result))
+                    self.logger.info("upload user feature result: {0}".format(identity_result))
+
+                with allure.step("teststep: identity user."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                    get_timestamp(), self.logger)
+                    allure.attach("identity owner result", "{0}".format(identity_result))
+                    self.logger.info("identity owner result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -202,8 +212,8 @@ class TestIdentityRelatives(object):
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -265,19 +275,19 @@ class TestIdentityRelatives(object):
         """
         self.logger.info(".... Start test_117003_token_wrong ({}) ....".format(token))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -344,19 +354,19 @@ class TestIdentityRelatives(object):
         """
         self.logger.info(".... Start test_117004_member_id_wrong ({}) ....".format(member_id))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -421,19 +431,19 @@ class TestIdentityRelatives(object):
         """
         self.logger.info(".... Start test_117005_features_name_correct ({}) ....".format(features_name))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": features_name, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -495,19 +505,19 @@ class TestIdentityRelatives(object):
         """
         self.logger.info(".... Start test_117006_features_name_wrong ({}) ....".format(features_name))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": features_name, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -556,36 +566,36 @@ class TestIdentityRelatives(object):
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("face_picture支持的图片类型")
+    @allure.story("other_photo支持的图片类型")
     @allure.testcase("FT-HTJK-117-007")
-    @pytest.mark.parametrize("face_picture, result",
+    @pytest.mark.parametrize("other_photo, result",
                              [("relate_face.png", {"code": 1, "msg": "关联成功"}),
                               ("relate_face.jpg", {"code": 1, "msg": "关联成功"}),
                               ("relate_face.jpeg", {"code": 1, "msg": "关联成功"}),
                               ("relate_face.tif", {"code": 1, "msg": "关联成功"}),
                               ("relate_face.bmp", {"code": 1, "msg": "关联成功"}), ],
-                             ids=["face_picture(png)", "face_picture(jpg)", "face_picture(jpeg)",
-                                  "face_picture(tif)", "face_picture(bmp)"])
-    def test_117007_face_picture_type_correct(self, face_picture, result):
-        """ Test correct face_picture image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-117-007).
-        :param face_picture: face_picture parameter value.
+                             ids=["other_photo(png)", "other_photo(jpg)", "other_photo(jpeg)",
+                                  "other_photo(tif)", "other_photo(bmp)"])
+    def test_117007_other_photo_type_correct(self, other_photo, result):
+        """ Test correct other_photo image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-117-007).
+        :param other_photo: other_photo parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_117007_face_picture_type_correct ({}) ....".format(face_picture))
+        self.logger.info(".... Start test_117007_other_photo_type_correct ({}) ....".format(other_photo))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path(face_picture), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path(other_photo), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -630,40 +640,40 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117007_face_picture_type_correct ({}) ....".format(face_picture))
+            self.logger.info(".... End test_117007_other_photo_type_correct ({}) ....".format(other_photo))
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("face_picture不支持的文件类型")
+    @allure.story("other_photo不支持的文件类型")
     @allure.testcase("FT-HTJK-117-008")
-    @pytest.mark.parametrize("face_picture, result",
+    @pytest.mark.parametrize("other_photo, result",
                              [("relate_face.gif", {"code": 0, "msg": "不合格"}),
                               ("case.xlsx", {"code": 0, "msg": "不合格"}),
                               ("temp.txt", {"code": 0, "msg": "不合格"}),
                               ("hb.mp4", {"code": 0, "msg": "不合格"}),
                               ("fore1.PNG", {"code": 0, "msg": "不通过"}), ],
-                             ids=["face_picture(gif)", "face_picture(xlsx)", "face_picture(txt)",
-                                  "face_picture(mp4)", "face_picture(other)"])
-    def test_117008_face_picture_type_wrong(self, face_picture, result):
-        """ Test wrong face_picture image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-117-008).
-        :param face_picture: face_picture parameter value.
+                             ids=["other_photo(gif)", "other_photo(xlsx)", "other_photo(txt)",
+                                  "other_photo(mp4)", "other_photo(other)"])
+    def test_117008_other_photo_type_wrong(self, other_photo, result):
+        """ Test wrong other_photo image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-117-008).
+        :param other_photo: other_photo parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_117008_face_picture_type_wrong ({}) ....".format(face_picture))
+        self.logger.info(".... Start test_117008_other_photo_type_wrong ({}) ....".format(other_photo))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path(face_picture), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path(other_photo), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -708,40 +718,40 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117008_face_picture_type_wrong ({}) ....".format(face_picture))
+            self.logger.info(".... End test_117008_other_photo_type_wrong ({}) ....".format(other_photo))
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("communtity_picture支持的图片类型")
+    @allure.story("my_photo支持的图片类型")
     @allure.testcase("FT-HTJK-117-009")
-    @pytest.mark.parametrize("communtity_picture, result",
-                             [("relate_com.png", {"code": 1, "msg": "关联成功"}),
-                              ("relate_com.jpg", {"code": 1, "msg": "关联成功"}),
-                              ("relate_com.jpeg", {"code": 1, "msg": "关联成功"}),
-                              ("relate_com.tif", {"code": 1, "msg": "关联成功"}),
-                              ("relate_com.bmp", {"code": 1, "msg": "关联成功"}), ],
-                             ids=["communtity_picture(png)", "communtity_picture(jpg)", "communtity_picture(jpeg)",
-                                  "communtity_picture(tif)", "communtity_picture(bmp)"])
-    def test_117009_communtity_picture_type_correct(self, communtity_picture, result):
-        """ Test correct communtity_picture image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-117-009).
-        :param communtity_picture: communtity_picture parameter value.
+    @pytest.mark.parametrize("my_photo, result",
+                             [("face2.png", {"code": 1, "msg": "关联成功"}),
+                              ("face2.jpg", {"code": 1, "msg": "关联成功"}),
+                              ("face2.jpeg", {"code": 1, "msg": "关联成功"}),
+                              ("face2.tif", {"code": 1, "msg": "关联成功"}),
+                              ("face2.bmp", {"code": 1, "msg": "关联成功"}), ],
+                             ids=["my_photo(png)", "my_photo(jpg)", "my_photo(jpeg)",
+                                  "my_photo(tif)", "my_photo(bmp)"])
+    def test_117009_my_photo_type_correct(self, my_photo, result):
+        """ Test correct my_photo image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-117-009).
+        :param my_photo: my_photo parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_117009_communtity_picture_type_correct ({}) ....".format(communtity_picture))
+        self.logger.info(".... Start test_117009_my_photo_type_correct ({}) ....".format(my_photo))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path(communtity_picture), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path(my_photo), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -786,40 +796,40 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117009_communtity_picture_type_correct ({}) ....".format(communtity_picture))
+            self.logger.info(".... End test_117009_my_photo_type_correct ({}) ....".format(my_photo))
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("communtity_picture不支持的文件类型")
+    @allure.story("my_photo不支持的文件类型")
     @allure.testcase("FT-HTJK-117-010")
-    @pytest.mark.parametrize("communtity_picture, result",
-                             [("relate_com.gif", {"code": 0, "msg": "不合格"}),
+    @pytest.mark.parametrize("my_photo, result",
+                             [("face2.gif", {"code": 0, "msg": "不合格"}),
                               ("case.xlsx", {"code": 0, "msg": "不合格"}),
                               ("temp.txt", {"code": 0, "msg": "不合格"}),
                               ("hb.mp4", {"code": 0, "msg": "不合格"}),
-                              ("fore1.PNG", {"code": 0, "msg": "不通过"}), ],
-                             ids=["communtity_picture(gif)", "communtity_picture(xlsx)", "communtity_picture(txt)",
-                                  "communtity_picture(mp4)", "communtity_picture(other)"])
-    def test_117010_communtity_picture_type_wrong(self, communtity_picture, result):
-        """ Test wrong communtity_picture image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-117-010).
-        :param communtity_picture: communtity_picture parameter value.
+                              ("face1.PNG", {"code": 0, "msg": "不通过"}), ],
+                             ids=["my_photo(gif)", "my_photo(xlsx)", "my_photo(txt)",
+                                  "my_photo(mp4)", "my_photo(other)"])
+    def test_117010_my_photo_type_wrong(self, my_photo, result):
+        """ Test wrong my_photo image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-117-010).
+        :param my_photo: my_photo parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_117010_communtity_picture_type_wrong ({}) ....".format(communtity_picture))
+        self.logger.info(".... Start test_117010_my_photo_type_wrong ({}) ....".format(my_photo))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path(communtity_picture), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path(my_photo), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -864,29 +874,29 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117010_communtity_picture_type_wrong ({}) ....".format(communtity_picture))
+            self.logger.info(".... End test_117010_my_photo_type_wrong ({}) ....".format(my_photo))
             self.logger.info("")
 
     @allure.severity("blocker")
-    @allure.story("关联人不在合拍照")
+    @allure.story("关联人在合拍照")
     @allure.testcase("FT-HTJK-117-011")
-    def test_117011_relatives_not_in_community(self):
-        """ Test relatives not in communtity_picture(FT-HTJK-117-011)."""
-        self.logger.info(".... Start test_117011_relatives_not_in_community ....")
+    def test_117011_relatives_in_community(self):
+        """ Test relatives in communtity_picture(FT-HTJK-117-011)."""
+        self.logger.info(".... Start test_117011_relatives_in_community ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('face2.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_com.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -927,29 +937,29 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117011_relatives_not_in_community ....")
+            self.logger.info(".... End test_117011_relatives_in_community ....")
             self.logger.info("")
 
     @allure.severity("blocker")
-    @allure.story("会员不在合拍照")
+    @allure.story("会员在合拍照")
     @allure.testcase("FT-HTJK-117-012")
-    def test_117012_user_not_in_community(self):
-        """ Test user not in communtity_picture(FT-HTJK-117-012)."""
-        self.logger.info(".... Start test_117012_user_not_in_community ....")
+    def test_117012_user_in_community(self):
+        """ Test user in communtity_picture(FT-HTJK-117-012)."""
+        self.logger.info(".... Start test_117012_user_in_community ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_face.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('relate_com.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -990,29 +1000,29 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117012_user_not_in_community ....")
+            self.logger.info(".... End test_117012_user_in_community ....")
             self.logger.info("")
 
     @allure.severity("blocker")
-    @allure.story("会员和关联人不在合拍照")
+    @allure.story("会员和关联人在合拍照")
     @allure.testcase("FT-HTJK-117-013")
-    def test_117013_all_not_in_community(self):
-        """ Test all not in communtity_picture(FT-HTJK-117-013)."""
-        self.logger.info(".... Start test_117013_all_not_in_community ....")
+    def test_117013_all_in_community(self):
+        """ Test all in communtity_picture(FT-HTJK-117-013)."""
+        self.logger.info(".... Start test_117013_all_in_community ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('Kaola.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_com.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('relate_com.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1053,7 +1063,7 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117013_all_not_in_community ....")
+            self.logger.info(".... End test_117013_all_in_community ....")
             self.logger.info("")
 
     @allure.severity("critical")
@@ -1070,19 +1080,19 @@ class TestIdentityRelatives(object):
         """
         self.logger.info(".... Start test_117014_timestamp_correct ({}) ....".format(timestamp))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": timestamp}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1162,19 +1172,19 @@ class TestIdentityRelatives(object):
         """
         self.logger.info(".... Start test_117015_timestamp_wrong ({}) ....".format(timestamp))
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": timestamp}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1229,19 +1239,19 @@ class TestIdentityRelatives(object):
         """ Test identity relatives without token(FT-HTJK-117-016)."""
         self.logger.info(".... Start test_117016_no_token ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": None}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1291,19 +1301,19 @@ class TestIdentityRelatives(object):
         """ Test identity relatives without member_id(FT-HTJK-117-017)."""
         self.logger.info(".... Start test_117017_no_member_id ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1353,19 +1363,19 @@ class TestIdentityRelatives(object):
         """ Test identity relatives without features_name(FT-HTJK-117-018)."""
         self.logger.info(".... Start test_117018_no_features_name ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1409,24 +1419,24 @@ class TestIdentityRelatives(object):
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少face_picture参数")
+    @allure.story("缺少other_photo参数")
     @allure.testcase("FT-HTJK-117-019")
-    def test_117019_no_face_picture(self):
-        """ Test identity relatives without face_picture(FT-HTJK-117-019)."""
-        self.logger.info(".... Start test_117019_no_face_picture ....")
+    def test_117019_no_other_photo(self):
+        """ Test identity relatives without other_photo(FT-HTJK-117-019)."""
+        self.logger.info(".... Start test_117019_no_other_photo ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1466,28 +1476,28 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117019_no_face_picture ....")
+            self.logger.info(".... End test_117019_no_other_photo ....")
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少community_picture参数")
+    @allure.story("缺少my_photo参数")
     @allure.testcase("FT-HTJK-117-020")
-    def test_117020_no_community_picture(self):
-        """ Test identity relatives without community_picture(FT-HTJK-117-020)."""
-        self.logger.info(".... Start test_117020_no_community_picture ....")
+    def test_117020_no_my_photo(self):
+        """ Test identity relatives without my_photo(FT-HTJK-117-020)."""
+        self.logger.info(".... Start test_117020_no_my_photo ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1527,7 +1537,7 @@ class TestIdentityRelatives(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_117020_no_community_picture ....")
+            self.logger.info(".... End test_117020_no_my_photo ....")
             self.logger.info("")
 
     @allure.severity("critical")
@@ -1537,19 +1547,19 @@ class TestIdentityRelatives(object):
         """ Test identity relatives without timestamp(FT-HTJK-117-021)."""
         self.logger.info(".... Start test_117021_no_timestamp ....")
         try:
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep1: user feature."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                self.logger.info("identity_result: {0}".format(identity_result))
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli'}
                 headers = {"authorization": self.token}
-                files = {"face_picture": open(get_image_path('relate_face.jpg'), 'rb'),
-                         "community_picture": open(get_image_path('relate_com.jpg'), 'rb')}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 

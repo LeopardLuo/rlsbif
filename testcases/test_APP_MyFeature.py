@@ -12,8 +12,8 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("APP-用户身份认证")
-class TestIdentityUser(object):
+@allure.feature("APP-用户特征照片采集")
+class TestMyFeature(object):
 
     @allure.step("+++ setup class +++")
     def setup_class(cls):
@@ -25,7 +25,7 @@ class TestIdentityUser(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'UserIdentity')
+                cls.URI = cls.config.getItem('uri', 'MyFeature')
                 allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
@@ -59,7 +59,7 @@ class TestIdentityUser(object):
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222161", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511222261", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
@@ -70,14 +70,6 @@ class TestIdentityUser(object):
                 cls.logger.info("register result: {0}".format(register_result))
                 cls.token = register_result['token']
                 cls.member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep: user feature."):
-                headers = {"authorization": cls.token}
-                cls.httpclient.update_header(headers)
-                identity_result = user_myfeature(cls.httpclient, cls.member_id, 'face2.jpg',
-                                                get_timestamp(), cls.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                cls.logger.info("upload user feature result: {0}".format(identity_result))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -108,8 +100,8 @@ class TestIdentityUser(object):
         self.logger.info("")
         self.logger.info("=== Start teardown method ===")
         self.logger.info(method.__name__)
-        with allure.step("delete mem_member_identity"):
-            table = 'mem_member_identity'
+        with allure.step("delete mem_features"):
+            table = 'mem_features'
             condition = ("member_id", self.member_id)
             allure.attach("table name and condition", "{0},{1}".format(table, condition))
             self.logger.info("delele records of table: {0}".format(table))
@@ -120,17 +112,16 @@ class TestIdentityUser(object):
         self.logger.info("")
 
     @allure.severity("blocker")
-    @allure.story("身份认证成功")
-    @allure.testcase("FT-HTJK-115-001")
-    def test_115001_identity_user_correct(self):
-        """ Test identity user by correct parameters(FT-HTJK-115-001)."""
-        self.logger.info(".... Start test_115001_identity_user_correct ....")
+    @allure.story("采集成功")
+    @allure.testcase("FT-HTJK-124-001")
+    def test_124001_myfeature_correct(self):
+        """ Test myfeature by correct parameters(FT-HTJK-124001)."""
+        self.logger.info(".... Start test_124001_myfeature_correct ....")
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -154,10 +145,10 @@ class TestIdentityUser(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert '认证通过' in rsp_content['message']
+                assert '保存特征成功' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -172,30 +163,29 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115001_identity_user_correct ....")
+            self.logger.info(".... End test_124001_myfeature_correct ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误token值")
-    @allure.testcase("FT-HTJK-115-002")
+    @allure.testcase("FT-HTJK-124-002")
     @pytest.mark.parametrize("token, result",
                              [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
                               ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
                               ('', {"code": 0, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
-    def test_115002_token_wrong(self, token, result):
-        """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-115-002).
+    def test_124002_token_wrong(self, token, result):
+        """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-124-002).
         :param token: token parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_115002_token_wrong ({}) ....".format(token))
+        self.logger.info(".... Start test_124002_token_wrong ({}) ....".format(token))
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -220,7 +210,7 @@ class TestIdentityUser(object):
                 assert result['msg'] in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -235,12 +225,12 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115002_token_wrong ({}) ....".format(token))
+            self.logger.info(".... End test_124002_token_wrong ({}) ....".format(token))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误member_id值")
-    @allure.testcase("FT-HTJK-115-003")
+    @allure.testcase("FT-HTJK-124-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
                               (1.0, {"status": 400, "code": 0, "msg": ""}),
@@ -255,18 +245,17 @@ class TestIdentityUser(object):
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
                                   "member_id(0)", "member_id(超大)"])
-    def test_115003_member_id_wrong(self, member_id, result):
-        """ Test wrong member_id values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-115-003).
+    def test_124003_member_id_wrong(self, member_id, result):
+        """ Test wrong member_id values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-124-003).
         :param member_id: member_id parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_115003_member_id_wrong ({}) ....".format(member_id))
+        self.logger.info(".... Start test_124003_member_id_wrong ({}) ....".format(member_id))
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -309,32 +298,31 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115003_member_id_wrong ({}) ....".format(member_id))
+            self.logger.info(".... End test_124003_member_id_wrong ({}) ....".format(member_id))
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("identity_card_face支持的图片类型")
+    @allure.story("face_photo支持的图片类型")
     @allure.testcase("FT-HTJK-115-004")
-    @pytest.mark.parametrize("identity_card_face, result",
-                             [("fore2.png", {"code": 1, "msg": "认证通过"}),
-                              ("fore2.jpg", {"code": 1, "msg": "认证通过"}),
-                              ("fore2.jpeg", {"code": 1, "msg": "认证通过"}),
-                              ("fore2.tif", {"code": 1, "msg": "认证通过"}),
-                              ("fore2.bmp", {"code": 1, "msg": "认证通过"}), ],
-                             ids=["identity_card_face(png)", "identity_card_face(jpg)", "identity_card_face(jpeg)",
-                                  "identity_card_face(tif)", "identity_card_face(bmp)"])
-    def test_115004_identity_card_face_type_correct(self, identity_card_face, result):
-        """ Test correct identity_card_face image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-115-004).
-        :param identity_card_face: identity_card_face parameter value.
+    @pytest.mark.parametrize("face_photo, result",
+                             [("face2.png", {"code": 1, "msg": "认证通过"}),
+                              ("face2.jpg", {"code": 1, "msg": "认证通过"}),
+                              ("face2.jpeg", {"code": 1, "msg": "认证通过"}),
+                              ("face2.tif", {"code": 1, "msg": "认证通过"}),
+                              ("face2.bmp", {"code": 1, "msg": "认证通过"}), ],
+                             ids=["face_photo(png)", "face_photo(jpg)", "face_photo(jpeg)",
+                                  "face_photo(tif)", "face_photo(bmp)"])
+    def test_124004_face_photo_type_correct(self, face_photo, result):
+        """ Test correct face_photo image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-124-004).
+        :param face_photo: face_photo parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_115004_identity_card_face_type_correct ({}) ....".format(identity_card_face))
+        self.logger.info(".... Start test_124004_face_photo_type_correct ({}) ....".format(face_photo))
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path(identity_card_face), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path(face_photo), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -377,32 +365,31 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115004_identity_card_face_type_correct ({}) ....".format(identity_card_face))
+            self.logger.info(".... End test_124004_face_photo_type_correct ({}) ....".format(face_photo))
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("identity_card_face不支持的文件类型")
-    @allure.testcase("FT-HTJK-115-005")
-    @pytest.mark.parametrize("identity_card_face, result",
-                             [("fore2.gif", {"code": 0, "msg": "身份证照片不合格"}),
+    @allure.story("face_photo不支持的文件类型")
+    @allure.testcase("FT-HTJK-124-005")
+    @pytest.mark.parametrize("face_photo, result",
+                             [("face2.gif", {"code": 0, "msg": "身份证照片不合格"}),
                               ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
                               ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
                               ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
                               ("fore1.PNG", {"code": 0, "msg": "认证不通过"}), ],
-                             ids=["identity_card_face(gif)", "identity_card_face(xlsx)", "identity_card_face(txt)",
-                                  "identity_card_face(mp4)", "identity_card_face(other)"])
-    def test_115005_identity_card_face_type_wrong(self, identity_card_face, result):
-        """ Test wrong identity_card_face image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-115-005).
-        :param identity_card_face: identity_card_face parameter value.
+                             ids=["face_photo(gif)", "face_photo(xlsx)", "face_photo(txt)",
+                                  "face_photo(mp4)", "face_photo(other)"])
+    def test_124005_face_photo_type_wrong(self, face_photo, result):
+        """ Test wrong face_photo image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-124-005).
+        :param face_photo: face_photo parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_115005_identity_card_face_type_wrong ({}) ....".format(identity_card_face))
+        self.logger.info(".... Start test_124005_face_photo_type_wrong ({}) ....".format(face_photo))
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path(identity_card_face), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path(face_photo), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -445,168 +432,28 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(
-                ".... End test_115005_identity_card_face_type_wrong ({}) ....".format(identity_card_face))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("identity_card_emblem支持的图片类型")
-    @allure.testcase("FT-HTJK-115-006")
-    @pytest.mark.parametrize("identity_card_emblem, result",
-                             [("back2.png", {"code": 1, "msg": "认证通过"}),
-                              ("back2.jpg", {"code": 1, "msg": "认证通过"}),
-                              ("back2.jpeg", {"code": 1, "msg": "认证通过"}),
-                              ("back2.tif", {"code": 1, "msg": "认证通过"}),
-                              ("back2.bmp", {"code": 1, "msg": "认证通过"}), ],
-                             ids=["identity_card_emblem(png)", "identity_card_emblem(jpg)", "identity_card_emblem(jpeg)",
-                                  "identity_card_emblem(tif)", "identity_card_emblem(bmp)"])
-    def test_115006_identity_card_emblem_type_correct(self, identity_card_emblem, result):
-        """ Test correct identity_card_emblem image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-115-006).
-        :param identity_card_emblem: identity_card_emblem parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_115006_identity_card_emblem_type_correct ({}) ....".format(identity_card_emblem))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb')}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                self.httpclient.update_header(headers)
-                rsp = self.httpclient.post(self.URI, data=params, files=files)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.files", str(files))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.files: {}".format(files))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-
-            with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 1
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(
-                ".... End test_115006_identity_card_emblem_type_correct ({}) ....".format(identity_card_emblem))
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("identity_card_emblem不支持的文件类型")
-    @allure.testcase("FT-HTJK-115-007")
-    @pytest.mark.parametrize("identity_card_emblem, result",
-                             [("back2.gif", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("a1.jpeg", {"code": 0, "msg": "认证不通过"}), ],
-                             ids=["identity_card_emblem(gif)", "identity_card_emblem(xlsx)", "identity_card_emblem(txt)",
-                                  "identity_card_emblem(mp4)", "identity_card_emblem(other)"])
-    def test_115007_identity_card_emblem_type_wrong(self, identity_card_emblem, result):
-        """ Test wrong identity_card_emblem image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-115-007).
-        :param identity_card_emblem: identity_card_emblem parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_115007_identity_card_emblem_type_wrong ({}) ....".format(identity_card_emblem))
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb')}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                self.httpclient.update_header(headers)
-                rsp = self.httpclient.post(self.URI, data=params, files=files)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.files", str(files))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.files: {}".format(files))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-
-            with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(
-                ".... End test_115007_identity_card_emblem_type_wrong ({}) ....".format(identity_card_emblem))
+            self.logger.info(".... End Start test_124005_face_photo_type_wrong ({}) ....".format(face_photo))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("正确timestamp值")
-    @allure.testcase("FT-HTJK-115-010")
+    @allure.testcase("FT-HTJK-124-006")
     @pytest.mark.parametrize("timestamp, result",
                              [(get_timestamp() - 10000, {"code": 1, "msg": "认证通过"}),
                               (get_timestamp() + 1000, {"code": 1, "msg": "认证通过"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
-    def test_115010_timestamp_correct(self, timestamp, result):
-        """ Test correct timestamp values (最小值、最大值）(FT-HTJK-115-010).
+    def test_124006_timestamp_correct(self, timestamp, result):
+        """ Test correct timestamp values (最小值、最大值）(FT-HTJK-124-006).
         :param timestamp: timestamp parameter value.
         :param result: expect result.
         """
         self.logger.info(
-            ".... Start test_115010_timestamp_correct ({}) ....".format(timestamp))
+            ".... Start test_124006_timestamp_correct ({}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": timestamp}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -650,12 +497,12 @@ class TestIdentityUser(object):
             assert False
         finally:
             self.logger.info(
-                ".... End test_115010_timestamp_correct ({}) ....".format(timestamp))
+                ".... End test_124006_timestamp_correct ({}) ....".format(timestamp))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误timestamp值")
-    @allure.testcase("FT-HTJK-115-011")
+    @allure.testcase("FT-HTJK-124-007")
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
@@ -677,20 +524,19 @@ class TestIdentityUser(object):
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
                                   "timestamp(数字中文)",
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
-    def test_115011_timestamp_wrong(self, timestamp, result):
+    def test_124007_timestamp_wrong(self, timestamp, result):
         """ Test wrong timestamp values (1、9223372036854775807、0、-1、-9223372036854775809、9223372036854775808、1.0、
-            字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-115-011).
+            字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-124-007).
         :param timestamp: timestamp parameter value.
         :param result: expect result.
         """
         self.logger.info(
-            ".... Start test_115011_timestamp_wrong ({}) ....".format(timestamp))
+            ".... Start test_124007_timestamp_wrong ({}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": timestamp}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -734,21 +580,20 @@ class TestIdentityUser(object):
             assert False
         finally:
             self.logger.info(
-                ".... End test_115011_timestamp_wrong ({}) ....".format(timestamp))
+                ".... End test_124007_timestamp_wrong ({}) ....".format(timestamp))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少token参数")
-    @allure.testcase("FT-HTJK-115-012")
-    def test_115012_no_token(self):
-        """ Test modify head image without token(FT-HTJK-115-012)."""
-        self.logger.info(".... Start test_115012_no_token ....")
+    @allure.testcase("FT-HTJK-124-008")
+    def test_124008_no_token(self):
+        """ Test myfeature without token(FT-HTJK-124-008)."""
+        self.logger.info(".... Start test_124008_no_token ....")
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": None}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -790,21 +635,20 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115012_no_token ....")
+            self.logger.info(".... End test_124008_no_token ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少member_id参数")
-    @allure.testcase("FT-HTJK-115-013")
-    def test_115013_no_member_id(self):
-        """ Test modify head image without member_id(FT-HTJK-115-013)."""
-        self.logger.info(".... Start test_115013_no_member_id ....")
+    @allure.testcase("FT-HTJK-124-009")
+    def test_124009_no_member_id(self):
+        """ Test myfeature without member_id(FT-HTJK-124-009)."""
+        self.logger.info(".... Start test_124009_no_member_id ....")
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -846,20 +690,20 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115013_no_member_id ....")
+            self.logger.info(".... End test_124009_no_member_id ....")
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少identity_card_face参数")
-    @allure.testcase("FT-HTJK-115-014")
-    def test_115014_no_identity_card_face(self):
-        """ Test modify head image without identity_card_face(FT-HTJK-115-014)."""
-        self.logger.info(".... Start test_115014_no_identity_card_face ....")
+    @allure.story("缺少face_photo参数")
+    @allure.testcase("FT-HTJK-124-010")
+    def test_124010_no_face_photo(self):
+        """ Test myfeature without face_photo(FT-HTJK-124-010)."""
+        self.logger.info(".... Start test_124010_no_face_photo ....")
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -883,7 +727,7 @@ class TestIdentityUser(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
-                assert 'identity_card_face不能为空' in rsp_content['message']
+                assert 'face_photo不能为空' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
                 table = 'mem_member_identity'
@@ -901,76 +745,20 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115014_no_identity_card_face ....")
-            self.logger.info("")
-
-    @allure.severity("critical")
-    @allure.story("缺少identity_card_emblem参数")
-    @allure.testcase("FT-HTJK-115-015")
-    def test_115015_no_identity_card_emblem(self):
-        """ Test modify head image without identity_card_emblem(FT-HTJK-115-015)."""
-        self.logger.info(".... Start test_115015_no_identity_card_emblem ....")
-        try:
-            with allure.step("teststep1: get parameters."):
-                params = {"member_id": self.member_id, "timestamp": get_timestamp()}
-                headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb')}
-                allure.attach("params value", "{0}, {1}".format(params, headers))
-                self.logger.info("data: {0}, headers: {1}".format(params, headers))
-
-            with allure.step("teststep2: requests http post."):
-                self.httpclient.update_header(headers)
-                rsp = self.httpclient.post(self.URI, data=params, files=files)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body))
-                allure.attach("request.url", str(rsp.request.url))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body))
-                self.logger.info("request.url: {}".format(rsp.request.url))
-
-            with allure.step("teststep3: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '保存身份证国徽面照片失败' in rsp_content['message']
-
-            with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception occur: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_115015_no_identity_card_emblem ....")
+            self.logger.info(".... End test_124010_no_face_photo ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少timestamp参数")
-    @allure.testcase("FT-HTJK-115-017")
-    def test_115017_no_timestamp(self):
-        """ Test modify head image without timestamp(FT-HTJK-115-017)."""
-        self.logger.info(".... Start test_115017_no_timestamp ....")
+    @allure.testcase("FT-HTJK-124-011")
+    def test_124011_no_timestamp(self):
+        """ Test myfeature without timestamp(FT-HTJK-124-011)."""
+        self.logger.info(".... Start test_124011_no_timestamp ....")
         try:
             with allure.step("teststep1: get parameters."):
                 params = {"member_id": self.member_id}
                 headers = {"authorization": self.token}
-                files = {"identity_card_face": open(get_image_path('fore2.jpg'), 'rb'),
-                         "identity_card_emblem": open(get_image_path('back2.jpg'), 'rb')}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
 
@@ -1012,10 +800,10 @@ class TestIdentityUser(object):
             self.logger.error(e)
             assert False
         finally:
-            self.logger.info(".... End test_115017_no_timestamp ....")
+            self.logger.info(".... End test_124011_no_timestamp ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Identity_User.py'])
-    pytest.main(['-s', 'test_APP_Identity_User.py::TestIdentityUser::test_115002_token_wrong'])
+    # pytest.main(['-s', 'test_APP_MyFeature.py'])
+    pytest.main(['-s', 'test_APP_MyFeature.py::TestMyFeature::test_124011_no_timestamp'])

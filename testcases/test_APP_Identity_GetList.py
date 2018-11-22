@@ -71,14 +71,21 @@ class TestGetIdentityList(object):
                 cls.token = register_result['token']
                 cls.member_id = register_result['user_info']['member_id']
 
-            with allure.step("teststep1: identity user."):
+            with allure.step("teststep: user feature."):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
-                identity_result = user_identity(cls.httpclient, cls.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
+                identity_result = user_myfeature(cls.httpclient, cls.member_id, 'face2.jpg',
                                                 get_timestamp(), cls.logger)
-                allure.attach("identity_result", "{0}".format(identity_result))
-                cls.logger.info("identity_result: {0}".format(identity_result))
-                assert identity_result
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                cls.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep: identity user."):
+                headers = {"authorization": cls.token}
+                cls.httpclient.update_header(headers)
+                identity_result = user_identity(cls.httpclient, cls.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), cls.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                cls.logger.info("identity owner result: {0}".format(identity_result))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -123,12 +130,12 @@ class TestGetIdentityList(object):
             with allure.step("teststep1: identity other."):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg', 'relate_com.jpg',
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg', 'face2.jpg',
                                                 get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result1))
                 self.logger.info("identity_result: {0}".format(identity_result1))
                 identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result2))
                 self.logger.info("identity_result: {0}".format(identity_result2))
@@ -197,12 +204,12 @@ class TestGetIdentityList(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result1))
                 self.logger.info("identity_result: {0}".format(identity_result1))
                 identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result2))
                 self.logger.info("identity_result: {0}".format(identity_result2))

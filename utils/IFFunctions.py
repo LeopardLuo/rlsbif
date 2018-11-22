@@ -683,14 +683,100 @@ def account_list(httpclient, member_id, timestamp=None, logger=None):
         return {}
 
 
+@allure.step("Account-UnbindWX")
+def unbind_wx(httpclient, member_id, auth_id, timestamp=None, logger=None):
+    """ Relate the webchat user to current user, return True or False.
+    :param httpclient: http request client.
+    :param member_id: interface defined parameter member_id return by login string type.
+    :param auth_id: interface defined parameter auth_id of webchat account num string type.
+    :param timestamp: interface defined parameter timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return True successfully, False failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start unbind_wx ----")
+    uri = ConfigParse().getItem("uri", "UnbindWX")
+    if not timestamp:
+        timestamp = get_timestamp()
+    json = {"member_id": member_id, "auth_id": auth_id, "timestamp": timestamp}
+    allure.attach("request params", str(json))
+    logger and logger.info("UnbindWX json: {}".format(json))
+    rsp = httpclient.post(uri=uri, json=json)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end unbind_wx ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end unbind_wx ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return True
+    else:
+        return False
+
+
+@allure.step("User-MyFeature")
+def user_myfeature(httpclient, member_id, face_photo, timestamp=None, logger=None):
+    """ Identify user by images, return True or False.
+    :param httpclient: http request client.
+    :param member_id: interface defined parameter member_id return by login string type.
+    :param face_photo: interface defined parameter face_photo from upload photo url string type.
+    :param timestamp: interface defined parameter timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return True successfully, False failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start user_myfeature ----")
+    uri = ConfigParse().getItem("uri", "MyFeature")
+    if not timestamp:
+        timestamp = get_timestamp()
+    params = {"member_id": member_id, "timestamp": get_timestamp()}
+    files = {"face_photo": open(get_image_path(face_photo), 'rb')}
+    allure.attach("request params", str(params))
+    logger and logger.info("UserIdentity json: {}".format(params))
+    rsp = httpclient.post(uri, data=params, files=files)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.files", str(files))
+    logger and logger.info("request.files: {}".format(files))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end user_myfeature ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end user_myfeature ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return True
+    else:
+        return False
+
+
 @allure.step("User-Identify")
-def user_identity(httpclient, member_id, identity_card_face, identity_card_emblem, face_picture, timestamp=None, logger=None):
+def user_identity(httpclient, member_id, identity_card_face, identity_card_emblem, timestamp=None, logger=None):
     """ Identify user by images, return True or False.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
     :param identity_card_face: interface defined parameter identity_card_face from upload photo url string type.
     :param identity_card_emblem: interface defined parameter identity_card_emblem from upload photo url string type.
-    :param face_picture: interface defined parameter face_picture from upload photo url string type.
     :param timestamp: interface defined parameter timestamp int type, optional.
     :param logger: logger instance for logging, optional.
     :rtype: return True successfully, False failed.
@@ -702,8 +788,7 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
         timestamp = get_timestamp()
     params = {"member_id": member_id, "timestamp": get_timestamp()}
     files = {"identity_card_face": open(get_image_path(identity_card_face), 'rb'),
-             "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb'),
-             "face_picture": open(get_image_path(face_picture), 'rb')}
+             "identity_card_emblem": open(get_image_path(identity_card_emblem), 'rb')}
     allure.attach("request params", str(params))
     logger and logger.info("UserIdentity json: {}".format(params))
     rsp = httpclient.post(uri, data=params, files=files)
@@ -732,7 +817,7 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
 
 
 @allure.step("associates-InfoList")
-def get_identity_other_list(httpclient, member_id, page_index, page_size, timestamp=None, orderby=None, logger=None):
+def get_identity_other_list(httpclient, member_id, page_index, page_size, relationships=None, timestamp=None, orderby=None, logger=None):
     """ Get related peoples of user list.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
@@ -740,6 +825,7 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
     :param page_size: interface defined parameter page_size int type.
     :param timestamp: interface defined parameter timestamp int type, optional.
     :param orderby: interface defined parameter orderby string type, optional.
+    :param relationships: interface defined parameter relationships int(0/1) type, optional.
     :param logger: logger instance for logging, optional.
     :rtype: return related peoples dict successfully, {} failed.
     """
@@ -748,7 +834,7 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
     uri = ConfigParse().getItem("uri", "GetIdentityOtherList")
     if not timestamp:
         timestamp = get_timestamp()
-    data = {"member_id": member_id, "page_index": page_index, "page_size": page_size, "timestamp": timestamp, "orderby": orderby}
+    data = {"member_id": member_id, "page_index": page_index, "page_size": page_size, "timestamp": timestamp, "orderby": orderby, "relationships": relationships}
     allure.attach("request params", str(data))
     logger and logger.info("GetIdentityOtherList json: {}".format(data))
     rsp = httpclient.get(uri=uri, params=data)
@@ -777,13 +863,13 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
 
 
 @allure.step("associates-Identify")
-def identity_other(httpclient, member_id, features_name, face_picture, community_picture, timestamp=None, logger=None):
+def identity_other(httpclient, member_id, features_name, other_photo, my_photo, timestamp=None, logger=None):
     """ Identify the related peoples of user.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
     :param features_name: interface defined parameter features_name string type.
-    :param face_picture: interface defined parameter face_picture from upload photo url string type.
-    :param community_picture: interface defined parameter community_picture from upload photo url string type.
+    :param other_photo: interface defined parameter other_photo from upload photo url string type.
+    :param my_photo: interface defined parameter my_photo from upload photo url string type.
     :param timestamp: interface defined parameter timestamp int type, optional.
     :param logger: logger instance for logging, optional.
     :rtype: return True successfully, False failed.
@@ -794,8 +880,8 @@ def identity_other(httpclient, member_id, features_name, face_picture, community
     if not timestamp:
         timestamp = get_timestamp()
     params = {"member_id": member_id, "features_name": features_name, "timestamp": timestamp}
-    files = {"face_picture": open(get_image_path(face_picture), 'rb'),
-             "community_picture": open(get_image_path(community_picture), 'rb')}
+    files = {"other_photo": open(get_image_path(other_photo), 'rb'),
+             "my_photo": open(get_image_path(my_photo), 'rb')}
     allure.attach("request params", str(params))
     logger and logger.info("IdentityOther json: {}".format(params))
     rsp = httpclient.post(uri, data=params, files=files)
@@ -821,6 +907,51 @@ def identity_other(httpclient, member_id, features_name, face_picture, community
         return True
     else:
         return False
+
+
+@allure.step("associates-temp-Identify")
+def identity_temp(httpclient, member_id, feature_name, temp_photo, timestamp=None, logger=None):
+    """ Identify the related peoples of user.
+    :param httpclient: http request client.
+    :param member_id: interface defined parameter member_id return by login string type.
+    :param features_name: interface defined parameter features_name string type.
+    :param temp_photo: interface defined parameter temp_photo from upload photo url string type.
+    :param timestamp: interface defined parameter timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return True successfully, False failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start identity_temp ----")
+    uri = ConfigParse().getItem("uri", "IdentityTemp")
+    if not timestamp:
+        timestamp = get_timestamp()
+    params = {"member_id": member_id, "feature_name": feature_name, "timestamp": timestamp}
+    files = {"temp_photo": open(get_image_path(temp_photo), 'rb')}
+    allure.attach("request params", str(params))
+    logger and logger.info("IdentityOther json: {}".format(params))
+    rsp = httpclient.post(uri, data=params, files=files)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.files", str(files))
+    logger and logger.info("request.files: {}".format(files))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end identity_temp ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end identity_temp ----")
+    logger and logger.info("")
+    if rsp_content["Code"] == 1:
+        return rsp_content["Result"]
+    else:
+        return {}
 
 
 @allure.step("associates-Modify")
@@ -1094,6 +1225,49 @@ def get_recognized_record_list(httpclient, member_id, page_index, page_size, ord
         return {}
 
 
+@allure.step("App-CheckVersion")
+def check_version(httpclient, package_type, package_version, timestamp=None, logger=None):
+    """ Get recognized record list.
+    :param httpclient: http request client.
+    :param package_type: interface defined parameter package_type int type.
+    :param package_version: interface defined parameter package_version string type.
+    :param timestamp: interface defined parameter timestamp int type..
+    :param logger: logger instance for logging, optional.
+    :rtype: return recognized record dict successfully, {} failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start check_version ----")
+    uri = ConfigParse().getItem("uri", "GetRecognizedRecordList")
+    if not timestamp:
+        timestamp = get_timestamp()
+    data = {"package_type": package_type, "package_version": package_version, "timestamp": timestamp}
+    allure.attach("request params", str(data))
+    logger and logger.info("GetRecognizedRecordList json: {}".format(data))
+    rsp = httpclient.get(uri=uri, data=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end check_version ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end check_version ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return rsp_content["result"]
+    else:
+        return {}
+
+
 @allure.step("H5-Get-Authentication")
 def h5_get_business_token(httpclient, member_id, timestamp=None, logger=None):
     """ Business system H5 get the user authentication info.
@@ -1134,6 +1308,150 @@ def h5_get_business_token(httpclient, member_id, timestamp=None, logger=None):
         return rsp_content["result"]
     else:
         return {}
+
+
+@allure.step("Inner-Auth")
+def inner_auth(httpclient, member_id, timestamp=None, logger=None):
+    """ Business system H5 get the user authentication info.
+    :param httpclient: http request client.
+    :param member_id: interface defined parameter member_id return by login string type.
+    :param timestamp: interface defined parameter timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return authentication info dict successfully, {} failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start inner_auth ----")
+    uri = ConfigParse().getItem("uri", "INAuth")
+    if not timestamp:
+        timestamp = get_timestamp()
+    json = {"member_id": member_id, "timestamp": timestamp}
+    allure.attach("request params", str(json))
+    logger and logger.info("INAuth json: {}".format(json))
+    rsp = httpclient.post(uri=uri, json=json)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end inner_auth ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end inner_auth ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return rsp_content["result"]
+    else:
+        return {}
+
+
+@allure.step("Inner-Create-Service-Order")
+def inner_create_service_order(httpclient, system_id, business_order_id, member_id, feature_id, device_ids,
+                            verify_condition_type, begin_time, end_time, in_count, spu_id, service_unit,
+                            service_address, timestamp=None, logger=None):
+    """ Business system submit service order to server.
+    :param httpclient: http request client.
+    :param system_id: interface defined parameter system_id long type.
+    :param business_order_id: interface defined parameter business_order_id string type.
+    :param member_id: interface defined parameter member_id long type.
+    :param feature_id: interface defined parameter feature_id long type.
+    :param devices_ids: interface defined parameter devices_ids string array type.
+    :param verify_condition_type: interface defined parameter verify_condition_type int type.
+    :param begin_time: interface defined parameter begin_time long type, optional.
+    :param end_time: interface defined parameter end_time long type, optional.
+    :param in_count: interface defined parameter in_count int type, optional.
+    :param spu_id: interface defined parameter spu_id string type.
+    :param service_unit: interface defined parameter service_unit string type.
+    :param service_address: interface defined parameter service_address string type.
+    :param timestamp: interface defined parameter Timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return service order dict successfully, {} failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start inner_create_service_order ----")
+    uri = ConfigParse().getItem("uri", "INCreate")
+    if not timestamp:
+        timestamp = get_timestamp()
+    json = {"system_id": system_id, "business_order_id": business_order_id, "member_id": member_id,
+            "feature_id": feature_id, "device_ids": device_ids, "verify_condition_type": verify_condition_type,
+            "begin_time": begin_time, "end_time": end_time, "in_count": in_count, "spu_id": spu_id,
+            "service_unit": service_unit, "service_address": service_address, "timestamp": timestamp}
+    allure.attach("request params", str(json))
+    logger and logger.info("INCreate json: {}".format(json))
+    rsp = httpclient.post(uri=uri, json=json)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end inner_create_service_order ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end inner_create_service_order ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return rsp_content["result"]
+    else:
+        return {}
+
+
+@allure.step("Inner-Close-Service-Order")
+def inner_close_service_order(httpclient, system_id, service_order_id, close_code, timestamp=None, logger=None):
+    """ Business system cancel service order to server.
+    :param httpclient: http request client.
+    :param system_id: interface defined parameter system_id long type.
+    :param service_order_id: interface defined parameter service_order_id string type.
+    :param close_code: interface defined parameter close_code int type.
+    :param timestamp: interface defined parameter timestamp int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return True successfully, False failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start inner_close_service_order ----")
+    uri = ConfigParse().getItem("uri", "INClose")
+    if not timestamp:
+        timestamp = get_timestamp()
+    json = {"system_id": system_id, "service_order_id": service_order_id, "close_code": close_code, "timestamp": timestamp}
+    allure.attach("request params", str(json))
+    logger and logger.info("INClose json: {}".format(json))
+    rsp = httpclient.post(uri=uri, json=json)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.body", str(rsp.request.body))
+    logger and logger.info("request.body: {}".format(rsp.request.body))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end inner_close_service_order ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end inner_close_service_order ----")
+    logger and logger.info("")
+    if rsp_content["code"] == 1:
+        return True
+    else:
+        return False
 
 
 @allure.step("BS-Get-UserInfo")
