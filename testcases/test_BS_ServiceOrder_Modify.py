@@ -72,10 +72,18 @@ class TestModifyServiceOrder(object):
                 cls.token = register_result['token']
                 cls.member_id = register_result['user_info']['member_id']
 
+            with allure.step("teststep: user feature."):
+                headers = {"authorization": cls.token}
+                cls.httpclient.update_header(headers)
+                identity_result = user_myfeature(cls.httpclient, cls.member_id, 'face2.jpg',
+                                                get_timestamp(), cls.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                cls.logger.info("upload user feature result: {0}".format(identity_result))
+
             with allure.step("teststep: identity user."):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
-                identity_result = user_identity(cls.httpclient, cls.member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
+                identity_result = user_identity(cls.httpclient, cls.member_id, 'fore2.jpg', 'back2.jpg',
                                                 get_timestamp(), cls.logger)
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 cls.logger.info("identity owner result: {0}".format(identity_result))
@@ -84,17 +92,10 @@ class TestModifyServiceOrder(object):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
                 identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), cls.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 cls.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep: get business token."):
-                cls.httpclient.update_header({"authorization": cls.token})
-                business_result = h5_get_business_token(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-                allure.attach("business token", str(business_result))
-                cls.logger.info("business token: {}".format(business_result))
-                business_token = business_result['business_token']
 
             with allure.step("teststep: get business system id and code"):
                 table = 'bus_system'
@@ -122,8 +123,7 @@ class TestModifyServiceOrder(object):
                     cls.devices_ids.append(device[0])
 
             with allure.step("teststep: get features id by user info."):
-                user_info = bs_get_user_info(cls.httpclient, cls.system_id, cls.member_id, business_token,
-                                             get_timestamp(), cls.logger)
+                user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 cls.logger.info("features data list: {0}".format(user_info))
                 cls.features_id = ''
@@ -170,11 +170,12 @@ class TestModifyServiceOrder(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         with allure.step("teststep: create service orders"):
-            order_result = h5_create_service_order(self.httpclient, self.system_id, str(random.randint(1000, 100000)),
-                                                   self.member_id,
-                                                   self.system_code, self.features_id, self.devices_ids, 3,
-                                                   get_timestamp(), 9999999999, 10, 'testunit',
-                                                   'dept1', get_timestamp(), self.logger)
+            order_result = inner_create_service_order(self.httpclient, self.system_id,
+                                                      str(random.randint(1000, 100000)),
+                                                      self.member_id, self.features_id, self.devices_ids, 3,
+                                                      get_timestamp(), 9999999999, 10, random.randint(1000, 100000),
+                                                      'testunit',
+                                                      'dept1', get_timestamp(), self.logger)
             allure.attach("order list", str(order_result))
             self.logger.info("order list: {0}".format(order_result))
             self.service_order_id = order_result['service_order_id']
