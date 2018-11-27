@@ -131,13 +131,13 @@ class TestCetServiceOrderList(object):
                     if item['features_name'] == 'kuli1':
                         cls.features_id = item['features_id']
 
-            with allure.step("teststep: create service orders"):
-                order_result = inner_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)),
-                                   cls.member_id, cls.features_id, cls.devices_ids, 3,
-                                   get_timestamp(), 9999999999, 10, random.randint(1000, 100000),
-                                    'testunit', 'dept1', get_timestamp(), cls.logger)
-                allure.attach("order list", str(order_result))
-                cls.logger.info("order list: {0}".format(order_result))
+            # with allure.step("teststep: create service orders"):
+            #     order_result = inner_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)),
+            #                        cls.member_id, cls.features_id, cls.devices_ids, 3,
+            #                        get_timestamp(), 9999999999, 10, random.randint(1000, 100000),
+            #                         'testunit', 'dept1', get_timestamp(), cls.logger)
+            #     allure.attach("order list", str(order_result))
+            #     cls.logger.info("order list: {0}".format(order_result))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)

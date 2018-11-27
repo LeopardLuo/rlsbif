@@ -246,7 +246,7 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201109
                 assert '当前手机号码与验证手机号不符' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -261,9 +261,9 @@ class TestModifyPhone(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-112-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_112003_token_wrong(self, token, result):
@@ -323,7 +323,7 @@ class TestModifyPhone(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -438,20 +438,20 @@ class TestModifyPhone(object):
     @allure.story("错误phone值")
     @allure.testcase("FT-HTJK-112-005")
     @pytest.mark.parametrize("phone, result",
-                             [("1", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("135123456789", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("0", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("-1", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("135112210.0", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1" * 256, {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("a", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("中", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("*", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1351122105a", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1351122105中", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1351122105*", {"code": 0, "msg": "当前手机号码与验证手机号不符"}),
-                              (" ", {"code": 0, "msg": "phone值非法"}),
-                              ("", {"code": 0, "msg": "phone值非法"})],
+                             [("1", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("135123456789", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("0", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("-1", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("135112210.0", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1" * 256, {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("a", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("中", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("*", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1351122105a", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1351122105中", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1351122105*", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              (" ", {"code": 101000, "msg": "phone值非法"}),
+                              ("", {"code": 101000, "msg": "phone值非法"})],
                              ids=["phone(1)", "phone(12位)", "phone(0)", "phone(-1)", "phone(小数)", "phone(超长值)",
                                   "phone(字母)", "phone(中文)", "phone(特殊字符)", "phone(数字字母)", "phone(数字中文)",
                                   "phone(数字特殊字符)", "phone(空格)", "phone(空)"])
@@ -536,16 +536,16 @@ class TestModifyPhone(object):
     @allure.story("错误sms_code值")
     @allure.testcase("FT-HTJK-112-006")
     @pytest.mark.parametrize("sms_code, result",
-                             [('1' * 256, {"code": 0, "msg": "验证码不正确"}),
-                              ('1.0', {"code": 0, "msg": "验证码不正确"}),
-                              ('a', {"code": 0, "msg": "验证码不正确"}),
-                              ('中', {"code": 0, "msg": "验证码不正确"}),
-                              ('*', {"code": 0, "msg": "验证码不正确"}),
-                              ('1a', {"code": 0, "msg": "验证码不正确"}),
-                              ('1中', {"code": 0, "msg": "验证码不正确"}),
-                              ('1*', {"code": 0, "msg": "验证码不正确"}),
-                              (' ', {"code": 0, "msg": "sms_code值非法"}),
-                              ('', {"code": 0, "msg": "sms_code值非法"})],
+                             [('1' * 256, {"code": 201106, "msg": "验证码不正确"}),
+                              ('1.0', {"code": 201106, "msg": "验证码不正确"}),
+                              ('a', {"code": 201106, "msg": "验证码不正确"}),
+                              ('中', {"code": 201106, "msg": "验证码不正确"}),
+                              ('*', {"code": 201106, "msg": "验证码不正确"}),
+                              ('1a', {"code": 201106, "msg": "验证码不正确"}),
+                              ('1中', {"code": 201106, "msg": "验证码不正确"}),
+                              ('1*', {"code": 201106, "msg": "验证码不正确"}),
+                              (' ', {"code": 101000, "msg": "sms_code值非法"}),
+                              ('', {"code": 101000, "msg": "sms_code值非法"})],
                              ids=["sms_code(超长值)", "sms_code(小数)", "sms_code(字母)", "sms_code(中文)",
                                   "sms_code(特殊字符)", "sms_code(数字字母)", "sms_code(数字中文)",
                                   "sms_code(数字特殊字符)", "sms_code(空格)", "sms_code(空)"])
@@ -630,16 +630,16 @@ class TestModifyPhone(object):
     @allure.story("错误code_token值")
     @allure.testcase("FT-HTJK-112-007")
     @pytest.mark.parametrize("code_token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}),
-                              ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('a', {"code": 0, "msg": "授权非法"}),
-                              ('中', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}),
-                              ('1a', {"code": 0, "msg": "授权非法"}),
-                              ('1中', {"code": 0, "msg": "授权非法"}),
-                              ('1*', {"code": 0, "msg": "授权非法"}),
-                              (' ', {"code": 0, "msg": "code_token值非法"}),
-                              ('', {"code": 0, "msg": "code_token值非法"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}),
+                              ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('a', {"code": 201001, "msg": "授权非法"}),
+                              ('中', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}),
+                              ('1a', {"code": 201001, "msg": "授权非法"}),
+                              ('1中', {"code": 201001, "msg": "授权非法"}),
+                              ('1*', {"code": 201001, "msg": "授权非法"}),
+                              (' ', {"code": 101000, "msg": "code_token值非法"}),
+                              ('', {"code": 101000, "msg": "code_token值非法"})],
                              ids=["code_token(超长值)", "code_token(小数)", "code_token(字母)", "code_token(中文)",
                                   "code_token(特殊字符)", "code_token(数字字母)", "code_token(数字中文)",
                                   "code_token(数字特殊字符)", "code_token(空格)", "code_token(空)"])
@@ -724,16 +724,16 @@ class TestModifyPhone(object):
     @allure.story("错误phone_token值")
     @allure.testcase("FT-HTJK-112-008")
     @pytest.mark.parametrize("phone_token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}),
-                              ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('a', {"code": 0, "msg": "授权非法"}),
-                              ('中', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}),
-                              ('1a', {"code": 0, "msg": "授权非法"}),
-                              ('1中', {"code": 0, "msg": "授权非法"}),
-                              ('1*', {"code": 0, "msg": "授权非法"}),
-                              (' ', {"code": 0, "msg": "phone_token值非法"}),
-                              ('', {"code": 0, "msg": "phone_token值非法"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}),
+                              ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('a', {"code": 201001, "msg": "授权非法"}),
+                              ('中', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}),
+                              ('1a', {"code": 201001, "msg": "授权非法"}),
+                              ('1中', {"code": 201001, "msg": "授权非法"}),
+                              ('1*', {"code": 201001, "msg": "授权非法"}),
+                              (' ', {"code": 101000, "msg": "phone_token值非法"}),
+                              ('', {"code": 101000, "msg": "phone_token值非法"})],
                              ids=["phone_token(超长值)", "phone_token(小数)", "phone_token(字母)", "phone_token(中文)",
                                   "phone_token(特殊字符)", "phone_token(数字字母)", "phone_token(数字中文)",
                                   "phone_token(数字特殊字符)", "phone_token(空格)", "phone_token(空)"])
@@ -817,8 +817,8 @@ class TestModifyPhone(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-112-009")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": ""}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": ""})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "修改用户手机成功"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "修改用户手机成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_112009_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-112-009).
@@ -1055,13 +1055,13 @@ class TestModifyPhone(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1135,8 +1135,8 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content['message']
+                assert rsp_content["code"] == 201301
+                assert '非该用户的认证手机号码' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1209,7 +1209,7 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'phone值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1283,7 +1283,7 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'sms_code值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1357,7 +1357,7 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'code_token值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1431,7 +1431,7 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'phone_token值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1505,7 +1505,7 @@ class TestModifyPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1519,4 +1519,4 @@ class TestModifyPhone(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_Phone.py'])
-    pytest.main(['-s', 'test_APP_Modify_Phone.py::TestModifyPhone::test_112001_modify_phone_correct'])
+    pytest.main(['-s', 'test_APP_Modify_Phone.py::TestModifyPhone::test_112017_no_timestamp'])

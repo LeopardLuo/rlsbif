@@ -198,9 +198,9 @@ class TestGetUserInfo(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-106-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)",  "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_106003_token_wrong(self, token, result):
@@ -229,7 +229,7 @@ class TestGetUserInfo(object):
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 if rsp.status_code != 200:
                     self.logger.info("rsp.text: {}".format(rsp.text))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -253,7 +253,7 @@ class TestGetUserInfo(object):
                              [('1' * 256, {"code": 0, "msg": "is not valid"}), (1.0, {"code": 0, "msg": "is not valid"}),
                               ('中', {"code": 0, "msg": "is not valid"}), ('*', {"code": 0, "msg": "is not valid"}),
                               ('1中', {"code": 0, "msg": "is not valid"}), ('1*', {"code": 0, "msg": "is not valid"}),
-                              (' ', {"code": 0, "msg": "is not valid"}), ('', {"code": 0, "msg": "is not valid"})],
+                              (' ', {"code": 0, "msg": "is not valid"}), ('', {"code": 0, "msg": "is invalid"})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)"])
@@ -283,7 +283,7 @@ class TestGetUserInfo(object):
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 if rsp.status_code != 200:
                     self.logger.info("rsp.text: {}".format(rsp.text))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -315,8 +315,8 @@ class TestGetUserInfo(object):
                               ('1a', {"status": 400, "code": 0, "msg": "is not valid"}),
                               ('1中', {"status": 400, "code": 0, "msg": "is not valid"}),
                               ('1*', {"status": 400, "code": 0, "msg": "is not valid"}),
-                              (' ', {"status": 400, "code": 0, "msg": "is not valid"}),
-                              ('', {"status": 400, "code": 0, "msg": "is not valid"})],
+                              (' ', {"status": 400, "code": 0, "msg": "is invalid"}),
+                              ('', {"status": 400, "code": 0, "msg": "is invalid"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)", "timestamp(0)", "timestamp(-1)",
                                   "timestamp(超小值)", "timestamp(超大值)", "timestamp(小数)",
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
@@ -393,13 +393,14 @@ class TestGetUserInfo(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 400
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", rsp_content)
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content
+                assert rsp_content['code'] == 201000
+                assert '未登录或登录已过期' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -439,8 +440,8 @@ class TestGetUserInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content['code'] == 0
-                assert '授权非法' in rsp_content['message']
+                assert rsp_content['code'] == 201200
+                assert '拉取用户信息失败' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -480,8 +481,8 @@ class TestGetUserInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content['code'] == 0
-                assert rsp_content['message']
+                assert rsp_content['code'] == 101000
+                assert 'timestamp不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -494,4 +495,4 @@ class TestGetUserInfo(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_UserInfo.py'])
-    pytest.main(['-s', 'test_APP_Get_UserInfo.py::TestGetUserInfo::test_106001_get_userinfo_correct'])
+    pytest.main(['-s', 'test_APP_Get_UserInfo.py::TestGetUserInfo::test_106008_no_timestamp'])

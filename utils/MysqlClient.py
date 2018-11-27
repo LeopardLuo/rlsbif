@@ -149,6 +149,27 @@ class MysqlClient(object):
         except mysql.connector.Error as err:
             print("Failed to select table: {}".format(err))
             return None
+
+    def execute_select_conditions(self, table, condition):
+        """ 查询数据库表table符合条件condition的记录，使用的是where子句的查询条件。
+
+        Args:
+            table: 要查询的数据库表名字符串。
+            condition: 一个string 查询条件，用于where子句中的条件。
+
+        Returns:
+            .符合条件的所有数据库表记录列表，其中每个记录又是一个列表，相当于是一个二维数组，如果有异常或者错误则返回None。
+        """
+        try:
+            sql = "SELECT * FROM {0} WHERE {1}".format(table, condition)
+            print(sql)
+            self.__cursor.execute(sql)
+            result = list(self.__cursor.fetchall())
+            self.__cnx.commit()
+            return result
+        except mysql.connector.Error as err:
+            print("Failed to select table: {}".format(err))
+            return None
     
     def execute_delete_condition(self, table, condition):
         """ 删除数据库表table中符合条件condition的记录，使用的是where子句的删除条件。
@@ -163,6 +184,25 @@ class MysqlClient(object):
         try:
             cd = "%s like '%s'" % (condition[0], condition[1])
             sql = "DELETE FROM {0} WHERE {1}".format(table, cd)
+            self.__cursor.execute(sql)
+            self.__cnx.commit()
+            return True
+        except mysql.connector.Error as err:
+            print("Failed to delete record: {}".format(err))
+            return False
+
+    def execute_delete_conditions(self, table, condition):
+        """ 删除数据库表table中符合条件condition的记录，使用的是where子句的删除条件。
+
+        Args:
+            table: 要删除记录的数据库表名字符串。
+            condition: 一个string查询条件，用于where子句中的条件。
+
+        Returns:
+            .删除记录成功返回True，删除有异常或者出错返回False。
+        """
+        try:
+            sql = "DELETE FROM {0} WHERE {1}".format(table, condition)
             self.__cursor.execute(sql)
             self.__cnx.commit()
             return True

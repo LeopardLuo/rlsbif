@@ -145,7 +145,7 @@ class TestMyFeature(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert '保存特征成功' in rsp_content['message']
+                assert '采集成功' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
                 table = 'mem_features'
@@ -170,9 +170,9 @@ class TestMyFeature(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-124-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_124002_token_wrong(self, token, result):
@@ -200,7 +200,7 @@ class TestMyFeature(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -305,11 +305,11 @@ class TestMyFeature(object):
     @allure.story("face_photo支持的图片类型")
     @allure.testcase("FT-HTJK-115-004")
     @pytest.mark.parametrize("face_photo, result",
-                             [("face2.png", {"code": 1, "msg": "认证通过"}),
-                              ("face2.jpg", {"code": 1, "msg": "认证通过"}),
-                              ("face2.jpeg", {"code": 1, "msg": "认证通过"}),
-                              ("face2.tif", {"code": 1, "msg": "认证通过"}),
-                              ("face2.bmp", {"code": 1, "msg": "认证通过"}), ],
+                             [("face2.png", {"code": 1, "msg": "采集成功"}),
+                              ("face2.jpg", {"code": 1, "msg": "采集成功"}),
+                              ("face2.jpeg", {"code": 1, "msg": "采集成功"}),
+                              ("face2.tif", {"code": 1, "msg": "采集成功"}),
+                              ("face2.bmp", {"code": 1, "msg": "采集成功"}), ],
                              ids=["face_photo(png)", "face_photo(jpg)", "face_photo(jpeg)",
                                   "face_photo(tif)", "face_photo(bmp)"])
     def test_124004_face_photo_type_correct(self, face_photo, result):
@@ -350,7 +350,7 @@ class TestMyFeature(object):
                     assert rsp_content
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -372,13 +372,14 @@ class TestMyFeature(object):
     @allure.story("face_photo不支持的文件类型")
     @allure.testcase("FT-HTJK-124-005")
     @pytest.mark.parametrize("face_photo, result",
-                             [("face2.gif", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("fore1.PNG", {"code": 0, "msg": "认证不通过"}), ],
+                             [("face2.gif", {"code": 201412, "msg": "照片不合格"}),
+                              ("case.xlsx", {"code": 201412, "msg": "照片不合格"}),
+                              ("temp.txt", {"code": 201412, "msg": "照片不合格"}),
+                              ("hb.mp4", {"code": 201412, "msg": "照片不合格"}),
+                              ("fore1.PNG", {"code": 201412, "msg": "照片不合格[提取特征失败"}),
+                              ("dog5.jpg", {"code": 201412, "msg": "照片不合格[图片里没有人脸]"}), ],
                              ids=["face_photo(gif)", "face_photo(xlsx)", "face_photo(txt)",
-                                  "face_photo(mp4)", "face_photo(other)"])
+                                  "face_photo(mp4)", "face_photo(other)", "face_photo(dog)"])
     def test_124005_face_photo_type_wrong(self, face_photo, result):
         """ Test wrong face_photo image type values (gif/xlsx/txt/mp4/other）(FT-HTJK-124-005).
         :param face_photo: face_photo parameter value.
@@ -439,8 +440,8 @@ class TestMyFeature(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-124-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "认证通过"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "认证通过"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "采集成功"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "采集成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_124006_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-124-006).
@@ -481,7 +482,7 @@ class TestMyFeature(object):
                     assert rsp_content
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -564,7 +565,7 @@ class TestMyFeature(object):
                     assert rsp_content
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -610,17 +611,17 @@ class TestMyFeature(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -671,11 +672,11 @@ class TestMyFeature(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content['message']
+                assert rsp_content["code"] == 201100
+                assert '用户不存在' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
-                table = 'mem_member_identity'
+                table = 'mem_features'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
@@ -726,7 +727,7 @@ class TestMyFeature(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'face_photo不能为空' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
@@ -781,7 +782,7 @@ class TestMyFeature(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):

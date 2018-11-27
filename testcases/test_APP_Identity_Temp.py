@@ -171,7 +171,6 @@ class TestIdentityTemp(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                print(rsp.text)
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
@@ -179,19 +178,20 @@ class TestIdentityTemp(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert '关联成功' in rsp_content['message']
+                assert not rsp_content['message']
+                assert rsp_content['result']['feature_id']
 
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 1
-                assert select_result[0][2] == params['features_name']
+            # with allure.step("teststep6: query database records"):
+            #     table = 'mem_member_identity_other'
+            #     condition = ("member_id", self.member_id)
+            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            #     self.logger.info("")
+            #     self.logger.info("table: {0}, condition: {1}".format(table, condition))
+            #     select_result = self.mysql.execute_select_condition(table, condition)
+            #     allure.attach("query result", str(select_result))
+            #     self.logger.info("query result: {0}".format(select_result))
+            #     assert len(select_result) == 1
+            #     assert select_result[0][2] == params['features_name']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -228,26 +228,14 @@ class TestIdentityTemp(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                print(rsp.text)
                 assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 201401
+                assert '请先完成本人的信息采集' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -261,9 +249,9 @@ class TestIdentityTemp(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-125-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_125003_token_wrong(self, token, result):
@@ -299,7 +287,7 @@ class TestIdentityTemp(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -307,17 +295,6 @@ class TestIdentityTemp(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -331,15 +308,16 @@ class TestIdentityTemp(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-125-004")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 400, "code": 0, "msg": ""}),
-                              ('中', {"status": 400, "code": 0, "msg": ""}),
-                              ('*', {"status": 400, "code": 0, "msg": ""}),
-                              ('1中', {"status": 400, "code": 0, "msg": ""}),
-                              ('1*', {"status": 400, "code": 0, "msg": ""}),
-                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
+                             [('1' * 256, {"status": 200, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              ('中', {"status": 200, "code": 0, "msg": ""}),
+                              ('*', {"status": 200, "code": 0, "msg": ""}),
+                              ('1中', {"status": 200, "code": 0, "msg": ""}),
+                              ('1*', {"status": 200, "code": 0, "msg": ""}),
+                              (' ', {"status": 200, "code": 0, "msg": ""}),
+                              ('', {"status": 200, "code": 0, "msg": ""}),
                               (0, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
+                              (9223372036854775808, {"status": 200, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
@@ -390,17 +368,6 @@ class TestIdentityTemp(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -414,10 +381,10 @@ class TestIdentityTemp(object):
     @allure.story("正确feature_name值")
     @allure.testcase("FT-HTJK-125-005")
     @pytest.mark.parametrize("feature_name, result",
-                             [('1', {"code": 1, "msg": "关联成功"}), ('1' * 100, {"code": 1, "msg": "关联成功"}),
-                              ('abcd', {"code": 1, "msg": "关联成功"}), ('中中中中', {"code": 1, "msg": "关联成功"}),
-                              ('(*.)', {"code": 1, "msg": "关联成功"}), ('1a*中', {"code": 1, "msg": "关联成功"}),
-                              (1.123, {"code": 1, "msg": "关联成功"})],
+                             [('1', {"code": 1, "msg": ""}), ('1' * 50, {"code": 1, "msg": ""}),
+                              ('abcd', {"code": 1, "msg": ""}), ('中中中中', {"code": 1, "msg": ""}),
+                              ('(*.)', {"code": 1, "msg": ""}), ('1a*中', {"code": 1, "msg": ""}),
+                              (1.123, {"code": 1, "msg": ""})],
                              ids=["feature_name(最小长度值)", "feature_name(最大长度值)", "feature_name(字母)",
                                   "feature_name(中文)", "feature_name(特殊字符)", "feature_name(数字字母中文特殊字符)",
                                   "feature_name(小数)", ])
@@ -462,22 +429,9 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 1
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert rsp_content['result']['feature_id']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -491,8 +445,8 @@ class TestIdentityTemp(object):
     @allure.story("错误feature_name值")
     @allure.testcase("FT-HTJK-125-006")
     @pytest.mark.parametrize("feature_name, result",
-                             [('1' * 101, {"code": 0, "msg": ""}),
-                              ('     ', {"code": 0, "msg": ""}), ('', {"code": 0, "msg": ""})],
+                             [('1' * 101, {"code": 201903, "msg": "采集失败"}),
+                              ('     ', {"code": 201903, "msg": "采集失败"}), ('', {"code": 201903, "msg": "采集失败"})],
                              ids=["feature_name(超长值)", "feature_name(空格)", "feature_name(空)"])
     def test_125006_feature_name_wrong(self, feature_name, result):
         """ Test wrong feature_name values (超长值、空格、空）(FT-HTJK-125-006).
@@ -540,17 +494,6 @@ class TestIdentityTemp(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -564,11 +507,11 @@ class TestIdentityTemp(object):
     @allure.story("temp_photo支持的图片类型")
     @allure.testcase("FT-HTJK-125-007")
     @pytest.mark.parametrize("temp_photo, result",
-                             [("relate_face.png", {"code": 1, "msg": "关联成功"}),
-                              ("relate_face.jpg", {"code": 1, "msg": "关联成功"}),
-                              ("relate_face.jpeg", {"code": 1, "msg": "关联成功"}),
-                              ("relate_face.tif", {"code": 1, "msg": "关联成功"}),
-                              ("relate_face.bmp", {"code": 1, "msg": "关联成功"}), ],
+                             [("relate_face.png", {"code": 1, "msg": ""}),
+                              ("relate_face.jpg", {"code": 1, "msg": ""}),
+                              ("relate_face.jpeg", {"code": 1, "msg": ""}),
+                              ("relate_face.tif", {"code": 1, "msg": ""}),
+                              ("relate_face.bmp", {"code": 1, "msg": ""}), ],
                              ids=["temp_photo(png)", "temp_photo(jpg)", "temp_photo(jpeg)",
                                   "temp_photo(tif)", "temp_photo(bmp)"])
     def test_125007_temp_photo_type_correct(self, temp_photo, result):
@@ -612,22 +555,9 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content['message']
-                else:
-                    assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 1
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert rsp_content['result']['feature_id']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -641,11 +571,11 @@ class TestIdentityTemp(object):
     @allure.story("temp_photo不支持的文件类型")
     @allure.testcase("FT-HTJK-125-008")
     @pytest.mark.parametrize("temp_photo, result",
-                             [("relate_face.gif", {"code": 0, "msg": "不合格"}),
-                              ("case.xlsx", {"code": 0, "msg": "不合格"}),
-                              ("temp.txt", {"code": 0, "msg": "不合格"}),
-                              ("hb.mp4", {"code": 0, "msg": "不合格"}),
-                              ("fore1.PNG", {"code": 0, "msg": "不通过"}), ],
+                             [("relate_face.gif", {"code": 201412, "msg": "照片不合格"}),
+                              ("case.xlsx", {"code": 201412, "msg": "照片不合格"}),
+                              ("temp.txt", {"code": 201412, "msg": "照片不合格"}),
+                              ("hb.mp4", {"code": 201412, "msg": "照片不合格"}),
+                              ("fore1.PNG", {"code": 201412, "msg": "照片不合格"}), ],
                              ids=["temp_photo(gif)", "temp_photo(xlsx)", "temp_photo(txt)",
                                   "temp_photo(mp4)", "temp_photo(other)"])
     def test_125008_temp_photo_type_wrong(self, temp_photo, result):
@@ -694,17 +624,6 @@ class TestIdentityTemp(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -754,19 +673,8 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -780,8 +688,8 @@ class TestIdentityTemp(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-125-010")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "关联成功"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "关联成功"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": ""}),
+                              (get_timestamp() + 300, {"code": 1, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_125010_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-125-010).
@@ -829,17 +737,6 @@ class TestIdentityTemp(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -857,17 +754,17 @@ class TestIdentityTemp(object):
                               (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (0, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('1a', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('1中', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('1*', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (' ', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('', {"status": 400, "code": 0, "msg": "is invalid"})],
+                              (-9223372036854775809, {"status": 400, "code": 0, "msg": "is not valid "}),
+                              (9223372036854775808, {"status": 400, "code": 0, "msg": "is not valid "}),
+                              (1.0, {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('a', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('中', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('*', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('1a', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('1中', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('1*', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              (' ', {"status": 400, "code": 0, "msg": "is not valid "}),
+                              ('', {"status": 400, "code": 0, "msg": "is not valid "})],
                              ids=["timestamp(最小值)", "timestamp(最大值)", "timestamp(0)", "timestamp(-1)",
                                   "timestamp(超小值)", "timestamp(超大值)", "timestamp(小数)",
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
@@ -909,7 +806,7 @@ class TestIdentityTemp(object):
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("Actual response content：", str(rsp.text))
                 self.logger.info("Actual response content：{0}".format(rsp.text))
-                assert rsp.status_code == 200
+                assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -919,18 +816,7 @@ class TestIdentityTemp(object):
                     assert rsp_content["code"] == result['code']
                     assert result['msg'] in rsp_content['message']
                 else:
-                    assert rsp_content
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                    assert result['msg'] in rsp_content
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -973,25 +859,14 @@ class TestIdentityTemp(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1040,19 +915,8 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 201401
+                assert '请先完成本人的信息采集' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1101,19 +965,8 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 201903
+                assert '采集失败' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1164,17 +1017,6 @@ class TestIdentityTemp(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert '失败' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1223,19 +1065,8 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '失败' in rsp_content['message']
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_identity_other'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 101000
+                assert 'timestamp' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

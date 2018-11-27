@@ -128,8 +128,8 @@ class TestGetWXAcount(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert '未关联任何第三方帐户' in rsp_content['message']
-                assert not rsp_content['result']
+                assert not rsp_content['message']
+                assert not rsp_content['result']['data']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -143,9 +143,9 @@ class TestGetWXAcount(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-114-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_114002_token_wrong(self, token, result):
@@ -174,7 +174,7 @@ class TestGetWXAcount(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -202,7 +202,7 @@ class TestGetWXAcount(object):
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -258,8 +258,8 @@ class TestGetWXAcount(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-114-004")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "未关联任何第三方帐户"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "未关联任何第三方帐户"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": ""}),
+                              (get_timestamp() + 300, {"code": 1, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_114004_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-114-004).
@@ -404,13 +404,13 @@ class TestGetWXAcount(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -453,7 +453,7 @@ class TestGetWXAcount(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert '参数非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -496,7 +496,7 @@ class TestGetWXAcount(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert '不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -510,4 +510,4 @@ class TestGetWXAcount(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_WX_GetAccount.py'])
-    pytest.main(['-s', 'test_APP_WX_GetAccount.py::TestGetWXAcount::test_114001_get_acount_correct'])
+    pytest.main(['-s', 'test_APP_WX_GetAccount.py::TestGetWXAcount::test_114008_no_timestamp'])

@@ -146,9 +146,9 @@ class TestModifySex(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-108-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_108002_token_wrong(self, token, result):
@@ -175,7 +175,7 @@ class TestModifySex(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -322,10 +322,10 @@ class TestModifySex(object):
     @allure.story("错误sex值")
     @allure.testcase("FT-HTJK-108-005")
     @pytest.mark.parametrize("sex, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
-                              (0, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
-                              (3, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
-                              (4, {"status": 200, "code": 0, "msg": "修改性别只能是1-男，2-女"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": "修改性别只能是1-男，2-女"}),
+                              (0, {"status": 200, "code": 101000, "msg": "修改性别只能是1-男，2-女"}),
+                              (3, {"status": 200, "code": 101000, "msg": "修改性别只能是1-男，2-女"}),
+                              (4, {"status": 200, "code": 101000, "msg": "修改性别只能是1-男，2-女"}),
                               (-2147483649, {"status": 400, "code": 0, "msg": ""}),
                               (2147483648, {"status": 400, "code": 0, "msg": ""}), (1.0, {"status": 400, "code": 0, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}), ('中', {"status": 400, "code": 0, "msg": ""}),
@@ -389,8 +389,8 @@ class TestModifySex(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-108-006")
     @pytest.mark.parametrize("sex, timestamp, result",
-                             [(1, get_timestamp() - 10000, {"code": 1, "msg": "修改性别成功"}),
-                              (2, get_timestamp() + 1000, {"code": 1, "msg": "修改性别成功"})],
+                             [(1, get_timestamp() - 300, {"code": 1, "msg": "修改性别成功"}),
+                              (2, get_timestamp() + 300, {"code": 1, "msg": "修改性别成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_108006_timestamp_correct(self, sex, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-108-006).
@@ -536,13 +536,13 @@ class TestModifySex(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -590,8 +590,8 @@ class TestModifySex(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '' in rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert 'member_id值非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -636,8 +636,8 @@ class TestModifySex(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert '修改性别只能是1-男，2-女' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -682,7 +682,7 @@ class TestModifySex(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -701,4 +701,4 @@ class TestModifySex(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_Sex.py'])
-    pytest.main(['-s', 'test_APP_Modify_Sex.py::TestModifySex::test_108001_modify_sex_correct'])
+    pytest.main(['-s', 'test_APP_Modify_Sex.py::TestModifySex::test_108011_no_timestamp'])

@@ -138,8 +138,8 @@ class TestWXLogin(object):
     @allure.story("错误client_type值")
     @allure.testcase("FT-HTJK-104-003")
     @pytest.mark.parametrize("client_type, result",
-                             [(-1, {"status": 200, "msg": "client_type值非法", "code": 0}),
-                              (5, {"status": 200, "msg": "client_type值非法", "code": 0}),
+                             [(-1, {"status": 200, "msg": "client_type值非法", "code": 101000}),
+                              (15, {"status": 200, "msg": "client_type值非法", "code": 101000}),
                               (-2147483649, {"status": 400, "msg": "", "code": 0}),
                               (2147483648, {"status": 400, "msg": "", "code": 0}),
                               (1.0, {"status": 400, "msg": "", "code": 0}),
@@ -204,9 +204,9 @@ class TestWXLogin(object):
     @allure.story("错误client_version值")
     @allure.testcase("FT-HTJK-104-005")
     @pytest.mark.parametrize("client_version, result",
-                             [('1' * 1001, {"msg": "", "code": 0}),
-                              (' ', {"msg": "client_version不能为空", "code": 0}),
-                              ('', {"msg": "client_version不能为空", "code": 0})],
+                             [('1' * 1001, {"msg": "", "code": 101000}),
+                              (' ', {"msg": "client_version不能为空", "code": 101000}),
+                              ('', {"msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)", "client_version(空格)", "client_version(空)"])
     def test_104005_clientversion_wrong(self, client_version, result):
         """ Test wrong client_type values (超长值、空格、空）(FT-HTJK-104-005).
@@ -257,8 +257,8 @@ class TestWXLogin(object):
     @allure.story("错误device_token值")
     @allure.testcase("FT-HTJK-104-007")
     @pytest.mark.parametrize("device_token, result",
-                             [('1' * 256, {"code": 0, "msg": ""}),
-                              (' ', {"code": 0, "msg": "不能为空"}), ('', {"code": 0, "msg": "不能为空"})],
+                             [('1' * 256, {"code": 101000, "msg": "device_token值非法"}),
+                              (' ', {"code": 101000, "msg": "不能为空"}), ('', {"code": 101000, "msg": "不能为空"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_104007_devicetoken_wrong(self, device_token, result):
         """ Test wrong device_token values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-104-007).
@@ -309,11 +309,11 @@ class TestWXLogin(object):
     @allure.story("错误imei值")
     @allure.testcase("FT-HTJK-104-009")
     @pytest.mark.parametrize("imei, result",
-                             [('1' * 18, {"code": 0, "msg": "长度"}), (12345678901234.0, {"code": 0, "msg": ""}),
-                              ('a' * 15, {"code": 0, "msg": ""}), ('中' * 15, {"code": 0, "msg": ""}),
-                              ('*' * 15, {"code": 0, "msg": ""}), ('1a' * 8, {"code": 0, "msg": ""}),
-                              ('1中' * 8, {"code": 0, "msg": ""}), ('1*' * 8, {"code": 0, "msg": ""}),
-                              (' ' * 15, {"code": 0, "msg": "长度"}), ('', {"code": 0, "msg": "长度"})],
+                             [('1' * 18, {"code": 201103, "msg": "获取授权失败"}), (12345678901234.0, {"code": 201103, "msg": "获取授权失败"}),
+                              ('a' * 15, {"code": 201103, "msg": "获取授权失败"}), ('中' * 15, {"code": 201103, "msg": "获取授权失败"}),
+                              ('*' * 15, {"code": 201103, "msg": "获取授权失败"}), ('1a' * 8, {"code": 201103, "msg": "获取授权失败"}),
+                              ('1中' * 8, {"code": 201103, "msg": "获取授权失败"}), ('1*' * 8, {"code": 201103, "msg": "获取授权失败"}),
+                              (' ' * 15, {"code": 101000, "msg": "imei值非法"}), ('', {"code": 101000, "msg": "imei值非法"})],
                              ids=["imei(超长值)", "imei(小数)", "imei(字母)", "imei(中文)",
                                   "imei(特殊字符)", "imei(数字字母)", "imei(数字中文)",
                                   "imei(数字特殊字符)", "imei(空格)", "imei(空)"])
@@ -366,11 +366,11 @@ class TestWXLogin(object):
     @allure.story("错误code值")
     @allure.testcase("FT-HTJK-104-010")
     @pytest.mark.parametrize("code, result",
-                             [('1' * 256, {"code": 0, "msg": "验证码不正确"}), (1.0, {"code": 0, "msg": "验证码不正确"}),
-                              ('a', {"code": 0, "msg": "验证码不正确"}), ('中', {"code": 0, "msg": "验证码不正确"}),
-                              ('*', {"code": 0, "msg": "验证码不正确"}), ('1a', {"code": 0, "msg": "验证码不正确"}),
-                              ('1中', {"code": 0, "msg": "验证码不正确"}), ('1*', {"code": 0, "msg": "验证码不正确"}),
-                              (' ', {"code": 0, "msg": "验证码不正确"}), ('', {"code": 0, "msg": "验证码不正确"})],
+                             [('1' * 256, {"code": 201103, "msg": "获取授权失败"}), (1.0, {"code": 201103, "msg": "获取授权失败"}),
+                              ('a', {"code": 201103, "msg": "获取授权失败"}), ('中', {"code": 201103, "msg": "获取授权失败"}),
+                              ('*', {"code": 201103, "msg": "获取授权失败"}), ('1a', {"code": 201103, "msg": "获取授权失败"}),
+                              ('1中', {"code": 201103, "msg": "获取授权失败"}), ('1*', {"code": 201103, "msg": "获取授权失败"}),
+                              (' ', {"code": 101000, "msg": "code值非法"}), ('', {"code": 101000, "msg": "code值非法"})],
                              ids=["code(超长值)", "code(小数)", "code(字母)", "code(中文)",
                                   "code(特殊字符)", "code(数字字母)", "code(数字中文)",
                                   "code(数字特殊字符)", "code(空格)", "code(空)"])
@@ -521,8 +521,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 201103
+                    assert '获取授权失败' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -566,8 +566,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 101000
+                    assert 'client_version不能为空' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -611,8 +611,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 101000
+                    assert '不能为空' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -656,8 +656,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 101000
+                    assert 'imei值非法' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -701,8 +701,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 101000
+                    assert 'code值非法' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -746,8 +746,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 101000
+                    assert 'timestamp不能为空' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -762,4 +762,4 @@ class TestWXLogin(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_LoginWX.py'])
-    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104003_clienttype_wrong'])
+    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104018_no_timestamp'])

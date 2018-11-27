@@ -110,26 +110,30 @@ class TestMixScenario(object):
                 token = register_result['token']
                 member_id = register_result['user_info']['member_id']
 
-            with allure.step("teststep2: identity user."):
-                headers = {"authorization": token}
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
                                                 get_timestamp(), self.logger)
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep3: identity relative."):
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+            with allure.step("teststep4: identity relative."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep4: get business token."):
-                business_result = h5_get_business_token(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("business token", str(business_result))
-                self.logger.info("business token: {}".format(business_result))
-                business_token = business_result['business_token']
 
             with allure.step("teststep5: get business system id and code"):
                 table = 'bus_system'
@@ -159,8 +163,7 @@ class TestMixScenario(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep7: get features id by user info."):
-                user_info = bs_get_user_info(self.httpclient, system_id, member_id, business_token,
-                                             get_timestamp(), self.logger)
+                user_info = inner_auth(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
                 features_id = ''
@@ -176,9 +179,10 @@ class TestMixScenario(object):
                 start_time = int(time.time())
 
                 with allure.step("teststep9: create service orders"):
-                    order_result = h5_create_service_order(self.httpclient, system_id,
-                        str(random.randint(1000, 100000)), member_id, system_code, features_id, devices_ids, 3,
-                        get_timestamp(), 9999999999, 1, 'testunit', 'dept1', get_timestamp(), self.logger)
+                    order_result = inner_create_service_order(self.httpclient, self.system_id,
+                          str(random.randint(1000, 100000)), self.member_id, self.features_id, self.devices_ids, 3,
+                          get_timestamp(), 9999999999, 1, random.randint(1000, 100000), 'testunit',
+                          'dept1', get_timestamp(), self.logger)
                     allure.attach("create order result", str(order_result))
                     self.logger.info("create order result: {0}".format(order_result))
                     service_order_id = order_result['service_order_id']
@@ -302,26 +306,30 @@ class TestMixScenario(object):
                 token = register_result['token']
                 member_id = register_result['user_info']['member_id']
 
-            with allure.step("teststep2: identity user."):
-                headers = {"authorization": token}
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
                                                 get_timestamp(), self.logger)
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep3: identity relative."):
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+            with allure.step("teststep4: identity relative."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep4: get business token."):
-                business_result = h5_get_business_token(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("business token", str(business_result))
-                self.logger.info("business token: {}".format(business_result))
-                business_token = business_result['business_token']
 
             with allure.step("teststep5: get business system id and code"):
                 table = 'bus_system'
@@ -351,8 +359,7 @@ class TestMixScenario(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep7: get features id by user info."):
-                user_info = bs_get_user_info(self.httpclient, system_id, member_id, business_token,
-                                             get_timestamp(), self.logger)
+                user_info = inner_auth(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
                 features_id = ''
@@ -368,11 +375,12 @@ class TestMixScenario(object):
                 start_time = int(time.time())
 
                 with allure.step("teststep9: create service orders"):
-                    order_result = h5_create_service_order(self.httpclient, system_id,
-                                                           str(random.randint(1000, 100000)), member_id, system_code,
-                                                           features_id, devices_ids, 3,
-                                                           get_timestamp(), 9999999999, 10, 'testunit', 'dept1',
-                                                           get_timestamp(), self.logger)
+                    order_result = inner_create_service_order(self.httpclient, self.system_id,
+                                                              str(random.randint(1000, 100000)), self.member_id,
+                                                              self.features_id, self.devices_ids, 3,
+                                                              get_timestamp(), 9999999999, 10,
+                                                              random.randint(1000, 100000), 'testunit',
+                                                              'dept1', get_timestamp(), self.logger)
                     allure.attach("create order result", str(order_result))
                     self.logger.info("create order result: {0}".format(order_result))
                     service_order_id = order_result['service_order_id']
@@ -500,26 +508,30 @@ class TestMixScenario(object):
                 token = register_result['token']
                 member_id = register_result['user_info']['member_id']
 
-            with allure.step("teststep2: identity user."):
-                headers = {"authorization": token}
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
                                                 get_timestamp(), self.logger)
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep3: identity relative."):
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+            with allure.step("teststep4: identity relative."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep4: get business token."):
-                business_result = h5_get_business_token(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("business token", str(business_result))
-                self.logger.info("business token: {}".format(business_result))
-                business_token = business_result['business_token']
 
             with allure.step("teststep5: get business system id and code"):
                 table = 'bus_system'
@@ -549,8 +561,7 @@ class TestMixScenario(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep7: get features id by user info."):
-                user_info = bs_get_user_info(self.httpclient, system_id, member_id, business_token,
-                                             get_timestamp(), self.logger)
+                user_info = inner_auth(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
                 features_id = ''
@@ -566,11 +577,12 @@ class TestMixScenario(object):
                 start_time = int(time.time())
 
                 with allure.step("teststep9: create service orders"):
-                    order_result = h5_create_service_order(self.httpclient, system_id,
-                                                           str(random.randint(1000, 100000)), member_id,
-                                                           system_code, features_id, devices_ids, 3,
-                                                           get_timestamp(), 9999999999, 1, 'testunit',
-                                                           'dept1', get_timestamp(), self.logger)
+                    order_result = inner_create_service_order(self.httpclient, self.system_id,
+                                                              str(random.randint(1000, 100000)), self.member_id,
+                                                              self.features_id, self.devices_ids, 3,
+                                                              get_timestamp(), 9999999999, 1,
+                                                              random.randint(1000, 100000), 'testunit',
+                                                              'dept1', get_timestamp(), self.logger)
                     allure.attach("create order result", str(order_result))
                     self.logger.info("create order result: {0}".format(order_result))
                     service_order_id = order_result['service_order_id']
@@ -691,26 +703,30 @@ class TestMixScenario(object):
                 token = register_result['token']
                 member_id = register_result['user_info']['member_id']
 
-            with allure.step("teststep2: identity user."):
-                headers = {"authorization": token}
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg', 'face2.jpg',
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
                                                 get_timestamp(), self.logger)
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep3: identity relative."):
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'relate_com.jpg',
+            with allure.step("teststep4: identity relative."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep4: get business token."):
-                business_result = h5_get_business_token(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("business token", str(business_result))
-                self.logger.info("business token: {}".format(business_result))
-                business_token = business_result['business_token']
 
             with allure.step("teststep5: get business system id and code"):
                 table = 'bus_system'
@@ -740,8 +756,7 @@ class TestMixScenario(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep7: get features id by user info."):
-                user_info = bs_get_user_info(self.httpclient, system_id, member_id, business_token,
-                                             get_timestamp(), self.logger)
+                user_info = inner_auth(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
                 features_id = ''
@@ -757,11 +772,12 @@ class TestMixScenario(object):
                 start_time = int(time.time())
 
                 with allure.step("teststep9: create service orders"):
-                    order_result = h5_create_service_order(self.httpclient, system_id,
-                                                           str(random.randint(1000, 100000)), member_id,
-                                                           system_code, features_id, devices_ids, 3,
-                                                           get_timestamp(), 9999999999, 10, 'testunit',
-                                                           'dept1', get_timestamp(), self.logger)
+                    order_result = inner_create_service_order(self.httpclient, self.system_id,
+                                                              str(random.randint(1000, 100000)), self.member_id,
+                                                              self.features_id, self.devices_ids, 3,
+                                                              get_timestamp(), 9999999999, 10,
+                                                              random.randint(1000, 100000), 'testunit',
+                                                              'dept1', get_timestamp(), self.logger)
                     allure.attach("create order result", str(order_result))
                     self.logger.info("create order result: {0}".format(order_result))
                     service_order_id = order_result['service_order_id']

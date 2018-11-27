@@ -11,7 +11,7 @@ from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
-
+@pytest.mark.skip(reason="discarded")
 @allure.feature("APP-获取应用列表")
 class TestGetApplicationList(object):
 
@@ -1006,5 +1006,5 @@ class TestGetApplicationList(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Get_ApplicationList.py'])
-    pytest.main(['-s', 'test_APP_Get_ApplicationList.py::TestGetApplicationList::test_121003_get_multidata_without_login'])
+    pytest.main(['-s', 'test_APP_Get_ApplicationList.py'])
+    # pytest.main(['-s', 'test_APP_Get_ApplicationList.py::TestGetApplicationList::test_121003_get_multidata_without_login'])

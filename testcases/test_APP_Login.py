@@ -68,9 +68,9 @@ class TestLogin(object):
                 allure.attach("register result", str(register_result))
                 cls.logger.info("register result: {0}".format(register_result))
                 token = register_result['token']
-                member_id = register_result['user_info']['member_id']
+                cls.member_id = register_result['user_info']['member_id']
                 cls.httpclient.update_header({"authorization": token})
-                logout_result = logout(cls.httpclient, member_id, get_timestamp(), cls.logger)
+                logout_result = logout(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
                 cls.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
                 cls.logger.info("logout result: {0}".format(logout_result))
@@ -99,9 +99,10 @@ class TestLogin(object):
         self.logger.info(method.__name__)
         with allure.step("delete mem_member_login"):
             table = 'mem_member_login'
+            condition = 'member_id = "{}"'.format(self.member_id)
             allure.attach("table name and condition", "{0}".format(table))
             self.logger.info("delele records of table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_all(table)
+            delete_result = self.mysql.execute_delete_conditions(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
         self.logger.info("=== End setup method ===")
@@ -160,6 +161,7 @@ class TestLogin(object):
                 assert rsp_content["code"] == 1
                 assert '登录成功' in rsp_content["message"]
                 assert rsp_content["result"]["token"]
+                self.member_id = rsp_content["result"]['user_info']['member_id']
 
             with allure.step("teststep6: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -170,16 +172,16 @@ class TestLogin(object):
 
             with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "1" and member_id = "{}"'.format(self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
-                assert select_result[0][1] == json['phone']
                 assert select_result[0][3] == json['device_token']
-                assert select_result[0][6] == json['imei']
+                assert select_result[0][5] == json['imei']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -252,8 +254,8 @@ class TestLogin(object):
             with allure.step("teststep8: assert the response content"):
                 allure.attach("response content：", str(rsp2_content))
                 self.logger.info("response content: {}".format(rsp2_content))
-                assert rsp2_content["code"] == 0
-                assert '用户登录异常' in rsp2_content["message"]
+                assert rsp2_content["code"] == 201106
+                assert '验证码不正确' in rsp2_content["message"]
 
             with allure.step("teststep9: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -322,6 +324,7 @@ class TestLogin(object):
                 assert rsp_content["code"] == 1
                 assert '登录成功' in rsp_content["message"]
                 assert rsp_content["result"]["token"]
+                self.member_id = rsp_content["result"]['user_info']['member_id']
 
             with allure.step("teststep6: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -332,10 +335,11 @@ class TestLogin(object):
 
             with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(client_type, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
@@ -352,7 +356,7 @@ class TestLogin(object):
     @allure.story("错误client_type值")
     @allure.testcase("FT-HTJK-103-004")
     @pytest.mark.parametrize("client_type, result",
-                             [(-1, {"status": 200, "msg": "client_type值非法", "code": 0}), (5, {"status": 200, "msg": "client_type值非法", "code": 0}),
+                             [(-1, {"status": 200, "msg": "client_type值非法", "code": 101000}), (6, {"status": 200, "msg": "client_type值非法", "code": 101000}),
                               (-2147483649, {"status": 400, "msg": "", "code": 0}), (2147483648, {"status": 400, "msg": "", "code": 0}),
                               (1.0, {"status": 400, "msg": "", "code": 0}), ('a', {"status": 400, "msg": "", "code": 0}),
                               ('中', {"status": 400, "msg": "", "code": 0}), ('*', {"status": 400, "msg": "", "code": 0}),
@@ -407,6 +411,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -419,12 +424,13 @@ class TestLogin(object):
                 else:
                     assert rsp_content
 
-            with allure.step("teststep6: query database records"):
+            with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type < "{0}" and member_id = "{1}"'.format(99, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -493,6 +499,7 @@ class TestLogin(object):
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
                 assert rsp_content["result"]["token"]
+                self.member_id = rsp_content["result"]['user_info']['member_id']
 
             with allure.step("teststep6: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -503,10 +510,11 @@ class TestLogin(object):
 
             with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
@@ -524,7 +532,7 @@ class TestLogin(object):
     @allure.testcase("FT-HTJK-103-006")
     @pytest.mark.parametrize("client_version, result",
                              [('1' * 1001, {"msg": "", "code": 0}),
-                              (' ', {"msg": "client_version不能为空", "code": 0}), ('', {"msg": "client_version不能为空", "code": 0})],
+                              (' ', {"msg": "client_version不能为空", "code": 101000}), ('', {"msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)",  "client_version(空格)", "client_version(空)"])
     def test_103006_clientversion_wrong(self, client_version, result):
         """ Test wrong client_type values (超长值、空格、空）(FT-HTJK-103-006).
@@ -569,6 +577,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -581,12 +590,13 @@ class TestLogin(object):
                 else:
                     assert rsp_content
 
-            with allure.step("teststep6: query database records"):
+            with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -658,6 +668,7 @@ class TestLogin(object):
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
                 assert rsp_content["result"]["token"]
+                self.member_id = rsp_content["result"]['user_info']['member_id']
 
             with allure.step("teststep6: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -668,10 +679,11 @@ class TestLogin(object):
 
             with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
@@ -689,7 +701,7 @@ class TestLogin(object):
     @allure.testcase("FT-HTJK-103-008")
     @pytest.mark.parametrize("device_token, result",
                              [('1' * 1001, {"code": 0, "msg": ""}),
-                              (' ', {"code": 0, "msg": "不能为空"}), ('', {"code": 0, "msg": "不能为空"})],
+                              (' ', {"code": 101000, "msg": "device_token不能为空"}), ('', {"code": 101000, "msg": "device_token不能为空"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_103008_devicetoken_wrong(self, device_token, result):
         """ Test wrong device_token values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-103-008).
@@ -734,6 +746,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -744,12 +757,13 @@ class TestLogin(object):
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
 
-            with allure.step("teststep6: query database records"):
+            with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -814,6 +828,7 @@ class TestLogin(object):
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
                 assert rsp_content["result"]["token"]
+                self.member_id = rsp_content["result"]['user_info']['member_id']
 
             with allure.step("teststep6: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -825,10 +840,11 @@ class TestLogin(object):
 
             with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
@@ -845,11 +861,11 @@ class TestLogin(object):
     @allure.story("错误imei值")
     @allure.testcase("FT-HTJK-103-010")
     @pytest.mark.parametrize("imei, result",
-                             [('1' * 18, {"code": 0, "msg": "长度"}), (12345678901234.0, {"code": 0, "msg": ""}),
-                              ('a'*15, {"code": 0, "msg": ""}), ('中'*15, {"code": 0, "msg": ""}),
-                              ('*'*15, {"code": 0, "msg": ""}), ('1a'*8, {"code": 0, "msg": ""}),
-                              ('1中'*8, {"code": 0, "msg": ""}), ('1*'*8, {"code": 0, "msg": ""}),
-                              (' '*15, {"code": 0, "msg": "长度"}), ('', {"code": 0, "msg": "长度"})],
+                             [('1' * 18, {"code": 101000, "msg": "长度"}), (12345678901234.0, {"code": 101000, "msg": ""}),
+                              ('a'*15, {"code": 101000, "msg": ""}), ('中'*15, {"code": 101000, "msg": ""}),
+                              ('*'*15, {"code": 101000, "msg": ""}), ('1a'*8, {"code": 101000, "msg": ""}),
+                              ('1中'*8, {"code": 101000, "msg": ""}), ('1*'*8, {"code": 101000, "msg": ""}),
+                              (' '*15, {"code": 101000, "msg": "长度"}), ('', {"code": 101000, "msg": "长度"})],
                              ids=["imei(超长值)", "imei(小数)", "imei(字母)", "imei(中文)",
                                   "imei(特殊字符)", "imei(数字字母)", "imei(数字中文)",
                                   "imei(数字特殊字符)", "imei(空格)", "imei(空)"])
@@ -896,6 +912,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -908,10 +925,11 @@ class TestLogin(object):
 
             with allure.step("teststep6: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -966,18 +984,8 @@ class TestLogin(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 201109
+                assert '当前手机号码与验证手机号不符' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1031,16 +1039,6 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 0
                 assert rsp_content["Message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1092,18 +1090,8 @@ class TestLogin(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 201106
+                assert '验证码不正确' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1117,20 +1105,20 @@ class TestLogin(object):
     @allure.story("错误phone值")
     @allure.testcase("FT-HTJK-103-014")
     @pytest.mark.parametrize("phone, result",
-                             [("1", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("135123456789", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("0", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("-1", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("135112210.0", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("1" * 256, {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("a", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("中", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("*", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("1351122105a", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("1351122105中", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("1351122105*", {"code": 0, "msg": "手机号码格式不正确"}),
-                              (" ", {"code": 0, "msg": "手机号码格式不正确"}),
-                              ("", {"code": 0, "msg": "手机号码格式不正确"})],
+                             [("1", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("135123456789", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("0", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("-1", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("135112210.0", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1" * 256, {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("a", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("中", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("*", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1351122105a", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1351122105中", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1351122105*", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              (" ", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("", {"code": 101000, "msg": "手机号码格式不正确"})],
                              ids=["phone(1)", "phone(12位)", "phone(0)", "phone(-1)", "phone(小数)", "phone(超长值)",
                                   "phone(字母)", "phone(中文)", "phone(特殊字符)", "phone(数字字母)", "phone(数字中文)",
                                   "phone(数字特殊字符)", "phone(空格)", "phone(空)"])
@@ -1177,6 +1165,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -1189,10 +1178,11 @@ class TestLogin(object):
 
             with allure.step("teststep6: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -1209,11 +1199,11 @@ class TestLogin(object):
     @allure.story("错误sms_code值")
     @allure.testcase("FT-HTJK-103-015")
     @pytest.mark.parametrize("sms_code, result",
-                             [('1' * 256, {"code": 0, "msg": "验证码不正确"}), (1.0, {"code": 0, "msg": "验证码不正确"}),
-                              ('a', {"code": 0, "msg": "验证码不正确"}), ('中', {"code": 0, "msg": "验证码不正确"}),
-                              ('*', {"code": 0, "msg": "验证码不正确"}), ('1a', {"code": 0, "msg": "验证码不正确"}),
-                              ('1中', {"code": 0, "msg": "验证码不正确"}), ('1*', {"code": 0, "msg": "验证码不正确"}),
-                              (' ', {"code": 0, "msg": "验证码不正确"}), ('', {"code": 0, "msg": "验证码不正确"})],
+                             [('1' * 256, {"code": 201106, "msg": "验证码不正确"}), (1.0, {"code": 201106, "msg": "验证码不正确"}),
+                              ('a', {"code": 201106, "msg": "验证码不正确"}), ('中', {"code": 201106, "msg": "验证码不正确"}),
+                              ('*', {"code": 201106, "msg": "验证码不正确"}), ('1a', {"code": 201106, "msg": "验证码不正确"}),
+                              ('1中', {"code": 201106, "msg": "验证码不正确"}), ('1*', {"code": 201106, "msg": "验证码不正确"}),
+                              (' ', {"code": 201106, "msg": "验证码不正确"}), ('', {"code": 201106, "msg": "验证码不正确"})],
                              ids=["sms_code(超长值)", "sms_code(小数)", "sms_code(字母)", "sms_code(中文)",
                                   "sms_code(特殊字符)", "sms_code(数字字母)", "sms_code(数字中文)",
                                   "sms_code(数字特殊字符)", "sms_code(空格)", "sms_code(空)"])
@@ -1260,6 +1250,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -1272,10 +1263,11 @@ class TestLogin(object):
 
             with allure.step("teststep6: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -1292,11 +1284,11 @@ class TestLogin(object):
     @allure.story("错误code_token值")
     @allure.testcase("FT-HTJK-103-016")
     @pytest.mark.parametrize("code_token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('a', {"code": 0, "msg": "授权非法"}), ('中', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1a', {"code": 0, "msg": "授权非法"}),
-                              ('1中', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              (' ', {"code": 0, "msg": "不能为空"}), ('', {"code": 0, "msg": "不能为空"})],
+                             [('1' * 256, {"code": 201107, "msg": "授权非法"}), ('1.0', {"code": 201107, "msg": "授权非法"}),
+                              ('a', {"code": 201107, "msg": "授权非法"}), ('中', {"code": 201107, "msg": "授权非法"}),
+                              ('*', {"code": 201107, "msg": "授权非法"}), ('1a', {"code": 201107, "msg": "授权非法"}),
+                              ('1中', {"code": 201107, "msg": "授权非法"}), ('1*', {"code": 201107, "msg": "授权非法"}),
+                              (' ', {"code": 101000, "msg": "不能为空"}), ('', {"code": 101000, "msg": "不能为空"})],
                              ids=["code_token(超长值)", "code_token(小数)", "code_token(字母)", "code_token(中文)",
                                   "code_token(特殊字符)", "code_token(数字字母)", "code_token(数字中文)",
                                   "code_token(数字特殊字符)", "code_token(空格)", "code_token(空)"])
@@ -1343,6 +1335,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -1355,10 +1348,11 @@ class TestLogin(object):
 
             with allure.step("teststep6: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -1375,8 +1369,8 @@ class TestLogin(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-103-017")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"code": 1, "msg": "登录成功"}), (get_timestamp() + 100, {"code": 1, "msg": "登录成功"})],
-                             ids=["timestamp(最小长度值)", "timestamp(最大长度值)"])
+                             [(get_timestamp() - 300, {"code": 1, "msg": "登录成功"}), (get_timestamp() + 300, {"code": 1, "msg": "登录成功"})],
+                             ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_103017_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值) (FT-HTJK-103-017).
         :param timestamp: timestamp parameter value.
@@ -1422,6 +1416,7 @@ class TestLogin(object):
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content["message"]
                 assert rsp_content["result"]["token"]
+                self.member_id = rsp_content["result"]['user_info']['member_id']
 
             with allure.step("teststep6: user logout"):
                 self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
@@ -1432,10 +1427,11 @@ class TestLogin(object):
 
             with allure.step("teststep7: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
@@ -1453,7 +1449,7 @@ class TestLogin(object):
     @allure.testcase("FT-HTJK-103-018")
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 0, "msg": ""}), (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}), (-1, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}), (-1, {"status": 200, "code": 0, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               (1.0, {"status": 400, "code": 0, "msg": ""}), ('a', {"status": 400, "code": 0, "msg": ""}),
@@ -1510,6 +1506,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -1524,10 +1521,11 @@ class TestLogin(object):
 
             with allure.step("teststep6: query database records"):
                 table = 'mem_member_login'
+                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
                 allure.attach("table name and condition", "{0}".format(table))
                 self.logger.info("")
                 self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 0
@@ -1583,6 +1581,7 @@ class TestLogin(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
                     if rsp_content["code"] == 1:
+                        self.member_id = rsp_content["result"]['user_info']['member_id']
                         with allure.step("user logout"):
                             self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
                             logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
@@ -1590,18 +1589,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'client_type值非法' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1661,18 +1650,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'client_version' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1732,18 +1711,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
-                assert 'device_token' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 101000
+                assert 'device_token不能为空' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1803,18 +1772,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'imei' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1874,18 +1833,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
-                assert 'phone' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 101000
+                assert "'phone' 不能为空" in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1945,18 +1894,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201106
                 assert '验证码不正确' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -2016,18 +1955,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
-                assert 'code_token' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 101000
+                assert 'code_token不能为空' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -2087,18 +2016,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 0
-                assert 'timestamp' in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_all(table)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                assert rsp_content["code"] == 101000
+                assert 'timestamp不能为空' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -2111,4 +2030,4 @@ class TestLogin(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Login.py'])
-    pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103003_clienttype_correct'])
+    pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103026_no_timestamp'])

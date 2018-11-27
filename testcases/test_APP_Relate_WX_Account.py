@@ -99,9 +99,9 @@ class TestRelateWXAccount(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-113-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_113002_token_wrong(self, token, result):
@@ -128,7 +128,7 @@ class TestRelateWXAccount(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -150,12 +150,12 @@ class TestRelateWXAccount(object):
     @allure.testcase("FT-HTJK-113-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 1001, {"status": 400, "code": 0, "msg": ""}),
-                              (25647141972344832, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (0, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (1, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (-1, {"status": 200, "code": 0, "msg": "member_id值非法"}),
-                              (1.5, {"status": 200, "code": 0, "msg": "获取授权失败"}),
+                              (25647141972344832, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (0, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (9223372036854775807, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (-1, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
+                              (1.5, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
@@ -220,18 +220,18 @@ class TestRelateWXAccount(object):
     @allure.story("错误code值")
     @allure.testcase("FT-HTJK-113-004")
     @pytest.mark.parametrize("code, result",
-                             [('1' * 1001, {"status": 200, "code": 0, "msg": ""}),
-                              ('071Patg81LrZmS1rY1j811xOg81Patg7', {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
-                              (1, {"status": 200, "code": 0, "msg": ""}),
-                              (-1, {"status": 200, "code": 0, "msg": ""}),
-                              (1.5, {"status": 200, "code": 0, "msg": ""}),
-                              ('中', {"status": 200, "code": 0, "msg": ""}),
-                              ('*', {"status": 200, "code": 0, "msg": ""}),
-                              ('1中', {"status": 200, "code": 0, "msg": ""}),
-                              ('1*', {"status": 200, "code": 0, "msg": ""}),
-                              (' ', {"status": 200, "code": 0, "msg": ""}),
-                              ('', {"status": 200, "code": 0, "msg": ""})],
+                             [('1' * 1001, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              ('071Patg81LrZmS1rY1j811xOg81Patg7', {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (0, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (-1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (1.5, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              ('中', {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              ('*', {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              ('1中', {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              ('1*', {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (' ', {"status": 200, "code": 101000, "msg": "code值非法"}),
+                              ('', {"status": 200, "code": 101000, "msg": "code值非法"})],
                              ids=["code(超长值)", "code(其他值)", "code(0)", "code(1)",
                                   "code(-1)", "code(小数)", "code(中文)", "code(特殊字符)",
                                   "code(数字中文)", "code(数字特殊字符)", "code(空格)", "code(空)"])
@@ -284,8 +284,8 @@ class TestRelateWXAccount(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-113-005")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 100, {"code": 0, "msg": "获取授权失败"}),
-                              (get_timestamp() + 100, {"code": 0, "msg": "获取授权失败"})],
+                             [(get_timestamp() - 300, {"code": 201103, "msg": "获取授权失败"}),
+                              (get_timestamp() + 300, {"code": 201103, "msg": "获取授权失败"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_113005_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-113-005).
@@ -336,15 +336,15 @@ class TestRelateWXAccount(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-113-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (0, {"status": 200, "code": 0, "msg": "timestamp不能为空"}),
-                              (-1, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (get_timestamp() - 1000, {"status": 200, "code": 0, "msg": "获取授权失败"}),
-                              (get_timestamp() + 1000, {"status": 200, "code": 0, "msg": "获取授权失败"}),
+                             [(1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (9223372036854775807, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (get_timestamp() - 1000, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (get_timestamp() + 1000, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.5, {"status": 200, "code": 0, "msg": "获取授权失败"}),
+                              (1.5, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -430,14 +430,14 @@ class TestRelateWXAccount(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
+                    assert rsp_content["code"] == 201000
                     assert '未登录或登录已过期' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -482,7 +482,7 @@ class TestRelateWXAccount(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
+                    assert rsp_content["code"] == 201103
                     assert '获取授权失败' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -527,7 +527,7 @@ class TestRelateWXAccount(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
+                    assert rsp_content["code"] == 101000
                     assert 'code值非法' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -571,7 +571,7 @@ class TestRelateWXAccount(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 0
+                    assert rsp_content["code"] == 101000
                     assert 'timestamp不能为空' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -587,4 +587,4 @@ class TestRelateWXAccount(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Relate_WX_Account.py'])
-    pytest.main(['-s', 'test_APP_Relate_WX_Account.py::TestRelateWXAccount::test_113002_token_wrong'])
+    pytest.main(['-s', 'test_APP_Relate_WX_Account.py::TestRelateWXAccount::test_113010_no_timestamp'])

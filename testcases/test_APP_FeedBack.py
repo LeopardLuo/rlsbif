@@ -102,9 +102,10 @@ class TestFeedBack(object):
         self.logger.info(method.__name__)
         with allure.step("delete feedback"):
             table = 'sys_feedback'
+            condition = ("member_id", self.member_id)
             allure.attach("table name", str(table))
-            self.logger.info("delele records of table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_all(table)
+            self.logger.info("delele records of table: {0}, conditon: {1}".format(table, condition))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
         self.logger.info("=== End setup method ===")
@@ -119,7 +120,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "comment": '意见反馈', "timestamp": get_timestamp()}
+                json = {"member_id": self.member_id, "comment": '意见反馈--意见反馈', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -156,7 +157,7 @@ class TestFeedBack(object):
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
                 assert (get_timestamp() - select_result[0][5]) < 60
-                match_list = list(filter(lambda x: x[2] == '意见反馈', select_result))
+                match_list = list(filter(lambda x: x[2] == '意见反馈--意见反馈', select_result))
                 self.logger.info("match list: {}".format(match_list))
                 assert match_list
         except Exception as e:
@@ -172,9 +173,9 @@ class TestFeedBack(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-120-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_120002_token_wrong(self, token, result):
@@ -186,7 +187,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "comment": '意见反馈', "timestamp": get_timestamp()}
+                json = {"member_id": self.member_id, "comment": '意见反馈--意见反馈', "timestamp": get_timestamp()}
                 headers = {"authorization": token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -203,7 +204,7 @@ class TestFeedBack(object):
                 allure.attach("Expect response code：", '200')
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -260,7 +261,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": member_id, "comment": '意见反馈', "timestamp": get_timestamp()}
+                json = {"member_id": member_id, "comment": '意见反馈--意见反馈', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -313,14 +314,15 @@ class TestFeedBack(object):
     @allure.testcase("FT-HTJK-120-004")
     @pytest.mark.parametrize("comment, result",
                              [('成' * 500, {"code": 1, "msg": "保存反馈意见成功"}),
-                              (1.0, {"code": 1, "msg": "保存反馈意见成功"}),
-                              ('abc', {"code": 1, "msg": "保存反馈意见成功"}),
-                              ('中', {"code": 1, "msg": "保存反馈意见成功"}),
-                              ('*', {"code": 1, "msg": "保存反馈意见成功"}),
-                              ('1.中', {"code": 1, "msg": "保存反馈意见成功"}),
-                              ('1a*', {"code": 1, "msg": "保存反馈意见成功"})],
+                              (100000000.0, {"code": 1, "msg": "保存反馈意见成功"}),
+                              ('abc'*4, {"code": 1, "msg": "保存反馈意见成功"}),
+                              ('中'*10, {"code": 1, "msg": "保存反馈意见成功"}),
+                              ('*'*10, {"code": 1, "msg": "保存反馈意见成功"}),
+                              ('1.中'*10, {"code": 1, "msg": "保存反馈意见成功"}),
+                              ('1a*'*10, {"code": 1, "msg": "保存反馈意见成功"}),
+                              ('            ', {"code": 1, "msg": "保存反馈意见成功"})],
                              ids=["comment(超长值)", "comment(小数)", "comment(字母)", "comment(中文)",
-                                  "comment(特殊字符)", "comment(数字中文)", "comment(数字特殊字符)"])
+                                  "comment(特殊字符)", "comment(数字中文)", "comment(数字特殊字符)", "comment(空格)"])
     def test_120004_comment_correct(self, comment, result):
         """ Test correct comment values (最大长度值、1.0、字母、中文、特殊字符、数字中文、数字特殊字符）(FT-HTJK-120-004).
         :param comment: comment parameter value.
@@ -382,10 +384,10 @@ class TestFeedBack(object):
     @allure.story("错误comment值")
     @allure.testcase("FT-HTJK-120-005")
     @pytest.mark.parametrize("comment, result",
-                             [('成' * 501, {"code": 0, "msg": ""}),
-                              ('  ', {"code": 0, "msg": ""}),
-                              ('', {"code": 0, "msg": ""})],
-                             ids=["comment(超长值)", "comment(空格)", "comment(空)"])
+                             [('成' * 9, {"code": 101000, "msg": "必须大于或等于10个字符"}),
+                              ('成' * 501, {"code": 101000, "msg": "comment长度10-500"}),
+                              ('', {"code": 101000, "msg": "必须大于或等于10个字符"})],
+                             ids=["comment(超短值)", "comment(超长值)", "comment(空)"])
     def test_120005_comment_wrong(self, comment, result):
         """ Test wrong comment values (超长值、空格、空）(FT-HTJK-120-005).
         :param comment: comment parameter value.
@@ -447,8 +449,8 @@ class TestFeedBack(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-120-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "保存反馈意见成功"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "保存反馈意见成功"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "保存反馈意见成功"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "保存反馈意见成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_120006_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-120-006).
@@ -459,7 +461,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "comment": "保存反馈意见成功", "timestamp": timestamp}
+                json = {"member_id": self.member_id, "comment": "测试保存反馈意见成功", "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -541,7 +543,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "comment": "保存反馈意见成功", "timestamp": timestamp}
+                json = {"member_id": self.member_id, "comment": "测试保存反馈意见成功", "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -598,7 +600,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "comment": '意见反馈', "timestamp": get_timestamp()}
+                json = {"member_id": self.member_id, "comment": '测试保存反馈意见成功', "timestamp": get_timestamp()}
                 headers = {"authorization": None}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -615,13 +617,13 @@ class TestFeedBack(object):
                 allure.attach("Expect response code：", '200')
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content["message"]
 
             with allure.step("teststep5: query database records"):
@@ -652,7 +654,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"comment": '意见反馈', "timestamp": get_timestamp()}
+                json = {"comment": '测试保存反馈意见成功', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -675,8 +677,8 @@ class TestFeedBack(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert 'member_id值非法' in rsp_content["message"]
 
             with allure.step("teststep5: query database records"):
                 table = 'sys_feedback'
@@ -729,7 +731,7 @@ class TestFeedBack(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert '' in rsp_content["message"]
 
             with allure.step("teststep5: query database records"):
@@ -760,7 +762,7 @@ class TestFeedBack(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "comment": '反馈意见'}
+                json = {"member_id": self.member_id, "comment": '测试保存反馈意见成功'}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -783,8 +785,8 @@ class TestFeedBack(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '' in rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert 'timestamp不能为空' in rsp_content["message"]
 
             with allure.step("teststep5: query database records"):
                 table = 'sys_feedback'
@@ -808,4 +810,4 @@ class TestFeedBack(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_FeedBack.py'])
-    pytest.main(['-s', 'test_APP_FeedBack.py::TestFeedBack::test_120003_member_id_wrong'])
+    pytest.main(['-s', 'test_APP_FeedBack.py::TestFeedBack::test_120011_no_timestamp'])

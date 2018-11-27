@@ -241,10 +241,10 @@ class TestLogout(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-105-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 101, {"code": 0, "msg": ""}), ('1.0', {"code": 0, "msg": ""}),
-                              ('中', {"code": 0, "msg": ""}), ('*', {"code": 0, "msg": ""}),
-                              ('1中', {"code": 0, "msg": ""}), ('1*', {"code": 0, "msg": ""}),
-                              (' ', {"code": 0, "msg": ""}), ('', {"code": 0, "msg": ""})],
+                             [('1' * 101, {"code": 201001, "msg": "退出不成功"}), ('1.0', {"code": 201001, "msg": "退出不成功"}),
+                              ('中', {"code": 201001, "msg": ""}), ('*', {"code": 201001, "msg": "退出不成功"}),
+                              ('1中', {"code": 201001, "msg": ""}), ('1*', {"code": 201001, "msg": "退出不成功"}),
+                              (' ', {"code": 201001, "msg": ""}), ('', {"code": 101000, "msg": "参数非法"})],
                              ids=["token(超长值)", "token(小数)", "token(中文)",
                                   "token(特殊字符)", "token(数字中文)",
                                   "token(数字特殊字符)", "token(空格)", "token(空)"])
@@ -265,7 +265,7 @@ class TestLogout(object):
                 self.logger.info("member_id: {0}".format(member_id))
 
             with allure.step("teststep2: requests http logout post."):
-                self.httpclient.update_header({"authorization": token})
+                self.httpclient.update_header({"authorization": token.encode('utf-8')})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
@@ -277,6 +277,7 @@ class TestLogout(object):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 if rsp.status_code != 200:
+                    self.logger.info("response content: {}".format(rsp.text))
                     with allure.step("user logout"):
                         self.httpclient.update_header({"authorization": self.login_result['token']})
                         logout_result = logout(self.httpclient, json['member_id'],
@@ -344,7 +345,7 @@ class TestLogout(object):
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: logout with token empty"):
-                self.httpclient.update_header({"token": ""})
+                self.httpclient.update_header({"authorization": None})
                 json = {"member_id": member_id, "timestamp": get_timestamp()}
                 rsp = self.httpclient.post(self.URI, json=json)
                 allure.attach("request.headers", str(rsp.request.headers))
@@ -361,8 +362,8 @@ class TestLogout(object):
             with allure.step("teststep6: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert '参数非法' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -377,10 +378,10 @@ class TestLogout(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-105-005")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"code": 0, "msg": ""}), (1.0, {"code": 0, "msg": ""}),
-                              ('中', {"code": 0, "msg": ""}), ('*', {"code": 0, "msg": ""}),
-                              ('1中', {"code": 0, "msg": ""}), ('1*', {"code": 0, "msg": ""}),
-                              (' ', {"code": 0, "msg": ""}), ('', {"code": 0, "msg": ""})],
+                             [('1' * 256, {"status": 200, "code": 0, "msg": ""}), (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              ('中', {"status": 200, "code": 0, "msg": ""}), ('*', {"status": 200, "code": 0, "msg": ""}),
+                              ('1中', {"status": 200, "code": 0, "msg": ""}), ('1*', {"status": 200, "code": 0, "msg": ""}),
+                              (' ', {"status": 200, "code": 0, "msg": ""}), ('', {"status": 200, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)"])
@@ -420,7 +421,7 @@ class TestLogout(object):
                         self.httpclient.update_header({"authorization": None})
                         allure.attach("Logout result：", str(logout_result))
                         self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp.status_code == 400
+                assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -586,8 +587,8 @@ class TestLogout(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                    assert rsp_content["code"] == 0
-                    assert '' in rsp_content["message"]
+                    assert rsp_content["code"] == 101000
+                    assert '参数非法' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -651,7 +652,7 @@ class TestLogout(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                    assert rsp_content["code"] == 0
+                    assert rsp_content["code"] == 101000
                     assert '' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -716,7 +717,7 @@ class TestLogout(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                    assert rsp_content["code"] == 0
+                    assert rsp_content["code"] == 101000
                     assert '' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -732,4 +733,4 @@ class TestLogout(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Logout.py'])
-    pytest.main(['-s', 'test_APP_Logout.py::TestLogout::test_105001_logout_correct'])
+    pytest.main(['-s', 'test_APP_Logout.py::TestLogout::test_105009_no_timestamp'])

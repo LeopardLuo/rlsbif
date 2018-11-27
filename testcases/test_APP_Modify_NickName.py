@@ -147,9 +147,9 @@ class TestModifyNickName(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-107-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)",  "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_107002_token_wrong(self, token, result):
@@ -176,7 +176,7 @@ class TestModifyNickName(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -271,9 +271,9 @@ class TestModifyNickName(object):
                              [('1234', {"code": 1, "msg": "修改昵称成功"}), ('1' * 10, {"code": 1, "msg": "修改昵称成功"}),
                               ('abcd', {"code": 1, "msg": "修改昵称成功"}), ('中中中中', {"code": 1, "msg": "修改昵称成功"}),
                               ('(*.)', {"code": 1, "msg": "修改昵称成功"}), ('1a*中', {"code": 1, "msg": "修改昵称成功"}),
-                              (1.123, {"code": 1, "msg": "修改昵称成功"})],
-                             ids=["nickname(最小长度值)", "nickname(最大长度值)", "nickname(字母)",
-                                  "nickname(中文)", "nickname(特殊字符)", "nickname(数字字母中文特殊字符)","nickname(小数)", ])
+                              (1.123, {"code": 1, "msg": "修改昵称成功"}), ('     ', {"code": 1, "msg": "修改昵称成功"}),],
+                             ids=["nickname(最小长度值)", "nickname(最大长度值)", "nickname(字母)","nickname(中文)",
+                                  "nickname(特殊字符)", "nickname(数字字母中文特殊字符)","nickname(小数)","nickname(空格)" ])
     def test_107004_nickname_correct(self, nickname, result):
         """ Test correct nickname values (最小长度值、最大长度值、字母、中文、特殊字符、数字字母中文特殊字符、空格、空）(FT-HTJK-107-004).
         :param nickname: nickname parameter value.
@@ -311,7 +311,7 @@ class TestModifyNickName(object):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
-                assert info['nickname'] == nickname
+                assert info['nickname'] == str(nickname)
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -325,9 +325,9 @@ class TestModifyNickName(object):
     @allure.story("错误nickname值")
     @allure.testcase("FT-HTJK-107-005")
     @pytest.mark.parametrize("nickname, result",
-                             [('123', {"code": 0, "msg": "昵称的长度为4到10"}),('1' * 11, {"code": 0, "msg": "昵称的长度为4到10"}),
-                              ('     ', {"code": 0, "msg": "昵称的长度为4到10"}), ('', {"code": 0, "msg": "昵称的长度为4到10"})],
-                             ids=["nickname(超短值)", "nickname(超长值)","nickname(空格)", "nickname(空)"])
+                             [('1' * 11, {"code": 101000, "msg": "昵称的长度为1到10"}),
+                              ('', {"code": 101000, "msg": "昵称的长度为1到10"})],
+                             ids=["nickname(超长值)", "nickname(空)"])
     def test_107005_nickname_wrong(self, nickname, result):
         """ Test wrong nickname values (小数、超长值）(FT-HTJK-107-005).
         :param nickname: nickname parameter value.
@@ -379,8 +379,8 @@ class TestModifyNickName(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-107-006")
     @pytest.mark.parametrize("timestamp, nickname, result",
-                             [(get_timestamp() - 10000, 'name1', {"code": 1, "msg": "修改昵称成功"}),
-                              (get_timestamp() + 1000, 'name2', {"code": 1, "msg": "修改昵称成功"})],
+                             [(get_timestamp() - 300, 'name1', {"code": 1, "msg": "修改昵称成功"}),
+                              (get_timestamp() + 300, 'name2', {"code": 1, "msg": "修改昵称成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_107006_timestamp_correct(self, timestamp, nickname, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-107-006).
@@ -524,13 +524,13 @@ class TestModifyNickName(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -579,8 +579,8 @@ class TestModifyNickName(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["message"]
+                assert rsp_content["code"] == 201200
+                assert '拉取用户信息失败' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -626,7 +626,7 @@ class TestModifyNickName(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -673,8 +673,8 @@ class TestModifyNickName(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert 'timestamp' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -693,4 +693,4 @@ class TestModifyNickName(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_NickName.py'])
-    pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107001_modify_nickname_correct'])
+    pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107011_no_timestamp'])

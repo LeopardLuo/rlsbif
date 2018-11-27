@@ -150,9 +150,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-110-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_110002_token_wrong(self, token, result):
@@ -180,7 +180,7 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -340,9 +340,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误province值")
     @allure.testcase("FT-HTJK-110-005")
     @pytest.mark.parametrize("province, result",
-                             [('1' * 100, {"code": 0, "msg": "province值非法"}),
-                              (' ', {"code": 0, "msg": "province值非法"}),
-                              ('', {"code": 0, "msg": "province值非法"})],
+                             [('1' * 100, {"code": 101000, "msg": "province值非法"}),
+                              (' ', {"code": 101000, "msg": "province值非法"}),
+                              ('', {"code": 101000, "msg": "province值非法"})],
                              ids=["province(超长值)", "province(空格)", "province(空)"])
     def test_110005_province_wrong(self, province, result):
         """ Test wrong province values (超长值、空格、空）(FT-HTJK-110-005).
@@ -464,9 +464,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误city值")
     @allure.testcase("FT-HTJK-110-007")
     @pytest.mark.parametrize("city, result",
-                             [('1' * 100, {"code": 0, "msg": "city值非法"}),
-                              (' ', {"code": 0, "msg": "city值非法"}),
-                              ('', {"code": 0, "msg": "city值非法"})],
+                             [('1' * 100, {"code": 101000, "msg": "city值非法"}),
+                              (' ', {"code": 101000, "msg": "city值非法"}),
+                              ('', {"code": 101000, "msg": "city值非法"})],
                              ids=["city(超长值)", "city(空格)", "city(空)"])
     def test_110007_city_wrong(self, city, result):
         """ Test wrong city values (超长值、空格、空）(FT-HTJK-110-007).
@@ -588,9 +588,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误district值")
     @allure.testcase("FT-HTJK-110-009")
     @pytest.mark.parametrize("district, result",
-                             [('1' * 100, {"code": 0, "msg": "district值非法"}),
-                              (' ', {"code": 0, "msg": "district值非法"}),
-                              ('', {"code": 0, "msg": "district值非法"})],
+                             [('1' * 100, {"code": 101000, "msg": "district值非法"}),
+                              (' ', {"code": 101000, "msg": "district值非法"}),
+                              ('', {"code": 101000, "msg": "district值非法"})],
                              ids=["city(超长值)", "city(空格)", "city(空)"])
     def test_110009_district_wrong(self, district, result):
         """ Test wrong city values (超长值、空格、空）(FT-HTJK-110-009).
@@ -712,9 +712,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误address值")
     @allure.testcase("FT-HTJK-110-011")
     @pytest.mark.parametrize("address, result",
-                             [('1' * 100, {"code": 0, "msg": "address值非法"}),
-                              (' ', {"code": 0, "msg": "address值非法"}),
-                              ('', {"code": 0, "msg": "address值非法"})],
+                             [('1' * 10001, {"code": 101000, "msg": "address值非法"}),
+                              (' ', {"code": 101000, "msg": "address值非法"}),
+                              ('', {"code": 101000, "msg": "address值非法"})],
                              ids=["address(超长值)", "address(空格)", "address(空)"])
     def test_110011_address_wrong(self, address, result):
         """ Test wrong address values (超长值、空格、空）(FT-HTJK-110-011).
@@ -771,8 +771,8 @@ class TestModifyHomeAddress(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-110-012")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "修改家庭地址成功"}),
-                              (get_timestamp(), {"code": 1, "msg": "修改家庭地址成功"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "修改家庭地址成功"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "修改家庭地址成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_110012_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-110-012).
@@ -925,13 +925,13 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -980,8 +980,8 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content["message"]
+                assert rsp_content["code"] == 201200
+                assert '拉取用户信息失败' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 self.httpclient.update_header({"authorization": self.token})
@@ -1029,7 +1029,7 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'province值非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -1078,7 +1078,7 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'city值非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -1127,7 +1127,7 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'district值非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -1176,7 +1176,7 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'address值非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -1225,7 +1225,7 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -1246,4 +1246,4 @@ class TestModifyHomeAddress(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
-    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110001_modify_home_address_correct'])
+    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110020_no_timestamp'])

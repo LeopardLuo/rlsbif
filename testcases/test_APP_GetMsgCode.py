@@ -132,7 +132,7 @@ class TestGetMsgCode(object):
     @pytest.mark.parametrize("code_type, phone, result",
                              [(0, "13511220002", {"code": 1, "msg": "短信已下发"}), (1, "13511220003", {"code": 1, "msg": "短信已下发"}),
                               (2, "13511220004", {"code": 1, "msg": "短信已下发"}), (3, "13511220005", {"code": 1, "msg": "短信已下发"}),
-                              (4, "13511220006", {"code": 0, "msg": "手机号码不存在"})],
+                              (4, "13511220006", {"code": 201112, "msg": "手机号码不存在"})],
                              ids=["code_type(0)", "code_type(1)", "code_type(2)", "code_type(3)", "code_type(4)"])
     def test_101002_codetype_correct(self, code_type, phone, result):
         """ Test correct code_type values (0, 1, 2, 3, 4) (FT-HTJK-101-002).
@@ -177,8 +177,8 @@ class TestGetMsgCode(object):
     @allure.story("错误code_type值")
     @allure.testcase("FT-HTJK-101-003")
     @pytest.mark.parametrize("code_type, phone, result",
-                             [(-1, "13511220007", {"status": 200, "msg": "code_type值非法", "code": 0}),
-                              (5, "13511220008", {"status": 200, "msg": "code_type值非法", "code": 0}),
+                             [(-1, "13511220007", {"status": 200, "msg": "code_type值非法", "code": 101000}),
+                              (5, "13511220008", {"status": 200, "msg": "code_type值非法", "code": 101000}),
                               (-2147483649, "13511220009", {"status": 400, "msg": "", "code": ""}),
                               (2147483648, "13511220010", {"status": 400, "msg": "", "code": ""}),
                               (1.0, "13511220011", {"status": 400, "msg": "", "code": ""}),
@@ -345,20 +345,20 @@ class TestGetMsgCode(object):
     @allure.story("错误phone值")
     @allure.testcase("FT-HTJK-101-006")
     @pytest.mark.parametrize("phone, result",
-                             [("-1", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("135123456789", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("0", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("1", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("1351234567.0", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("13511220012"*10, {"msg": "手机号码格式不正确", "code": 0}),
-                              ("abcdefghijk", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("中"*11, {"msg": "手机号码格式不正确", "code": 0}),
-                              ("*"*11, {"msg": "手机号码格式不正确", "code": 0}),
-                              ("1351122001a", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("1351122001中", {"msg": "手机号码格式不正确", "code": 0}),
-                              ("1351122001*", {"msg": "手机号码格式不正确", "code": 0}),
-                              (" "*11, {"msg": "手机号码格式不正确", "code": 0}),
-                              ("", {"msg": "手机号码格式不正确", "code": 0})],
+                             [("-1", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("135123456789", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("0", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("1", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("1351234567.0", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("13511220012"*10, {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("abcdefghijk", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("中"*11, {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("*"*11, {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("1351122001a", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("1351122001中", {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("1351122001*", {"msg": "手机号码格式不正确", "code": 101000}),
+                              (" "*11, {"msg": "手机号码格式不正确", "code": 101000}),
+                              ("", {"msg": "手机号码格式不正确", "code": 101000})],
                              ids=["phone(-1)", "phone(135123456789)", "phone(0)", "phone(1)", "phone(小数)",
                                   "phone(超长)","phone(字母)", "phone(中文)", "phone(特殊字符)", "phone(数字字母)",
                                   "phone(数字中文)", "phone(数字特殊字符)", "phone(空格)", "phone(空)"])
@@ -407,8 +407,8 @@ class TestGetMsgCode(object):
     @allure.story("正确时间戳值")
     @allure.testcase("FT-HTJK-101-007")
     @pytest.mark.parametrize("phone, timestamp, result",
-                             [("13511220022", 1, {"code": 1, "msg": ""}),
-                              ("13511220023", get_timestamp() + 10000, {"code": 1, "msg": ""})],
+                             [("13511220022", get_timestamp() - 300, {"code": 1, "msg": ""}),
+                              ("13511220023", get_timestamp() + 300, {"code": 1, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_101007_timestamp_correct(self, phone, timestamp, result):
         """ Test correct timestamp values (最小值、最大值) (FT-HTJK-101-007).
@@ -458,7 +458,7 @@ class TestGetMsgCode(object):
     @pytest.mark.parametrize("phone, timestamp, result",
                              [("13511220024", -1, {"status": 200, "msg": "不正确", "code": 0}),
                               ("13511220025", 9223372036854775807, {"status": 200, "msg": "不正确", "code": 0}),
-                              ("13511220026", 0, {"status": 200, "msg": "不正确", "code": 0}),
+                              ("13511220026", 0, {"status": 200, "msg": "timestamp不能为空", "code": 101000}),
                               ("13511220027", 1, {"status": 200, "msg": "不正确", "code": 0}),
                               ("13511220028", -9223372036854775809, {"status": 400, "msg": "", "code": ""}),
                               ("13511220029", 9223372036854775808, {"status": 400, "msg": "", "code": ""}),
@@ -544,7 +544,7 @@ class TestGetMsgCode(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert "不能为空" in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -582,7 +582,7 @@ class TestGetMsgCode(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert "不能为空" in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -620,8 +620,8 @@ class TestGetMsgCode(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
-                assert rsp_content["code"] == 0
-                assert "不能为空" in rsp_content["message"]
+                assert rsp_content["code"] == 101000
+                assert "timestamp不能为空" in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -634,4 +634,4 @@ class TestGetMsgCode(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_GetMsgCode.py'])
-    pytest.main(['-s', 'test_APP_GetMsgCode.py::TestGetMsgCode::test_101001_get_correct_msg_code'])
+    pytest.main(['-s', 'test_APP_GetMsgCode.py::TestGetMsgCode::test_101011_no_timestamp'])

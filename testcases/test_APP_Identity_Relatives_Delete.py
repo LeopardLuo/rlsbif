@@ -136,7 +136,7 @@ class TestDeleteRelatives(object):
                                                   get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result1))
                 self.logger.info("identity_result: {0}".format(identity_result1))
-                identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'relate_face.jpg',
+                identity_result2 = identity_other(self.httpclient, self.member_id, 'kuli2', 'mm1.jpg',
                                                   'face2.jpg',
                                                   get_timestamp(), self.logger)
                 allure.attach("identity_result", "{0}".format(identity_result2))
@@ -214,9 +214,9 @@ class TestDeleteRelatives(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-118-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_118002_token_wrong(self, token, result):
@@ -260,7 +260,7 @@ class TestDeleteRelatives(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -309,16 +309,16 @@ class TestDeleteRelatives(object):
     @allure.testcase("FT-HTJK-118-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (1.0, {"status": 200, "code": 0, "msg": "授权非法"}),
+                              (1, {"status": 200, "code": 201303, "msg": "特征不存在"}),
+                              (9223372036854775807, {"status": 200, "code": 201303, "msg": "特征不存在"}),
+                              (1.0, {"status": 200, "code": 201303, "msg": "特征不存在"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}),
                               ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "授权非法"}),
+                              (0, {"status": 200, "code": 201303, "msg": "特征不存在"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(最小值)","member_id(最大值)","member_id(小数)",
                                   "member_id(中文)", "member_id(特殊字符)", "member_id(数字中文)",
@@ -417,10 +417,10 @@ class TestDeleteRelatives(object):
     @allure.testcase("FT-HTJK-118-004")
     @pytest.mark.parametrize("features_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
-                              (1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 201303, "msg": "特征不存在"}),
+                              (1, {"status": 200, "code": 201303, "msg": "特征不存在"}),
+                              (9223372036854775807, {"status": 200, "code": 201303, "msg": "特征不存在"}),
+                              (1.0, {"status": 200, "code": 201303, "msg": "特征不存在"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
@@ -524,8 +524,8 @@ class TestDeleteRelatives(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-118-005")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "删除成功"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "删除成功"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "删除成功"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "删除成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_118005_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-118-005).
@@ -621,7 +621,7 @@ class TestDeleteRelatives(object):
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
                               (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -769,13 +769,13 @@ class TestDeleteRelatives(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
 
             with allure.step("teststep6: query database records"):
@@ -860,8 +860,8 @@ class TestDeleteRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content['message']
+                assert rsp_content["code"] == 201303
+                assert '特征不存在' in rsp_content['message']
 
             with allure.step("teststep6: query database records"):
                 table = 'mem_features'
@@ -945,7 +945,7 @@ class TestDeleteRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201303
                 assert '特征不存在' in rsp_content['message']
 
             with allure.step("teststep6: query database records"):
@@ -1030,7 +1030,7 @@ class TestDeleteRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
 
             with allure.step("teststep6: query database records"):
@@ -1071,4 +1071,4 @@ class TestDeleteRelatives(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
-    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118001_relatives_delete_correct'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118010_no_timestamp'])

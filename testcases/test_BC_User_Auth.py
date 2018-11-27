@@ -756,4 +756,4 @@ class TestBCUserAuth(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_BC_User_Auth.py'])
-    pytest.main(['-s', 'test_BC_User_Auth.py::TestBCUserAuth::test_123009_no_timestamp'])
+    pytest.main(['-s', 'test_BC_User_Auth.py::TestBCUserAuth::test_123001_user_auth_correct'])

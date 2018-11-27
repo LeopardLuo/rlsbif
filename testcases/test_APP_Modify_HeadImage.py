@@ -148,9 +148,9 @@ class TestModifyHeadImage(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-109-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_109002_token_wrong(self, token, result):
@@ -178,7 +178,7 @@ class TestModifyHeadImage(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -213,7 +213,8 @@ class TestModifyHeadImage(object):
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
-                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}),
+                              ('', {"status": 400, "code": 0, "msg": ""}),
                               (0, {"status": 200, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
@@ -335,10 +336,10 @@ class TestModifyHeadImage(object):
     @allure.story("不支持的图片类型")
     @allure.testcase("FT-HTJK-109-005")
     @pytest.mark.parametrize("filename, result",
-                             [("case.xlsx", {"code": 0, "msg": ""}),
-                              ("temp.txt", {"code": 0, "msg": ""}),
-                              ("hb.mp4", {"code": 0, "msg": ""}),
-                              ("max.jpg", {"code": 0, "msg": ""}), ],
+                             [("case.xlsx", {"code": 101000, "msg": ""}),
+                              ("temp.txt", {"code": 101000, "msg": ""}),
+                              ("hb.mp4", {"code": 101000, "msg": ""}),
+                              ("max.jpg", {"code": 101000, "msg": ""}), ],
                              ids=["image(xlsx)", "image(txt)", "image(mp4)", "image(max)"])
     def test_109005_image_type_wrong(self, filename, result):
         """ Test wrong image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-109-005).
@@ -392,8 +393,8 @@ class TestModifyHeadImage(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-109-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "修改头像成功"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "修改头像成功"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "修改头像成功"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "修改头像成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_109006_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-109-006).
@@ -540,13 +541,13 @@ class TestModifyHeadImage(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -595,8 +596,8 @@ class TestModifyHeadImage(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content["message"]
+                assert rsp_content["code"] == 201203
+                assert '保存头像失败' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 self.httpclient.update_header({"authorization": self.token})
@@ -638,7 +639,7 @@ class TestModifyHeadImage(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 415
+                assert rsp.status_code == 200
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp.text))
@@ -690,7 +691,7 @@ class TestModifyHeadImage(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
@@ -711,4 +712,4 @@ class TestModifyHeadImage(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_HeadImage.py'])
-    pytest.main(['-s', 'test_APP_Modify_HeadImage.py::TestModifyHeadImage::test_109001_modify_head_image_correct'])
+    pytest.main(['-s', 'test_APP_Modify_HeadImage.py::TestModifyHeadImage::test_109011_no_timestamp'])

@@ -179,9 +179,9 @@ class TestIdentityUser(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-115-002")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_115002_token_wrong(self, token, result):
@@ -210,7 +210,7 @@ class TestIdentityUser(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
@@ -242,15 +242,16 @@ class TestIdentityUser(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-115-003")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 400, "code": 0, "msg": ""}),
-                              ('中', {"status": 400, "code": 0, "msg": ""}),
-                              ('*', {"status": 400, "code": 0, "msg": ""}),
-                              ('1中', {"status": 400, "code": 0, "msg": ""}),
-                              ('1*', {"status": 400, "code": 0, "msg": ""}),
-                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
+                             [('1' * 256, {"status": 200, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              ('中', {"status": 200, "code": 0, "msg": ""}),
+                              ('*', {"status": 200, "code": 0, "msg": ""}),
+                              ('1中', {"status": 200, "code": 0, "msg": ""}),
+                              ('1*', {"status": 200, "code": 0, "msg": ""}),
+                              (' ', {"status": 200, "code": 0, "msg": ""}),
+                              ('', {"status": 200, "code": 0, "msg": ""}),
                               (0, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
+                              (9223372036854775808, {"status": 200, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
@@ -384,11 +385,11 @@ class TestIdentityUser(object):
     @allure.story("identity_card_face不支持的文件类型")
     @allure.testcase("FT-HTJK-115-005")
     @pytest.mark.parametrize("identity_card_face, result",
-                             [("fore2.gif", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("fore1.PNG", {"code": 0, "msg": "认证不通过"}), ],
+                             [("fore2.gif", {"code": 201307, "msg": "照片不合格"}),
+                              ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),
+                              ("temp.txt", {"code": 201307, "msg": "照片不合格"}),
+                              ("hb.mp4", {"code": 201307, "msg": "照片不合格"}),
+                              ("fore1.PNG", {"code": 201307, "msg": "照片不合格"}), ],
                              ids=["identity_card_face(gif)", "identity_card_face(xlsx)", "identity_card_face(txt)",
                                   "identity_card_face(mp4)", "identity_card_face(other)"])
     def test_115005_identity_card_face_type_wrong(self, identity_card_face, result):
@@ -522,11 +523,11 @@ class TestIdentityUser(object):
     @allure.story("identity_card_emblem不支持的文件类型")
     @allure.testcase("FT-HTJK-115-007")
     @pytest.mark.parametrize("identity_card_emblem, result",
-                             [("back2.gif", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("case.xlsx", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("temp.txt", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("hb.mp4", {"code": 0, "msg": "身份证照片不合格"}),
-                              ("a1.jpeg", {"code": 0, "msg": "认证不通过"}), ],
+                             [("back2.gif", {"code": 201307, "msg": "照片不合格"}),
+                              ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),
+                              ("temp.txt", {"code": 201307, "msg": "照片不合格"}),
+                              ("hb.mp4", {"code": 201307, "msg": "照片不合格"}),
+                              ("a1.jpeg", {"code": 201307, "msg": "照片不合格"}), ],
                              ids=["identity_card_emblem(gif)", "identity_card_emblem(xlsx)", "identity_card_emblem(txt)",
                                   "identity_card_emblem(mp4)", "identity_card_emblem(other)"])
     def test_115007_identity_card_emblem_type_wrong(self, identity_card_emblem, result):
@@ -591,8 +592,8 @@ class TestIdentityUser(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-115-010")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 10000, {"code": 1, "msg": "认证通过"}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": "认证通过"})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "认证通过"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "认证通过"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_115010_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-115-010).
@@ -765,13 +766,13 @@ class TestIdentityUser(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
@@ -827,8 +828,8 @@ class TestIdentityUser(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '授权非法' in rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'member_id值非法' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
                 table = 'mem_member_identity'
@@ -882,8 +883,8 @@ class TestIdentityUser(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert 'identity_card_face不能为空' in rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'identity_card_face值非法' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
                 table = 'mem_member_identity'
@@ -937,8 +938,8 @@ class TestIdentityUser(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '保存身份证国徽面照片失败' in rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'identity_card_emblem值非法' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
                 table = 'mem_member_identity'
@@ -993,7 +994,7 @@ class TestIdentityUser(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
@@ -1018,4 +1019,4 @@ class TestIdentityUser(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Identity_User.py'])
-    pytest.main(['-s', 'test_APP_Identity_User.py::TestIdentityUser::test_115002_token_wrong'])
+    pytest.main(['-s', 'test_APP_Identity_User.py::TestIdentityUser::test_115017_no_timestamp'])

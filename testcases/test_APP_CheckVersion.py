@@ -13,7 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
-@allure.feature("APP-获取识别记录")
+@allure.feature("APP-获取版本信息")
 class TestCheckVersion(object):
 
     @allure.step("+++ setup class +++")
@@ -83,8 +83,8 @@ class TestCheckVersion(object):
     @allure.story("正确package_type值")
     @allure.testcase("FT-HTJK-126-001")
     @pytest.mark.parametrize("package_type, result",
-                             [(1, {"code": 1, "msg": ""}), (2, {"code": 1, "msg": ""}),
-                              (3, {"code": 1, "msg": ""})],
+                             [(1, {"code": 0, "msg": "当前版本已是最新版本"}), (2, {"code": 1, "msg": "有新的版本"}),
+                              (3, {"code": 0, "msg": "当前版本已是最新版本"})],
                              ids=["package_type(1)", "package_type(2)", "package_type(3)"])
     def test_126001_package_type_correct(self, package_type, result):
         """ Test check version with correct package_type(FT-HTJK-126-001)."""
@@ -111,9 +111,12 @@ class TestCheckVersion(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert rsp_content['result']
+                assert rsp_content["code"] == result['code']
+                assert result['msg'] in rsp_content['message']
+                if rsp_content["code"] == 1:
+                    assert rsp_content['result']['data']['package_url']
+                else:
+                    assert not rsp_content['result']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -127,11 +130,11 @@ class TestCheckVersion(object):
     @allure.story("错误package_type值")
     @allure.testcase("FT-HTJK-126-002")
     @pytest.mark.parametrize("package_type, result",
-                             [(-2147483649, {"code": 0, "msg": ""}), (2147483648, {"code": 0, "msg": ""}),
-                              (0, {"code": 0, "msg": ""}),(4, {"code": 0, "msg": ""}),(-1, {"code": 0, "msg": ""}),
-                              (1.5, {"code": 0, "msg": ""}),('a', {"code": 0, "msg": ""}),('中文', {"code": 0, "msg": ""}),
-                              ('.*', {"code": 0, "msg": ""}),('1a', {"code": 0, "msg": ""}),('1中', {"code": 0, "msg": ""}),
-                              ('1*', {"code": 0, "msg": ""}),(' ', {"code": 0, "msg": ""}),('', {"code": 0, "msg": ""}),],
+                             [(-2147483649, {"status": 400, "code": 0, "msg": ""}), (2147483648, {"status": 400, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "package_type值非法"}),(4, {"status": 200, "code": 101000, "msg": "package_type值非法"}),(-1, {"status": 200, "code": 101000, "msg": "package_type值非法"}),
+                              (1.5, {"status": 400, "code": 0, "msg": ""}),('a', {"status": 400, "code": 0, "msg": ""}),('中文', {"status": 400, "code": 0, "msg": ""}),
+                              ('.*', {"status": 400, "code": 0, "msg": ""}),('1a', {"status": 400, "code": 0, "msg": ""}),('1中', {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', {"status": 400, "code": 0, "msg": ""}),(' ', {"status": 400, "code": 0, "msg": ""}),('', {"status": 400, "code": 0, "msg": ""}),],
                              ids=["package_type(-2147483649)", "package_type(2147483648)", "package_type(0)",
                                   "package_type(4)", "package_type(-1)", "package_type(1.5)","package_type(字母)",
                                   "package_type(中文)", "package_type(特殊字符)",  "package_type(数字字母)",
@@ -156,14 +159,18 @@ class TestCheckVersion(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == result['code']
-                assert result['msg'] in rsp_content['message']
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -177,7 +184,7 @@ class TestCheckVersion(object):
     @allure.story("正确package_version值")
     @allure.testcase("FT-HTJK-126-003")
     @pytest.mark.parametrize("package_version, result",
-                             [('1.0.0.0', {"code": 1, "msg": ""}), ('99.99.99.99', {"code": 1, "msg": ""})],
+                             [('1.0.0.0', {"code": 1, "msg": "有新的版本"}), ('99.99.99.99', {"code": 0, "msg": "当前版本已是最新版本"})],
                              ids=["package_version(最小值)", "package_version(最大值)"])
     def test_126003_package_version_correct(self, package_version, result):
         """ Test check version with correct package_version(FT-HTJK-126-003)."""
@@ -204,9 +211,10 @@ class TestCheckVersion(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert rsp_content['result']
+                assert rsp_content["code"] == result['code']
+                assert result['msg'] in rsp_content['message']
+                if rsp_content['code'] == 1:
+                    assert rsp_content['result']['data']['package_url']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -220,10 +228,10 @@ class TestCheckVersion(object):
     @allure.story("错误package_version值")
     @allure.testcase("FT-HTJK-126-004")
     @pytest.mark.parametrize("package_version, result",
-                             [(0, {"code": 0, "msg": ""}), (-1, {"code": 0, "msg": ""}), (1.0, {"code": 0, "msg": ""}),
-                              ('1.0.0.9999', {"code": 0, "msg": ""}), ('1.0.0.a', {"code": 0, "msg": ""}),
-                              ('1.0.0.中', {"code": 0, "msg": ""}), ('1.0.0.*', {"code": 0, "msg": ""}),
-                              ('       ', {"code": 0, "msg": ""}), ('', {"code": 0, "msg": ""})],
+                             [(0, {"code": 101000, "msg": "package_version值非法"}), (-1, {"code": 101000, "msg": "package_version值非法"}), (1.0, {"code": 101000, "msg": "package_version值非法"}),
+                              ('1.0.0.9999', {"code": 101000, "msg": "package_version值非法"}), ('1.0.0.a', {"code": 101000, "msg": "package_version值非法"}),
+                              ('1.0.0.中', {"code": 101000, "msg": "package_version值非法"}), ('1.0.0.*', {"code": 101000, "msg": "package_version值非法"}),
+                              ('       ', {"code": 101000, "msg": "package_version值非法"}), ('', {"code": 101000, "msg": "package_version值非法"})],
                              ids=["package_version(0)", "package_version(-1)", "package_version(1.0)",
                                   "package_version(9999)", "package_version(字母)", "package_version(中文)",
                                   "package_version(特殊字符)", "package_version(空格)", "package_version(空)", ])
@@ -267,8 +275,8 @@ class TestCheckVersion(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-126-005")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 100, {"code": 1, "msg": ""}),
-                              (get_timestamp() + 100, {"code": 1, "msg": ""})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": "有新的版本"}),
+                              (get_timestamp() + 300, {"code": 1, "msg": "有新的版本"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_126005_timestamp_correct(self, timestamp, result):
         """ Test check version with correct timestamp(FT-HTJK-126-005)."""
@@ -296,8 +304,7 @@ class TestCheckVersion(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert not rsp_content['message']
-                assert rsp_content['result']
+                assert result['msg'] in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -311,19 +318,19 @@ class TestCheckVersion(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-126-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('1a', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('1中', {"status": 400, "code": 0, "msg": "is invalid"}),
-                              ('1*', {"status": 400, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
+                              (9223372036854775807, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
+                              (-1, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
+                              (-9223372036854775809, {"status": 400, "code": 0, "msg": "is not valid"}),
+                              (9223372036854775808, {"status": 400, "code": 0, "msg": "is not valid"}),
+                              (1.0, {"status": 400, "code": 0, "msg": "is not valid"}),
+                              ('a', {"status": 400, "code": 0, "msg": "is not valid"}),
+                              ('中', {"status": 400, "code": 0, "msg": "is not valid"}),
+                              ('*', {"status": 400, "code": 0, "msg": "is not valid"}),
+                              ('1a', {"status": 400, "code": 0, "msg": "is not valid"}),
+                              ('1中', {"status": 400, "code": 0, "msg": "is not valid"}),
+                              ('1*', {"status": 400, "code": 0, "msg": "is not valid"}),
                               (' ', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('', {"status": 400, "code": 0, "msg": "is invalid"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)", "timestamp(0)", "timestamp(-1)",
@@ -354,14 +361,20 @@ class TestCheckVersion(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == result['code']
-                assert result['msg'] in rsp_content['message']
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert result['msg'] in rsp_content
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -399,8 +412,8 @@ class TestCheckVersion(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'package_type值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -438,8 +451,8 @@ class TestCheckVersion(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'package_version' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -477,8 +490,8 @@ class TestCheckVersion(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'timestamp值已过期' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

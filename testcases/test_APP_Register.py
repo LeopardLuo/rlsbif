@@ -1659,4 +1659,4 @@ class TestRegister(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Register.py'])
-    pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102001_register_correct'])
+    pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102002_clienttype_correct'])
