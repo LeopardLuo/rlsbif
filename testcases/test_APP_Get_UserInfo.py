@@ -397,7 +397,7 @@ class TestGetUserInfo(object):
                 rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", rsp_content)
+                allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content['code'] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']

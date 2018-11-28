@@ -97,39 +97,39 @@ class TestCetServiceOrderList(object):
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 cls.logger.info("identity relative result: {0}".format(identity_result1))
 
-            with allure.step("teststep: get business system id and code"):
-                table = 'bus_system'
-                condition = ("system_name", '公司类门禁业务系统')
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                cls.logger.info("")
-                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = cls.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                cls.logger.info("query result: {0}".format(select_result))
-                cls.system_id = select_result[0][0]
-                cls.system_code = select_result[0][2]
-
-            with allure.step("teststep: get devices id"):
-                table = 'bus_device'
-                condition = ("system_id", cls.system_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                cls.logger.info("")
-                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = cls.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                cls.logger.info("query result: {0}".format(select_result))
-                cls.devices_ids = []
-                for device in select_result:
-                    cls.devices_ids.append(device[0])
-
-            with allure.step("teststep: get features id by user info."):
-                user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                cls.logger.info("features data list: {0}".format(user_info))
-                cls.features_id = ''
-                for item in user_info['features_info']:
-                    if item['features_name'] == 'kuli1':
-                        cls.features_id = item['features_id']
+            # with allure.step("teststep: get business system id and code"):
+            #     table = 'bus_system'
+            #     condition = ("system_name", '公司类门禁业务系统')
+            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            #     cls.logger.info("")
+            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            #     select_result = cls.mysql.execute_select_condition(table, condition)
+            #     allure.attach("query result", str(select_result))
+            #     cls.logger.info("query result: {0}".format(select_result))
+            #     cls.system_id = select_result[0][0]
+            #     cls.system_code = select_result[0][2]
+            #
+            # with allure.step("teststep: get devices id"):
+            #     table = 'bus_device'
+            #     condition = ("system_id", cls.system_id)
+            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            #     cls.logger.info("")
+            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            #     select_result = cls.mysql.execute_select_condition(table, condition)
+            #     allure.attach("query result", str(select_result))
+            #     cls.logger.info("query result: {0}".format(select_result))
+            #     cls.devices_ids = []
+            #     for device in select_result:
+            #         cls.devices_ids.append(device[0])
+            #
+            # with allure.step("teststep: get features id by user info."):
+            #     user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
+            #     allure.attach("features data list", "{0}".format(user_info))
+            #     cls.logger.info("features data list: {0}".format(user_info))
+            #     cls.features_id = ''
+            #     for item in user_info['features_info']:
+            #         if item['features_name'] == 'kuli1':
+            #             cls.features_id = item['features_id']
 
             # with allure.step("teststep: create service orders"):
             #     order_result = inner_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)),
@@ -165,15 +165,15 @@ class TestCetServiceOrderList(object):
             select_result = cls.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(select_result))
             cls.logger.info("delete result: {0}".format(select_result))
-        with allure.step("delete service order records"):
-            table = 'bus_service_order'
-            condition = ("member_id", cls.member_id)
-            allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            cls.logger.info("")
-            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            delete_result = cls.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(delete_result))
-            cls.logger.info("delete result: {0}".format(delete_result))
+        # with allure.step("delete service order records"):
+        #     table = 'bus_service_order'
+        #     condition = ("member_id", cls.member_id)
+        #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+        #     cls.logger.info("")
+        #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+        #     delete_result = cls.mysql.execute_delete_condition(table, condition)
+        #     allure.attach("delete result", str(delete_result))
+        #     cls.logger.info("delete result: {0}".format(delete_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -276,9 +276,9 @@ class TestCetServiceOrderList(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-119-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_119003_token_wrong(self, token, result):
@@ -305,7 +305,7 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -1110,13 +1110,13 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1416,4 +1416,4 @@ class TestCetServiceOrderList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Service_Order_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119001_get_0index_of_2page'])
+    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119017_no_token'])

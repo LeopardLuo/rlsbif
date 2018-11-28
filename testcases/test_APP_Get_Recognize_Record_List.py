@@ -109,40 +109,40 @@ class TestGetRecognizeRecordList(object):
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 cls.logger.info("identity relative result: {0}".format(identity_result1))
 
-            with allure.step("teststep: get business system id and code"):
-                table = 'bus_system'
-                condition = ("system_name", '公司类门禁业务系统')
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                cls.logger.info("")
-                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = cls.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                cls.logger.info("query result: {0}".format(select_result))
-                cls.system_id = select_result[0][0]
-                cls.system_code = select_result[0][2]
-
-            with allure.step("teststep: get devices id"):
-                table = 'iot_releationship'
-                condition = ("iot_device_name", cls.devicename)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                cls.logger.info("")
-                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = cls.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                cls.logger.info("query result: {0}".format(select_result))
-                cls.devices_ids = []
-                if select_result:
-                    cls.device_id = select_result[0][0]
-                    cls.devices_ids.append(select_result[0][0])
-
-            with allure.step("teststep: get features id by user info."):
-                user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                cls.logger.info("features data list: {0}".format(user_info))
-                cls.features_id = ''
-                for item in user_info['features_info']:
-                    if item['features_name'] == 'kuli1':
-                        cls.features_id = item['features_id']
+            # with allure.step("teststep: get business system id and code"):
+            #     table = 'bus_system'
+            #     condition = ("system_name", '公司类门禁业务系统')
+            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            #     cls.logger.info("")
+            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            #     select_result = cls.mysql.execute_select_condition(table, condition)
+            #     allure.attach("query result", str(select_result))
+            #     cls.logger.info("query result: {0}".format(select_result))
+            #     cls.system_id = select_result[0][0]
+            #     cls.system_code = select_result[0][2]
+            #
+            # with allure.step("teststep: get devices id"):
+            #     table = 'iot_releationship'
+            #     condition = ("iot_device_name", cls.devicename)
+            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            #     cls.logger.info("")
+            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            #     select_result = cls.mysql.execute_select_condition(table, condition)
+            #     allure.attach("query result", str(select_result))
+            #     cls.logger.info("query result: {0}".format(select_result))
+            #     cls.devices_ids = []
+            #     if select_result:
+            #         cls.device_id = select_result[0][0]
+            #         cls.devices_ids.append(select_result[0][0])
+            #
+            # with allure.step("teststep: get features id by user info."):
+            #     user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
+            #     allure.attach("features data list", "{0}".format(user_info))
+            #     cls.logger.info("features data list: {0}".format(user_info))
+            #     cls.features_id = ''
+            #     for item in user_info['features_info']:
+            #         if item['features_name'] == 'kuli1':
+            #             cls.features_id = item['features_id']
 
             # with allure.step("teststep: create service orders"):
             #     order_result = inner_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)),
@@ -153,36 +153,36 @@ class TestGetRecognizeRecordList(object):
             #     cls.logger.info("order list: {0}".format(order_result))
             #     cls.service_order_id = order_result['service_order_id']
 
-            with allure.step("teststep: publish service order report."):
-                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
-                in_payload = {
-                    "action_id": "100",
-                    "data": {
-                        "service_order_id": str(cls.service_order_id),
-                        "device_id": str(cls.device_id),
-                        "in_out": "1",
-                        "exrea": "",
-                    },
-                    "timestamp": str(get_timestamp())
-                }
-                cls.logger.info("topic: {0}".format(topic))
-                cls.logger.info("in payload: {0}".format(in_payload))
-                cls.mqttclient.publish(topic, str(in_payload), 1)
-                sleep(5)
-                out_payload = {
-                    "action_id": "100",
-                    "data": {
-                        "service_order_id": str(cls.service_order_id),
-                        "device_id": str(cls.device_id),
-                        "in_out": "0",
-                        "exrea": "",
-                    },
-                    "timestamp": str(get_timestamp())
-                }
-                cls.logger.info("out payload: {0}".format(out_payload))
-                cls.mqttclient.publish(topic, str(out_payload), 1)
-                cls.mqttclient.close()
-                sleep(10)
+            # with allure.step("teststep: publish service order report."):
+            #     topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
+            #     in_payload = {
+            #         "action_id": "100",
+            #         "data": {
+            #             "service_order_id": str(cls.service_order_id),
+            #             "device_id": str(cls.device_id),
+            #             "in_out": "1",
+            #             "exrea": "",
+            #         },
+            #         "timestamp": str(get_timestamp())
+            #     }
+            #     cls.logger.info("topic: {0}".format(topic))
+            #     cls.logger.info("in payload: {0}".format(in_payload))
+            #     cls.mqttclient.publish(topic, str(in_payload), 1)
+            #     sleep(5)
+            #     out_payload = {
+            #         "action_id": "100",
+            #         "data": {
+            #             "service_order_id": str(cls.service_order_id),
+            #             "device_id": str(cls.device_id),
+            #             "in_out": "0",
+            #             "exrea": "",
+            #         },
+            #         "timestamp": str(get_timestamp())
+            #     }
+            #     cls.logger.info("out payload: {0}".format(out_payload))
+            #     cls.mqttclient.publish(topic, str(out_payload), 1)
+            #     cls.mqttclient.close()
+            #     sleep(10)
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -201,24 +201,24 @@ class TestGetRecognizeRecordList(object):
             cls.httpclient.update_header({"authorization": None})
             allure.attach("logout result", str(logout_result))
             cls.logger.info("logout result: {0}".format(logout_result))
-        with allure.step("delete service order status records"):
-            table = 'bus_service_order_status'
-            condition = ("service_order_id", cls.service_order_id)
-            allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            cls.logger.info("")
-            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            delete_result = cls.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(delete_result))
-            cls.logger.info("delete result: {0}".format(delete_result))
-        with allure.step("delete service order records"):
-            table = 'bus_service_order'
-            condition = ("member_id", cls.member_id)
-            allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            cls.logger.info("")
-            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            delete_result = cls.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(delete_result))
-            cls.logger.info("delete result: {0}".format(delete_result))
+        # with allure.step("delete service order status records"):
+        #     table = 'bus_service_order_status'
+        #     condition = ("service_order_id", cls.service_order_id)
+        #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+        #     cls.logger.info("")
+        #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+        #     delete_result = cls.mysql.execute_delete_condition(table, condition)
+        #     allure.attach("delete result", str(delete_result))
+        #     cls.logger.info("delete result: {0}".format(delete_result))
+        # with allure.step("delete service order records"):
+        #     table = 'bus_service_order'
+        #     condition = ("member_id", cls.member_id)
+        #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
+        #     cls.logger.info("")
+        #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+        #     delete_result = cls.mysql.execute_delete_condition(table, condition)
+        #     allure.attach("delete result", str(delete_result))
+        #     cls.logger.info("delete result: {0}".format(delete_result))
         with allure.step("teststep: delete user identity record"):
             table = 'mem_features'
             condition = ("member_id", cls.member_id)
@@ -333,9 +333,9 @@ class TestGetRecognizeRecordList(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-122-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 0, "msg": "授权非法"}), ('1.0', {"code": 0, "msg": "授权非法"}),
-                              ('*', {"code": 0, "msg": "授权非法"}), ('1*', {"code": 0, "msg": "授权非法"}),
-                              ('', {"code": 0, "msg": "未登录或登录已过期"})],
+                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
+                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
+                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_122003_token_wrong(self, token, result):
@@ -361,7 +361,7 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -383,10 +383,10 @@ class TestGetRecognizeRecordList(object):
     @allure.testcase("FT-HTJK-122-004")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 1001, {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (1, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (-1, {"status": 200, "code": 0, "msg": "授权非法"}),
+                              (0, {"status": 200, "code": 101000, "msg": "授权非法"}),
+                              (1, {"status": 200, "code": 101000, "msg": "授权非法"}),
+                              (9223372036854775807, {"status": 200, "code": 101000, "msg": "授权非法"}),
+                              (-1, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
                               (1.5, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
@@ -500,7 +500,7 @@ class TestGetRecognizeRecordList(object):
     @allure.story("错误page_index值")
     @allure.testcase("FT-HTJK-122-006")
     @pytest.mark.parametrize("page_index, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "page_index值非法"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": "page_index值非法"}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -617,9 +617,9 @@ class TestGetRecognizeRecordList(object):
     @allure.story("错误page_size值")
     @allure.testcase("FT-HTJK-122-008")
     @pytest.mark.parametrize("page_size, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "page_size值非法"}),
-                              (0, {"status": 200, "code": 0, "msg": "page_size值非法"}),
-                              (21, {"status": 200, "code": 0, "msg": "page_size值非法"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
+                              (0, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
+                              (21, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -901,8 +901,8 @@ class TestGetRecognizeRecordList(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-122-013")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 100, {"code": 1, "msg": ""}),
-                              (get_timestamp() + 100, {"code": 1, "msg": ""})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": ""}),
+                              (get_timestamp() + 300, {"code": 1, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_122013_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-122-013).
@@ -1040,13 +1040,13 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 401
+                assert rsp.status_code == 200
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1086,7 +1086,7 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert '授权非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1126,7 +1126,7 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1166,7 +1166,7 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1286,7 +1286,7 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1300,4 +1300,4 @@ class TestGetRecognizeRecordList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122002_get_recognize_record_correct'])
+    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122021_no_timestamp'])
