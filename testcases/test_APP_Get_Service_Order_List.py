@@ -60,7 +60,7 @@ class TestCetServiceOrderList(object):
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222251", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
@@ -96,48 +96,71 @@ class TestCetServiceOrderList(object):
                                                   get_timestamp(), cls.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 cls.logger.info("identity relative result: {0}".format(identity_result1))
+                identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
+                                                  'face2.jpg',
+                                                  get_timestamp(), cls.logger)
+                allure.attach("identity relative result", "{0}".format(identity_result2))
+                cls.logger.info("identity relative result: {0}".format(identity_result2))
 
-            # with allure.step("teststep: get business system id and code"):
-            #     table = 'bus_system'
-            #     condition = ("system_name", '公司类门禁业务系统')
-            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            #     cls.logger.info("")
-            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            #     select_result = cls.mysql.execute_select_condition(table, condition)
-            #     allure.attach("query result", str(select_result))
-            #     cls.logger.info("query result: {0}".format(select_result))
-            #     cls.system_id = select_result[0][0]
-            #     cls.system_code = select_result[0][2]
-            #
-            # with allure.step("teststep: get devices id"):
-            #     table = 'bus_device'
-            #     condition = ("system_id", cls.system_id)
-            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            #     cls.logger.info("")
-            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            #     select_result = cls.mysql.execute_select_condition(table, condition)
-            #     allure.attach("query result", str(select_result))
-            #     cls.logger.info("query result: {0}".format(select_result))
-            #     cls.devices_ids = []
-            #     for device in select_result:
-            #         cls.devices_ids.append(device[0])
-            #
-            # with allure.step("teststep: get features id by user info."):
-            #     user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-            #     allure.attach("features data list", "{0}".format(user_info))
-            #     cls.logger.info("features data list: {0}".format(user_info))
-            #     cls.features_id = ''
-            #     for item in user_info['features_info']:
-            #         if item['features_name'] == 'kuli1':
-            #             cls.features_id = item['features_id']
+            with allure.step("teststep: get provider id"):
+                provider_name = cls.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.provider_id = select_result[0][0]
 
-            # with allure.step("teststep: create service orders"):
-            #     order_result = inner_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)),
-            #                        cls.member_id, cls.features_id, cls.devices_ids, 3,
-            #                        get_timestamp(), 9999999999, 10, random.randint(1000, 100000),
-            #                         'testunit', 'dept1', get_timestamp(), cls.logger)
-            #     allure.attach("order list", str(order_result))
-            #     cls.logger.info("order list: {0}".format(order_result))
+            with allure.step("teststep: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", cls.provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.spu_id = select_result[0][0]
+
+            with allure.step("teststep: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", cls.spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.sku_id = select_result[0][0]
+
+            with allure.step("teststep: get features id by user info."):
+                user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
+                allure.attach("features data list", "{0}".format(user_info))
+                cls.logger.info("features data list: {0}".format(user_info))
+                cls.features_id1 = user_info[0]['features_id']
+                cls.features_id2 = user_info[1]['features_id']
+
+            with allure.step("teststep: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = cls.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    cls.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, cls.member_id, cls.token, cls.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    cls.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("申请下单"):
+                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
+                                                           [cls.features_id1, cls.features_id2], cls.logger)
+                    allure.attach("apply result", str(r_applyresult1))
+                    cls.logger.info("apply result: " + str(r_applyresult1))
+                    assert r_applyresult1
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -1413,7 +1436,27 @@ class TestCetServiceOrderList(object):
             self.logger.info(".... End test_119024_no_timestamp ....")
             self.logger.info("")
 
+    def test_add_service_order(self):
+        baseurl = "http://192.168.1.235:15300"
+        httpclient = HTTPClient(baseurl)
+        params = {"userId": self.member_id, "token": self.token}
+        rsp = httpclient.get("/Home/Index", params=params)
+        print(rsp.status_code)
+        print(rsp.request.headers)
+        print(rsp.request.url)
+        print(rsp.request.body)
+        print("")
+
+        params = {"providerId": 38754966088712192, "productId": 38756904616329216, "skuId": 38762443172298752,
+                  "features_id": [self.features_id], "start_date": "2018-11-28", "end_date": "2020-01-01"}
+        rsp = httpclient.get("/Shopping/ApplyResult", params=params)
+        print(rsp.status_code)
+        print(rsp.request.headers)
+        print(rsp.request.url)
+        print(rsp.request.body)
+        print(rsp.text)
+
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Service_Order_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119017_no_token'])
+    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119001_get_0index_of_2page'])

@@ -2089,3 +2089,127 @@ def make_login(httpclient, code_type, client_type, client_version, device_token,
         return {}
     result = app_login(httpclient, client_type, client_version, device_token, imei, phone, sms_code, code_token, timestamp, logger)
     return result
+
+
+@allure.step("H5-Get-HomeIndex")
+def h5_home_index(httpclient, member_id, token, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param member_id: interface defined parameter member_id return by login long type.
+    :param token: interface defined parameter token return by login String type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return user info dict successfully, {} failed.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_home_index ----")
+    uri = ConfigParse().getItem("uri", "H5HomeIndex")
+    data = {"userId": member_id, "token": token}
+    allure.attach("request params", str(data))
+    logger and logger.info("HomeIndex dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_home_index ----")
+        logger and logger.info("")
+        return rsp.text
+    rsp_content = ""
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_home_index ----")
+    logger and logger.info("")
+    return rsp_content
+
+
+@allure.step("H5-Get-ShoppingApplyResult")
+def h5_shopping_apply_result(httpclient, providerId, productId, skuId, features_id, start_date, end_date, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param providerId: interface defined parameter providerId long type.
+    :param productId: interface defined parameter productId long type.
+    :param skuId: interface defined parameter skuId long type.
+    :param features_id: interface defined parameter features_id list long type.
+    :param start_date: interface defined parameter start_date datetime type.
+    :param end_date: interface defined parameter end_date datetime type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_shopping_apply_result ----")
+    uri = ConfigParse().getItem("uri", "H5ShoppingApplyResult")
+    data = {"providerId": providerId, "productId": productId, "skuId": skuId,
+                  "features_id": features_id, "start_date": start_date, "end_date": end_date}
+    allure.attach("request params", str(data))
+    logger and logger.info("ApplyResult dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_shopping_apply_result ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_shopping_apply_result ----")
+    logger and logger.info("")
+    if int(rsp_content['status']) == 1:
+        return True
+    else:
+        return False
+
+
+@allure.step("H5-Get-ShoppingAddMemberResult")
+def h5_shopping_add_member_result(httpclient, providerId, productId, skuId, features_id, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param providerId: interface defined parameter providerId long type.
+    :param productId: interface defined parameter productId long type.
+    :param skuId: interface defined parameter skuId long type.
+    :param features_id: interface defined parameter features_id list long type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_shopping_add_member_result ----")
+    uri = ConfigParse().getItem("uri", "H5ShoppingAddMemberResult")
+    data = {"providerId": providerId, "productId": productId, "skuId": skuId, "characterIds": features_id}
+    allure.attach("request params", str(data))
+    logger and logger.info("AddMemberResult dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_shopping_apply_result ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_shopping_add_member_result ----")
+    logger and logger.info("")
+    if int(rsp_content['status']) == 1:
+        return True
+    else:
+        return False
