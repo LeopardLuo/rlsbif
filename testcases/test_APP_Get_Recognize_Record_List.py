@@ -72,7 +72,7 @@ class TestGetRecognizeRecordList(object):
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511222311", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
@@ -104,85 +104,137 @@ class TestGetRecognizeRecordList(object):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
                 identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), cls.logger)
+                                                  'face2.jpg', get_timestamp(), cls.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 cls.logger.info("identity relative result: {0}".format(identity_result1))
+                identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
+                                                  'face2.jpg',
+                                                  get_timestamp(), cls.logger)
+                allure.attach("identity relative result", "{0}".format(identity_result2))
+                cls.logger.info("identity relative result: {0}".format(identity_result2))
 
-            # with allure.step("teststep: get business system id and code"):
-            #     table = 'bus_system'
-            #     condition = ("system_name", '公司类门禁业务系统')
-            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            #     cls.logger.info("")
-            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            #     select_result = cls.mysql.execute_select_condition(table, condition)
-            #     allure.attach("query result", str(select_result))
-            #     cls.logger.info("query result: {0}".format(select_result))
-            #     cls.system_id = select_result[0][0]
-            #     cls.system_code = select_result[0][2]
-            #
-            # with allure.step("teststep: get devices id"):
-            #     table = 'iot_releationship'
-            #     condition = ("iot_device_name", cls.devicename)
-            #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-            #     cls.logger.info("")
-            #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-            #     select_result = cls.mysql.execute_select_condition(table, condition)
-            #     allure.attach("query result", str(select_result))
-            #     cls.logger.info("query result: {0}".format(select_result))
-            #     cls.devices_ids = []
-            #     if select_result:
-            #         cls.device_id = select_result[0][0]
-            #         cls.devices_ids.append(select_result[0][0])
-            #
-            # with allure.step("teststep: get features id by user info."):
-            #     user_info = inner_auth(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-            #     allure.attach("features data list", "{0}".format(user_info))
-            #     cls.logger.info("features data list: {0}".format(user_info))
-            #     cls.features_id = ''
-            #     for item in user_info['features_info']:
-            #         if item['features_name'] == 'kuli1':
-            #             cls.features_id = item['features_id']
+            with allure.step("teststep: get provider id"):
+                provider_name = cls.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.provider_id = select_result[0][0]
 
-            # with allure.step("teststep: create service orders"):
-            #     order_result = inner_create_service_order(cls.httpclient, cls.system_id, str(random.randint(1000, 100000)),
-            #                        cls.member_id, cls.features_id, cls.devices_ids, 3,
-            #                        get_timestamp(), 9999999999, 10, random.randint(1000, 100000),
-            #                         'testunit', 'dept1', get_timestamp(), cls.logger)
-            #     allure.attach("order list", str(order_result))
-            #     cls.logger.info("order list: {0}".format(order_result))
-            #     cls.service_order_id = order_result['service_order_id']
+            with allure.step("teststep: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", cls.provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.spu_id = select_result[0][0]
 
-            # with allure.step("teststep: publish service order report."):
-            #     topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
-            #     in_payload = {
-            #         "action_id": "100",
-            #         "data": {
-            #             "service_order_id": str(cls.service_order_id),
-            #             "device_id": str(cls.device_id),
-            #             "in_out": "1",
-            #             "exrea": "",
-            #         },
-            #         "timestamp": str(get_timestamp())
-            #     }
-            #     cls.logger.info("topic: {0}".format(topic))
-            #     cls.logger.info("in payload: {0}".format(in_payload))
-            #     cls.mqttclient.publish(topic, str(in_payload), 1)
-            #     sleep(5)
-            #     out_payload = {
-            #         "action_id": "100",
-            #         "data": {
-            #             "service_order_id": str(cls.service_order_id),
-            #             "device_id": str(cls.device_id),
-            #             "in_out": "0",
-            #             "exrea": "",
-            #         },
-            #         "timestamp": str(get_timestamp())
-            #     }
-            #     cls.logger.info("out payload: {0}".format(out_payload))
-            #     cls.mqttclient.publish(topic, str(out_payload), 1)
-            #     cls.mqttclient.close()
-            #     sleep(10)
+            with allure.step("teststep: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", cls.spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.sku_id = select_result[0][0]
+
+            with allure.step("teststep: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(cls.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.owner_feautreid = select_result[0][0]
+
+            with allure.step("teststep: get features id by user info."):
+                user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
+                allure.attach("features data list", "{0}".format(user_info))
+                cls.logger.info("features data list: {0}".format(user_info))
+                cls.features_id1 = user_info[0]['features_id']
+                cls.features_id2 = user_info[1]['features_id']
+
+            with allure.step("teststep: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = cls.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    cls.logger.info("baseurl: " + baseurl)
+                    cls.httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(cls.httpclient1, cls.member_id, cls.token, cls.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    cls.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    r_applyresult1 = h5_shopping_apply_result(cls.httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
+                                                           [cls.owner_feautreid], "2010-2-4", "2038-02-11", cls.logger)
+                    allure.attach("apply result", str(r_applyresult1))
+                    cls.logger.info("apply result: " + str(r_applyresult1))
+                    assert r_applyresult1
+
+            with allure.step("teststep: get service order id."):
+                r_order = get_myservice_order_list(cls.httpclient, cls.member_id, 0, 10, 3, timestamp=get_timestamp(),
+                                                   logger=cls.logger)
+                cls.service_order_id = r_order[0]['service_order_id']
+                cls.logger.info("service_order_id: " + str(cls.service_order_id))
+
+            with allure.step("teststep: get devices id"):
+                table = 'iot_releationship'
+                condition = ("iot_device_name", cls.devicename)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                devices_ids = []
+                cls.device_id = None
+                if select_result:
+                    cls.device_id = select_result[0][0]
+                    devices_ids.append(select_result[0][0])
+
+            with allure.step("teststep: publish service order report."):
+                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
+                in_payload = {
+                    "action_id": "100",
+                    "data": {
+                        "service_order_id": str(cls.service_order_id),
+                        "device_id": str(cls.device_id),
+                        "in_out": "1",
+                        "exrea": "",
+                    },
+                    "timestamp": str(get_timestamp())
+                }
+                cls.logger.info("topic: {0}".format(topic))
+                cls.logger.info("in payload: {0}".format(in_payload))
+                cls.mqttclient.publish(topic, str(in_payload), 1)
+                sleep(5)
+                out_payload = {
+                    "action_id": "100",
+                    "data": {
+                        "service_order_id": str(cls.service_order_id),
+                        "device_id": str(cls.device_id),
+                        "in_out": "0",
+                        "exrea": "",
+                    },
+                    "timestamp": str(get_timestamp())
+                }
+                cls.logger.info("out payload: {0}".format(out_payload))
+                cls.mqttclient.publish(topic, str(out_payload), 1)
+                cls.mqttclient.close()
+                sleep(10)
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -201,24 +253,24 @@ class TestGetRecognizeRecordList(object):
             cls.httpclient.update_header({"authorization": None})
             allure.attach("logout result", str(logout_result))
             cls.logger.info("logout result: {0}".format(logout_result))
-        # with allure.step("delete service order status records"):
-        #     table = 'bus_service_order_status'
-        #     condition = ("service_order_id", cls.service_order_id)
-        #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-        #     cls.logger.info("")
-        #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-        #     delete_result = cls.mysql.execute_delete_condition(table, condition)
-        #     allure.attach("delete result", str(delete_result))
-        #     cls.logger.info("delete result: {0}".format(delete_result))
-        # with allure.step("delete service order records"):
-        #     table = 'bus_service_order'
-        #     condition = ("member_id", cls.member_id)
-        #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-        #     cls.logger.info("")
-        #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-        #     delete_result = cls.mysql.execute_delete_condition(table, condition)
-        #     allure.attach("delete result", str(delete_result))
-        #     cls.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete service order status records"):
+            table = 'bus_service_order_status'
+            condition = ("service_order_id", cls.service_order_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            delete_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            cls.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete service order records"):
+            table = 'bus_service_order'
+            condition = ("member_id", cls.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            delete_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            cls.logger.info("delete result: {0}".format(delete_result))
         with allure.step("teststep: delete user identity record"):
             table = 'mem_features'
             condition = ("member_id", cls.member_id)
@@ -228,6 +280,15 @@ class TestGetRecognizeRecordList(object):
             select_result = cls.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(select_result))
             cls.logger.info("delete result: {0}".format(select_result))
+        with allure.step("delete bus service order records"):
+            table = 'bus_order'
+            condition = ("member_id", cls.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            delete_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            cls.logger.info("delete result: {0}".format(delete_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -1300,4 +1361,4 @@ class TestGetRecognizeRecordList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122021_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122002_get_recognize_record_correct'])

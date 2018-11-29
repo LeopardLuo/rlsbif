@@ -46,7 +46,7 @@ class ConfigParse(object):
             fh.close()
         
         self.__parser = configparser.ConfigParser()
-        self.__parser.read(self.__configfile)
+        self.__parser.read(self.__configfile, encoding='utf-8')
         if configs:
             for s in configs.keys():
                 self.__parser.add_section(s)
@@ -70,7 +70,7 @@ class ConfigParse(object):
             example:
             {'db_user': 'root', 'db_password': 'hrst123', 'db_database': 'gdhdb', 'db_host': '192.168.0.105', 'db_port': '3306'}
         """
-        self.__parser.read(self.__configfile)
+        self.__parser.read(self.__configfile, encoding='utf-8')
         try:
             if not self.__parser.has_section(section):
                 return {}
@@ -91,7 +91,7 @@ class ConfigParse(object):
             section里面的配置项key对应的值字符串，如果section或者key不存在，则返回空对象None。
             .所有返回值都是字符串，如果需要其他的类型，则需要自己处理返回值得类型转换，如int(value)。
         """
-        self.__parser.read(self.__configfile)
+        self.__parser.read(self.__configfile, encoding='utf-8')
         try:
             if self.__parser.has_option(section, key):
                 return self.__parser.get(section, key)
@@ -111,7 +111,7 @@ class ConfigParse(object):
             key: 要增加的配置关键字字符串，如('db_host')。
             value: 要增加的配置项值字符串，如('192.168.0.105')。
         """
-        self.__parser.read(self.__configfile)
+        self.__parser.read(self.__configfile, encoding='utf-8')
         if not self.__parser.has_section(section):
             self.__parser.add_section(section)
         if self.__parser.has_option(section, key):
@@ -125,7 +125,7 @@ class ConfigParse(object):
         Args:
             section: 要删除配置的区域字符串，如 ('db')。
         """
-        self.__parser.read(self.__configfile)
+        self.__parser.read(self.__configfile, encoding='utf-8')
         if not self.__parser.has_section(section):
             return
         self.__parser.remove_section(section)
@@ -137,7 +137,7 @@ class ConfigParse(object):
             section: 要删除配置的区域字符串，如 ('db')。
             key: 要删除的配置关键字字符串，如('db_host')。
         """
-        self.__parser.read(self.__configfile)
+        self.__parser.read(self.__configfile, encoding='utf-8')
         if not self.__parser.has_section(section):
             return
         if not self.__parser.has_option(section, key):

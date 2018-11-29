@@ -1200,7 +1200,7 @@ def get_recognized_record_list(httpclient, member_id, page_index, page_size, ord
             "orderby": orderby, "search": search, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("GetRecognizedRecordList json: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))
@@ -1243,7 +1243,7 @@ def check_version(httpclient, package_type, package_version, timestamp=None, log
     data = {"package_type": package_type, "package_version": package_version, "timestamp": timestamp}
     allure.attach("request params", str(data))
     logger and logger.info("GetRecognizedRecordList json: {}".format(data))
-    rsp = httpclient.get(uri=uri, data=data)
+    rsp = httpclient.get(uri=uri, params=data)
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.body", str(rsp.request.body))
@@ -2208,6 +2208,48 @@ def h5_shopping_add_member_result(httpclient, providerId, productId, skuId, feat
     allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end h5_shopping_add_member_result ----")
+    logger and logger.info("")
+    if int(rsp_content['status']) == 1:
+        return True
+    else:
+        return False
+
+
+@allure.step("H5-Order-Delete")
+def h5_order_delete(httpclient, providerId, productId, skuId, orderId, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param providerId: interface defined parameter providerId long type.
+    :param productId: interface defined parameter productId long type.
+    :param skuId: interface defined parameter skuId long type.
+    :param orderId: interface defined parameter orderId list long type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_order_delete ----")
+    uri = ConfigParse().getItem("uri", "H5OrderDelete")
+    data = {"providerId": providerId, "productId": productId, "skuId": skuId, "orderId": orderId}
+    allure.attach("request params", str(data))
+    logger and logger.info("OrderDelete dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_order_delete ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_order_delete ----")
     logger and logger.info("")
     if int(rsp_content['status']) == 1:
         return True
