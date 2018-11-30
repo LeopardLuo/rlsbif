@@ -59,37 +59,35 @@ class TestServiceOrderPush(object):
                 allure.attach("db_params",
                               "{0}, {1}, {2}, {3}, {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
-                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
+                                "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
-            with allure.step("注册用户，生成member_id"):
-                code_type = 2
-                client_type = 2
-                client_version = "v1"
-                device_token = "138001380001234"
-                imei = "138001380001234"
-                phone = "13800138000"
-                sms_code = "123456"
-                login_result = make_login(cls.httpclient, code_type, client_type, client_version, device_token, imei,
-                                          phone, sms_code,logger=cls.logger)
-                if login_result == {}:
-                    cls.logger.error("user login failed!")
-                    assert False
-                cls.member_id = login_result["user_info"]["member_id"]
-                cls.token = login_result['token']
-            with allure.step("进行身份认证，获取feature_id"):
-                headers = {"authorization": cls.token}
-                identity_card_face = "fore2.jpg"
-                identity_card_emblem = "back2.jpg"
-                face_picture = "face2.jpg"
-                cls.httpclient.update_header(headers)
-                user_identity_result = user_identity(cls.httpclient, cls.member_id, identity_card_face, identity_card_emblem,
-                                                     face_picture, logger=cls.logger)
-                if not user_identity_result:
-                    cls.logger.error("user identity failed!")
-                    assert False
-                table_name = "mem_features"
-                condition = ("member_id",cls.member_id)
-                cls.features_id = cls.mysql.execute_select_condition(table_name,condition)[0][0]
+            with allure.step("teststep: get provider id"):
+                provider_name = cls.config.getItem('h5', 'name2')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.provider_id = select_result[0][0]
+            with allure.step("teststep: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", cls.provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.spu_id = select_result[0][0]
+            with allure.step("初始化HTTP客户端2。"):
+                h5_port = cls.config.getItem('h5', 'port')
+                baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, h5_port)
+                allure.attach("baseurl", str(baseurl))
+                cls.logger.info("baseurl: " + baseurl)
+                cls.httpclient2 = HTTPClient(baseurl)
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -101,26 +99,12 @@ class TestServiceOrderPush(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
-        with allure.step("delete member"):
-            member_table = "mem_member"
-            mem_condition = ("member_id",cls.member_id)
-            allure.attach("table name", str(member_table))
-            cls.logger.info("table: {0}".format(member_table))
-            mem_delete_result = cls.mysql.execute_delete_condition(member_table, mem_condition)
-            allure.attach("delete result", str(mem_delete_result))
-            cls.logger.info("delete result: {0}".format(mem_delete_result))
-        with allure.step("delete feature"):
-            features_table = "mem_features"
-            features_condition = ("features_id",cls.features_id)
-            allure.attach("table name", str(features_table))
-            cls.logger.info("table: {0}".format(features_table))
-            features_delete_result = cls.mysql.execute_delete_condition(features_table, features_condition)
-            allure.attach("delete result", str(features_delete_result))
-            cls.logger.info("delete result: {0}".format(features_delete_result))
         if hasattr(cls, 'mqtt_client'):
             cls.mqtt_client.close()
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
+        if hasattr(cls, 'httpclient2'):
+            cls.httpclient2.close()
         if hasattr(cls, "mysql"):
             cls.mysql.close()
         cls.logger.info("*** End teardown class ***")
@@ -131,6 +115,40 @@ class TestServiceOrderPush(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         self.logger.info("Add some datas to database.")
+        with allure.step("注册用户，生成member_id"):
+            code_type = 2
+            client_type = 2
+            client_version = "v1"
+            device_token = "138001380001234"
+            imei = "138001380001234"
+            phone = "13800138000"
+            sms_code = "123456"
+            login_result = make_login(self.httpclient, code_type, client_type, client_version, device_token, imei,
+                                      phone, sms_code, logger=self.logger)
+            if login_result == {}:
+                self.logger.error("user login failed!")
+                assert False
+            self.member_id = login_result["user_info"]["member_id"]
+            self.token = login_result['token']
+        with allure.step("进行身份认证，获取feature_id"):
+            headers = {"authorization": self.token}
+            identity_card_face = "fore2.jpg"
+            identity_card_emblem = "back2.jpg"
+            face_picture = "face2.jpg"
+            self.httpclient.update_header(headers)
+            identity_myfeature = user_myfeature(self.httpclient, self.member_id, face_picture, logger=self.logger)
+            if not identity_myfeature:
+                self.logger.error("identity myfeature failed!")
+                assert False
+            user_identity_result = user_identity(self.httpclient, self.member_id, identity_card_face,
+                                                 identity_card_emblem,
+                                                 logger=self.logger)
+            if not user_identity_result:
+                self.logger.error("user identity failed!")
+                assert False
+            table_name = "mem_features"
+            condition = ("member_id", self.member_id)
+            self.features_id = self.mysql.execute_select_condition(table_name, condition)[0][0]
         self.logger.info("=== End setup method ===")
         self.logger.info("")
 
@@ -147,6 +165,55 @@ class TestServiceOrderPush(object):
             delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete business order"):
+            table = 'bus_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus_service_order_device_list"):
+            bus_service_order_device_list_table = "bus_service_order_device_list"
+            bus_service_order_device_list_condition = ("device_id", self.device_id)
+            allure.attach("table name", str(bus_service_order_device_list_table))
+            self.logger.info("table: {0}".format(bus_service_order_device_list_table))
+            bus_service_order_device_list_result = self.mysql.execute_delete_condition(
+                bus_service_order_device_list_table, bus_service_order_device_list_condition)
+            allure.attach("delete result", str(bus_service_order_device_list_result))
+            self.logger.info("delete result: {0}".format(bus_service_order_device_list_result))
+        with allure.step("delete bus_order_features"):
+            table = 'bus_order_features'
+            condition = ("service_orderid", self.service_order_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus_service_order_status"):
+            table = 'bus_service_order_status'
+            condition = ("service_order_id", self.service_order_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete member"):
+            member_table = "mem_member"
+            mem_condition = ("member_id", self.member_id)
+            allure.attach("table name", str(member_table))
+            self.logger.info("table: {0}".format(member_table))
+            mem_delete_result = self.mysql.execute_delete_condition(member_table, mem_condition)
+            allure.attach("delete result", str(mem_delete_result))
+            self.logger.info("delete result: {0}".format(mem_delete_result))
+        with allure.step("delete feature"):
+            features_table = "mem_features"
+            features_condition = ("features_id", self.features_id)
+            allure.attach("table name", str(features_table))
+            self.logger.info("table: {0}".format(features_table))
+            features_delete_result = self.mysql.execute_delete_condition(features_table, features_condition)
+            allure.attach("delete result", str(features_delete_result))
+            self.logger.info("delete result: {0}".format(features_delete_result))
         self.logger.info("=== End teardown method ===")
         self.logger.info("")
 
@@ -161,37 +228,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通AI产品部4"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the action_id in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the action_id in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -231,37 +308,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通AI产品部4"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the service order id in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the service order id in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -274,11 +361,11 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 service_order_id_payload = msg_payload_dict["data"]["service_order_id"]
-                allure.attach("Expect service order id:", str(service_order_id))
+                allure.attach("Expect service order id:", str(self.service_order_id))
                 allure.attach("Actual service order id:", str(service_order_id_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual service order id:{0}".format(service_order_id_payload))
-                assert service_order_id_payload == str(service_order_id)
+                assert service_order_id_payload == str(self.service_order_id)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -301,37 +388,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通AI产品部4"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the feature in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the feature in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -374,37 +471,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通AI产品部4"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the feature type in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the feature type in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -447,37 +554,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通AI产品部4"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the verify condition type in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the verify condition type in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -490,6 +607,16 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                with allure.step("get verify condition type in db"):
+                    table = 'bus_sku'
+                    condition = ("sku_id", sku_id)
+                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                    self.logger.info("")
+                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                    select_result = self.mysql.execute_select_condition(table, condition)
+                    allure.attach("query result", str(select_result))
+                    self.logger.info("query result: {0}".format(select_result))
+                    verify_condition_type = select_result[0][12]
                 allure.attach("Expect verify condition type:", str(verify_condition_type))
                 allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -517,37 +644,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the begin time in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the begin time in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -560,6 +697,7 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
+                begin_time = int(time.mktime(start_time.timetuple()))
                 allure.attach("Expect begin time:", str(begin_time))
                 allure.attach("Actual begin time:", str(begin_time_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -587,37 +725,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = 1539843055
-                end_time = 9999999999
-                in_count = 4
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the end time in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the end time in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -630,11 +778,12 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 end_time_payload = msg_payload_dict["data"]["end_time"]
-                allure.attach("Expect end time:", str(end_time))
+                end_time_stamp = int(time.mktime(end_time.timetuple()))
+                allure.attach("Expect end time:", str(end_time_stamp))
                 allure.attach("Actual end time:", str(end_time_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual end time:{0}".format(end_time_payload))
-                assert end_time_payload == str(end_time)
+                assert end_time_payload == str(end_time_stamp)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -657,37 +806,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 0
-                verify_condition_type = 1
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the begin time and end time in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the begin time and end time in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -702,19 +861,21 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                begin_time = int(time.mktime(start_time.timetuple()))
+                end_time_stamp = int(time.mktime(end_time.timetuple()))
                 allure.attach("Expect begin time stamp:", str(begin_time))
                 allure.attach("Actual begin time stamp:", str(begin_time_payload))
-                allure.attach("Expect end time stamp:", str(end_time))
+                allure.attach("Expect end time stamp:", str(end_time_stamp))
                 allure.attach("Actual end time stamp:", str(end_time_payload))
-                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Expect verify condition type:", str(1))
                 allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert begin_time_payload == str(begin_time)
-                assert end_time_payload == str(end_time)
-                assert verify_condition_type_payload == str(verify_condition_type)
+                assert end_time_payload == str(end_time_stamp)
+                assert verify_condition_type_payload == str(1)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -737,37 +898,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = 9999999999
-                in_count = 2
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the begin time and end time in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the begin time and end time in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -782,19 +953,20 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                begin_time = int(time.mktime(start_time.timetuple()))
                 allure.attach("Expect begin time stamp:", str(begin_time))
                 allure.attach("Actual begin time stamp:", str(begin_time_payload))
-                allure.attach("Expect end time stamp:", str(end_time))
+                allure.attach("Expect end time stamp:", str(9999999999))
                 allure.attach("Actual end time stamp:", str(end_time_payload))
-                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Expect verify condition type:", str(2))
                 allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert begin_time_payload == str(begin_time)
-                assert end_time_payload == str(end_time)
-                assert verify_condition_type_payload == str(verify_condition_type)
+                assert end_time_payload == str(9999999999)
+                assert verify_condition_type_payload == str(2)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -817,37 +989,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 2
-                verify_condition_type = 3
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the begin time and end time in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the begin time and end time in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -862,19 +1044,21 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                begin_time = int(time.mktime(start_time.timetuple()))
+                end_time_stamp = int(time.mktime(end_time.timetuple()))
                 allure.attach("Expect begin time stamp:", str(begin_time))
                 allure.attach("Actual begin time stamp:", str(begin_time_payload))
-                allure.attach("Expect end time stamp:", str(end_time))
+                allure.attach("Expect end time stamp:", str(end_time_stamp))
                 allure.attach("Actual end time stamp:", str(end_time_payload))
-                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Expect verify condition type:", str(1))
                 allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
+                assert end_time_payload == str(end_time_stamp)
+                assert verify_condition_type_payload == str(3)
                 assert begin_time_payload == str(begin_time)
-                assert end_time_payload == str(end_time)
-                assert verify_condition_type_payload == str(verify_condition_type)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -897,37 +1081,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 5
-                verify_condition_type = 3
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the in_count in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the in_count in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -940,6 +1134,16 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = msg_payload_dict["data"]["in_count"]
+                with allure.step("get in_count in db"):
+                    table = 'bus_sku'
+                    condition = ("sku_id", sku_id)
+                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                    self.logger.info("")
+                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                    select_result = self.mysql.execute_select_condition(table, condition)
+                    allure.attach("query result", str(select_result))
+                    self.logger.info("query result: {0}".format(select_result))
+                    in_count = select_result[0][16]
                 allure.attach("Expect in count:", str(in_count))
                 allure.attach("Actual in count:", str(in_count_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -967,37 +1171,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 0
-                verify_condition_type = 1
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the in_count in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the in_count in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -1011,15 +1225,25 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = msg_payload_dict["data"]["in_count"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                with allure.step("get in_count in db"):
+                    table = 'bus_sku'
+                    condition = ("sku_id", sku_id)
+                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                    self.logger.info("")
+                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                    select_result = self.mysql.execute_select_condition(table, condition)
+                    allure.attach("query result", str(select_result))
+                    self.logger.info("query result: {0}".format(select_result))
+                    in_count = select_result[0][16]
                 allure.attach("Expect in count:", str(in_count))
                 allure.attach("Actual in count:", str(in_count_payload))
-                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Expect verify condition type:", str(1))
                 allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
-                assert in_count_payload == str(0)
-                assert verify_condition_type_payload == str(verify_condition_type)
+                assert in_count_payload == str(in_count)
+                assert verify_condition_type_payload == str(1)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1042,37 +1266,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = 9999999999
-                in_count = 2
-                verify_condition_type = 2
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the in_count in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the in_count in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -1086,16 +1320,26 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = int(msg_payload_dict["data"]["in_count"])
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                with allure.step("get in_count in db"):
+                    table = 'bus_sku'
+                    condition = ("sku_id", sku_id)
+                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                    self.logger.info("")
+                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                    select_result = self.mysql.execute_select_condition(table, condition)
+                    allure.attach("query result", str(select_result))
+                    self.logger.info("query result: {0}".format(select_result))
+                    in_count = select_result[0][16]
                 allure.attach("Expect in count:", str(in_count))
                 allure.attach("Actual in count:", str(in_count_payload))
-                allure.attach("Expect verify condition type:", str(verify_condition_type))
+                allure.attach("Expect verify condition type:", str(2))
                 allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert in_count_payload == in_count
-                assert in_count > 0
-                assert verify_condition_type_payload == str(verify_condition_type)
+                assert in_count_payload > 0
+                assert verify_condition_type_payload == str(2)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1110,7 +1354,7 @@ class TestServiceOrderPush(object):
     @allure.severity("critical")
     @allure.story("verify_condition_type为3时,服务单下发payload的in_count大于0")
     @allure.testcase("FT-HTJK-003-014")
-    def test_003013_get_payload_in_count_3(self):
+    def test_003014_get_payload_in_count_3(self):
         self.logger.info("....test_get_payload_in_count_2 ....")
         topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
@@ -1118,37 +1362,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 2
-                verify_condition_type = 3
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the in_count in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the in_count in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -1162,16 +1416,26 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 in_count_payload = int(msg_payload_dict["data"]["in_count"])
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
+                with allure.step("get in_count in db"):
+                    table = 'bus_sku'
+                    condition = ("sku_id", sku_id)
+                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                    self.logger.info("")
+                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                    select_result = self.mysql.execute_select_condition(table, condition)
+                    allure.attach("query result", str(select_result))
+                    self.logger.info("query result: {0}".format(select_result))
+                    in_count = select_result[0][16]
                 allure.attach("Expect in count:", str(in_count))
                 allure.attach("Actual in count:", str(in_count_payload))
-                allure.attach("Expect verify condition type:", str(verify_condition_type))
-                allure.attach("Actual verify condition type:",str(verify_condition_type_payload))
+                allure.attach("Expect verify condition type:", str(3))
+                allure.attach("Actual verify condition type:", str(verify_condition_type_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual in count:{0}".format(in_count_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
                 assert in_count_payload == in_count
-                assert in_count > 0
-                assert verify_condition_type_payload == str(verify_condition_type)
+                assert in_count_payload > 0
+                assert verify_condition_type_payload == str(3)
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1194,37 +1458,47 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 0
-                verify_condition_type = 1
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
-            with allure.step("teststep3:assert the exrea in payload"):
+                    self.logger.info("can not get service order id.")
+                    assert False
+            with allure.step("teststep5:assert the exrea in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -1264,36 +1538,46 @@ class TestServiceOrderPush(object):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
                 self.logger.info("subscribe topic succeed!")
-            with allure.step("teststep2:issued the service order"):
-                self.logger.info("strat to create service order.")
-                system_id = "15596785737138176"
-                random_num = ""
-                # 生成随机4位数
-                for i in range(4):
-                    ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                    random_num += ch
-                business_order_id = str(get_timestamp()) + random_num
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                member_id = self.member_id
-                features_id = self.features_id
-                service_unit = "慧睿思通公共技术平台部"
-                service_address = "广州番禺区北大街"
-                begin_time = get_timestamp() + 300
-                end_time = get_timestamp() + 3000
-                in_count = 0
-                verify_condition_type = 1
-                device_ids = [self.device_id]
-                create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                      member_id, system_code, features_id, device_ids,
-                                                                      verify_condition_type, begin_time, end_time,
-                                                                      in_count, service_unit, service_address,
-                                                                      logger=self.logger)
-                service_order_id = 0
-                if create_service_order_result:
-                    service_order_id = create_service_order_result["service_order_id"]
-                    self.logger.info("service order id:" + str(service_order_id))
+            with allure.step("teststep2:get sku id"):
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_id = select_result[0][0]
+            with allure.step("teststep3:issued the service order"):
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
+                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
+                                                          [self.features_id], start_time, end_time, self.logger)
+                allure.attach("apply result", str(r_applyresult1))
+                self.logger.info("apply result: " + str(r_applyresult1))
+                assert r_applyresult1
+            with allure.step("teststep4:get service order id"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if select_result:
+                    self.service_order_id = select_result[0][0]
+                    allure.attach("service order id", str(self.service_order_id))
+                    self.logger.info("service order id:{0}".format(str(self.service_order_id)))
                 else:
-                    self.logger.info("create service order failed.")
+                    self.logger.info("can not get service order id.")
+                    assert False
             with allure.step("teststep3:assert the timestamp in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
@@ -1308,8 +1592,8 @@ class TestServiceOrderPush(object):
                 msg_payload_dict = json.loads(msg_payload)
                 timestamp_payload = int(msg_payload_dict["timestamp"])
                 table_name = "bus_service_order"
-                condition = ("service_order_id", service_order_id)
-                timestamp = self.mysql.execute_select_condition(table_name, condition)[0][16]
+                condition = ("service_order_id", self.service_order_id)
+                timestamp = self.mysql.execute_select_condition(table_name, condition)[0][17]
                 allure.attach("Expect timestamp:", str(timestamp))
                 allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -1329,4 +1613,4 @@ class TestServiceOrderPush(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003001_get_payload_action_id'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003015_get_payload_exrea'])

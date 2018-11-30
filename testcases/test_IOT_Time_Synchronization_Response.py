@@ -16,7 +16,7 @@ import json
 import datetime
 
 
-@allure.feature("时间同步响应")
+@allure.feature("IOT-时间同步响应")
 class TestTimeSynchronizationResponse(object):
 
     @allure.step("+++ setup class +++")

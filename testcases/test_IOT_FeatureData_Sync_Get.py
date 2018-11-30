@@ -17,7 +17,7 @@ import datetime
 
 
 @allure.feature("IOT-特征同步上报")
-class TestFeatureDataSyncReport(object):
+class TestFeatureDataSyncReportGet(object):
 
     @allure.step("+++ setup class +++")
     def setup_class(cls):
@@ -290,4 +290,5 @@ class TestFeatureDataSyncReport(object):
             self.logger.info("")
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_IOT_FeatureData_Sync_Report.py'])
+    # pytest.main(['-s', 'test_IOT_FeatureData_Sync_Report.py'])
+    pytest.main(['-s', 'test_IOT_FeatureData_Sync_Report_Get.py::TestFeatureDataSyncReportGet::test_003079_get_payload_action_id'])
