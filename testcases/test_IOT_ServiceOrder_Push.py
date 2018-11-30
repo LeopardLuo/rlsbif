@@ -62,7 +62,7 @@ class TestServiceOrderPush(object):
                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
             with allure.step("teststep: get provider id"):
-                provider_name = cls.config.getItem('h5', 'name2')
+                provider_name = cls.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
