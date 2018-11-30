@@ -92,8 +92,7 @@ class TestCetServiceOrderList(object):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
                 identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), cls.logger)
+                                                  'face2.jpg', get_timestamp(), cls.logger)
                 allure.attach("identity relative result", "{0}".format(identity_result1))
                 cls.logger.info("identity relative result: {0}".format(identity_result1))
                 identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
@@ -136,6 +135,17 @@ class TestCetServiceOrderList(object):
                 cls.logger.info("query result: {0}".format(select_result))
                 cls.sku_id = select_result[0][0]
 
+            with allure.step("teststep: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(cls.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.owner_feautreid = select_result[0][0]
+
             with allure.step("teststep: get features id by user info."):
                 user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
                 allure.attach("features data list", "{0}".format(user_info))
@@ -149,15 +159,20 @@ class TestCetServiceOrderList(object):
                     baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, h5_port)
                     allure.attach("baseurl", str(baseurl))
                     cls.logger.info("baseurl: " + baseurl)
-                    httpclient1 = HTTPClient(baseurl)
+                    cls.httpclient1 = HTTPClient(baseurl)
                 with allure.step("连接H5主页"):
-                    r_homeindex = h5_home_index(httpclient1, cls.member_id, cls.token, cls.logger)
+                    r_homeindex = h5_home_index(cls.httpclient1, cls.member_id, cls.token, cls.logger)
                     allure.attach("homeindex", str(r_homeindex))
                     cls.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                with allure.step("申请下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
-                                                           [cls.features_id1, cls.features_id2], cls.logger)
+                with allure.step("本人申请下单"):
+                    r_applyresult1 = h5_shopping_apply_result(cls.httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
+                                                           [cls.owner_feautreid], "2010-2-4", "2038-02-11", cls.logger)
+                    allure.attach("apply result", str(r_applyresult1))
+                    cls.logger.info("apply result: " + str(r_applyresult1))
+                with allure.step("本人申请成员下单"):
+                    r_applyresult1 = h5_shopping_add_member_result(cls.httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
+                                                           [cls.features_id1], cls.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     cls.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
@@ -188,15 +203,24 @@ class TestCetServiceOrderList(object):
             select_result = cls.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(select_result))
             cls.logger.info("delete result: {0}".format(select_result))
-        # with allure.step("delete service order records"):
-        #     table = 'bus_service_order'
-        #     condition = ("member_id", cls.member_id)
-        #     allure.attach("table name and condition", "{0},{1}".format(table, condition))
-        #     cls.logger.info("")
-        #     cls.logger.info("table: {0}, condition: {1}".format(table, condition))
-        #     delete_result = cls.mysql.execute_delete_condition(table, condition)
-        #     allure.attach("delete result", str(delete_result))
-        #     cls.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete service order records"):
+            table = 'bus_service_order'
+            condition = ("member_id", cls.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            delete_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            cls.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus service order records"):
+            table = 'bus_order'
+            condition = ("member_id", cls.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            delete_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            cls.logger.info("delete result: {0}".format(delete_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -1436,27 +1460,7 @@ class TestCetServiceOrderList(object):
             self.logger.info(".... End test_119024_no_timestamp ....")
             self.logger.info("")
 
-    def test_add_service_order(self):
-        baseurl = "http://192.168.1.235:15300"
-        httpclient = HTTPClient(baseurl)
-        params = {"userId": self.member_id, "token": self.token}
-        rsp = httpclient.get("/Home/Index", params=params)
-        print(rsp.status_code)
-        print(rsp.request.headers)
-        print(rsp.request.url)
-        print(rsp.request.body)
-        print("")
-
-        params = {"providerId": 38754966088712192, "productId": 38756904616329216, "skuId": 38762443172298752,
-                  "features_id": [self.features_id], "start_date": "2018-11-28", "end_date": "2020-01-01"}
-        rsp = httpclient.get("/Shopping/ApplyResult", params=params)
-        print(rsp.status_code)
-        print(rsp.request.headers)
-        print(rsp.request.url)
-        print(rsp.request.body)
-        print(rsp.text)
-
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Service_Order_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119001_get_0index_of_2page'])
+    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119024_no_timestamp'])
