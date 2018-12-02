@@ -118,7 +118,7 @@ class TestTimeSynchronizationRequest(object):
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
                 assert action_id == "204"
-                assert int(timestamp_payload) == local_timestamp
+                assert  local_timestamp-10 <=int(timestamp_payload) <= local_timestamp
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -228,7 +228,7 @@ class TestTimeSynchronizationRequest(object):
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
                 assert action_id == "204"
-                assert int(timestamp_payload) == local_timestamp
+                assert local_timestamp-10 <=int(timestamp_payload) <= local_timestamp
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")

@@ -62,36 +62,44 @@ class TestServiceOrderReport(object):
                 cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
-            with allure.step("注册用户，生成member_id"):
-                code_type = 2
-                client_type = 2
-                client_version = "v1"
-                device_token = "138001380001234"
-                imei = "138001380001234"
-                phone = "13800138000"
-                sms_code = "123456"
-                login_result = make_login(cls.httpclient, code_type, client_type, client_version, device_token, imei,
-                                          phone, sms_code, logger=cls.logger)
-                if login_result == {}:
-                    cls.logger.error("user login failed!")
-                    assert False
-                cls.member_id = login_result["user_info"]["member_id"]
-                cls.token = login_result['token']
-            with allure.step("进行身份认证，获取feature_id"):
-                headers = {"authorization": cls.token}
-                identity_card_face = "fore2.jpg"
-                identity_card_emblem = "back2.jpg"
-                face_picture = "face2.jpg"
-                cls.httpclient.update_header(headers)
-                user_identity_result = user_identity(cls.httpclient, cls.member_id, identity_card_face,
-                                                     identity_card_emblem,
-                                                     face_picture, logger=cls.logger)
-                if not user_identity_result:
-                    cls.logger.error("user identity failed!")
-                    assert False
-                table_name = "mem_features"
-                condition = ("member_id", cls.member_id)
-                cls.features_id = cls.mysql.execute_select_condition(table_name, condition)[0][0]
+            with allure.step("get provider id"):
+                provider_name = cls.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.provider_id = select_result[0][0]
+            with allure.step("get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", cls.provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.spu_id = select_result[0][0]
+            with allure.step("get sku id"):
+                sku_name = cls.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.sku_id = select_result[0][0]
+            with allure.step("初始化HTTP客户端2。"):
+                h5_port = cls.config.getItem('h5', 'port')
+                baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, h5_port)
+                allure.attach("baseurl", str(baseurl))
+                cls.logger.info("baseurl: " + baseurl)
+                cls.httpclient2 = HTTPClient(baseurl)
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -103,26 +111,12 @@ class TestServiceOrderReport(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
-        with allure.step("delete member"):
-            member_table = "mem_member"
-            mem_condition = ("member_id", cls.member_id)
-            allure.attach("table name", str(member_table))
-            cls.logger.info("table: {0}".format(member_table))
-            mem_delete_result = cls.mysql.execute_delete_condition(member_table, mem_condition)
-            allure.attach("delete result", str(mem_delete_result))
-            cls.logger.info("delete result: {0}".format(mem_delete_result))
-        with allure.step("delete feature"):
-            features_table = "mem_features"
-            features_condition = ("features_id", cls.features_id)
-            allure.attach("table name", str(features_table))
-            cls.logger.info("table: {0}".format(features_table))
-            features_delete_result = cls.mysql.execute_delete_condition(features_table, features_condition)
-            allure.attach("delete result", str(features_delete_result))
-            cls.logger.info("delete result: {0}".format(features_delete_result))
         if hasattr(cls, 'mqtt_client'):
             cls.mqtt_client.close()
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
+        if hasattr(cls, 'httpclient2'):
+            cls.httpclient2.close()
         if hasattr(cls, "mysql"):
             cls.mysql.close()
         cls.logger.info("*** End teardown class ***")
@@ -133,35 +127,84 @@ class TestServiceOrderReport(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         self.logger.info("Add some datas to database.")
+        with allure.step("注册用户，生成member_id"):
+            code_type = 2
+            client_type = 2
+            client_version = "v1"
+            device_token = "138001380001234"
+            imei = "138001380001234"
+            phone = "13800138000"
+            sms_code = "123456"
+            login_result = make_login(self.httpclient, code_type, client_type, client_version, device_token, imei,
+                                      phone, sms_code, logger=self.logger)
+            if login_result == {}:
+                self.logger.error("user login failed!")
+                assert False
+            self.member_id = login_result["user_info"]["member_id"]
+            self.token = login_result['token']
+        with allure.step("进行身份认证，获取feature_id"):
+            headers = {"authorization": self.token}
+            identity_card_face = "fore2.jpg"
+            identity_card_emblem = "back2.jpg"
+            face_picture = "face2.jpg"
+            self.httpclient.update_header(headers)
+            identity_myfeature = user_myfeature(self.httpclient, self.member_id, face_picture, logger=self.logger)
+            if not identity_myfeature:
+                self.logger.error("identity myfeature failed!")
+                assert False
+            user_identity_result = user_identity(self.httpclient, self.member_id, identity_card_face,
+                                                 identity_card_emblem,
+                                                 logger=self.logger)
+            if not user_identity_result:
+                self.logger.error("user identity failed!")
+                assert False
+            table_name = "mem_features"
+            condition = ("member_id", self.member_id)
+            self.features_id = self.mysql.execute_select_condition(table_name, condition)[0][0]
         with allure.step("创建服务单"):
-            self.logger.info("strat to create service order.")
-            self.system_id = "15596785737138176"
-            random_num = ""
-            # 生成随机4位数
-            for i in range(4):
-                ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                random_num += ch
-            business_order_id = str(get_timestamp()) + random_num
-            self.system_code = "ba80b269044e7501d1b4e7890d319ff5"
-            member_id = self.member_id
-            features_id = self.features_id
-            service_unit = "慧睿思通AI产品部4"
-            service_address = "广州番禺区北大街"
-            begin_time = get_timestamp() + 300
-            end_time = get_timestamp() + 3000
-            in_count = random.randint(1,20)
-            verify_condition_type = 3
-            device_ids = [self.device_id]
-            create_service_order_result = h5_create_service_order(self.httpclient, self.system_id, business_order_id,
-                                                                  member_id, self.system_code, features_id, device_ids,
-                                                                  verify_condition_type, begin_time, end_time,
-                                                                  in_count, service_unit, service_address,
-                                                                  logger=self.logger)
-            if create_service_order_result:
-                self.service_order_id = create_service_order_result["service_order_id"]
-                self.logger.info("service order id:" + str(self.service_order_id))
+            with allure.step("连接H5主页"):
+                r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                allure.attach("homeindex", str(r_homeindex))
+                self.logger.info("homeindex: " + str(r_homeindex))
+                assert not r_homeindex
+            start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+            end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+            r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, self.sku_id,
+                                                      [self.features_id], start_time, end_time, self.logger)
+            allure.attach("apply result", str(r_applyresult1))
+            self.logger.info("apply result: " + str(r_applyresult1))
+            assert r_applyresult1
+        with allure.step("get service order id"):
+            table = 'bus_service_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("")
+            self.logger.info("table: {0}, condition: {1}".format(table, condition))
+            select_result = self.mysql.execute_select_condition(table, condition)
+            allure.attach("query result", str(select_result))
+            self.logger.info("query result: {0}".format(select_result))
+            if select_result:
+                self.service_order_id = select_result[0][0]
+                allure.attach("service order id", str(self.service_order_id))
+                self.logger.info("service order id:{0}".format(str(self.service_order_id)))
             else:
-                self.logger.info("create service order failed.")
+                self.logger.info("can not get service order id.")
+                assert False
+        with allure.step("get business order id"):
+            table = 'bus_order'
+            condition = ("service_order_id", self.service_order_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("")
+            self.logger.info("table: {0}, condition: {1}".format(table, condition))
+            select_result = self.mysql.execute_select_condition(table, condition)
+            allure.attach("query result", str(select_result))
+            self.logger.info("query result: {0}".format(select_result))
+            if select_result:
+                self.bus_order_id = select_result[0][0]
+                allure.attach("business order id", str(self.bus_order_id))
+                self.logger.info("service order id:{0}".format(str(self.bus_order_id)))
+            else:
+                self.logger.info("can not get business order id.")
                 assert False
         self.logger.info("=== End setup method ===")
         self.logger.info("")
@@ -171,22 +214,6 @@ class TestServiceOrderReport(object):
         self.logger.info("=== Start teardown method ===")
         self.logger.info(method.__name__)
         self.logger.info("do some database clean operation.")
-        with allure.step("delete service order"):
-            table = 'bus_service_order'
-            condition = ("service_order_id", self.service_order_id)
-            allure.attach("table name", str(table))
-            self.logger.info("table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(delete_result))
-            self.logger.info("delete result: {0}".format(delete_result))
-        with allure.step("delete bus service order status"):
-            table = 'bus_service_order_status'
-            condition = ("service_order_id", self.service_order_id)
-            allure.attach("table name", str(table))
-            self.logger.info("table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(delete_result))
-            self.logger.info("delete result: {0}".format(delete_result))
         with allure.step("delete member order record"):
             table = 'mem_order_record'
             condition = ("service_order_id", self.service_order_id)
@@ -195,6 +222,63 @@ class TestServiceOrderReport(object):
             delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete service order"):
+            table = 'bus_service_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete business order"):
+            table = 'bus_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus_service_order_device_list"):
+            bus_service_order_device_list_table = "bus_service_order_device_list"
+            bus_service_order_device_list_condition = ("device_id", self.device_id)
+            allure.attach("table name", str(bus_service_order_device_list_table))
+            self.logger.info("table: {0}".format(bus_service_order_device_list_table))
+            bus_service_order_device_list_result = self.mysql.execute_delete_condition(
+                bus_service_order_device_list_table, bus_service_order_device_list_condition)
+            allure.attach("delete result", str(bus_service_order_device_list_result))
+            self.logger.info("delete result: {0}".format(bus_service_order_device_list_result))
+        with allure.step("delete bus_order_features"):
+            table = 'bus_order_features'
+            condition = ("service_orderid", self.service_order_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus_service_order_status"):
+            table = 'bus_service_order_status'
+            condition = ("service_order_id", self.service_order_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete feature"):
+            features_table = "mem_features"
+            features_condition = ("features_id", self.features_id)
+            allure.attach("table name", str(features_table))
+            self.logger.info("table: {0}".format(features_table))
+            features_delete_result = self.mysql.execute_delete_condition(features_table, features_condition)
+            allure.attach("delete result", str(features_delete_result))
+            self.logger.info("delete result: {0}".format(features_delete_result))
+        with allure.step("delete member"):
+            member_table = "mem_member"
+            mem_condition = ("member_id", self.member_id)
+            allure.attach("table name", str(member_table))
+            self.logger.info("table: {0}".format(member_table))
+            mem_delete_result = self.mysql.execute_delete_condition(member_table, mem_condition)
+            allure.attach("delete result", str(mem_delete_result))
+            self.logger.info("delete result: {0}".format(mem_delete_result))
         self.logger.info("=== End teardown method ===")
         self.logger.info("")
 
@@ -212,53 +296,68 @@ class TestServiceOrderReport(object):
                 self.mqtt_client.loopstart()
             with allure.step("teststep2:report service order status"):
                 self.logger.info("report service order status.")
+                time_stamp = get_timestamp()
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": in_out,
-                                         "exrea": ""}, "timestamp": str(get_timestamp())}
+                                         "exrea": ""}, "timestamp": str(time_stamp)}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                record_list = service_order_records["data"]
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
+                    self.logger.error("get recognized record failed.")
+                    assert False
+                record_list = recognize_record["data"]
                 start_time = datetime.datetime.now()
                 while record_list == []:
                     time.sleep(5)
-                    service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                         self.service_order_id, self.system_code, 0, 20,
-                                                                         get_timestamp(), self.logger)
-                    if service_order_records == {}:
+                    recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                                  logger=self.logger)
+                    if recognize_record == {}:
                         self.logger.error("get service order records failed.")
                         assert False
-                    record_list = service_order_records["data"]
+                    record_list = recognize_record["data"]
                     end_time = datetime.datetime.now()
                     during = (end_time - start_time).seconds
                     if during > 60:
                         self.logger.error("business system has not receive the service order report")
                         assert False
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
                     assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
-            with allure.step("teststep4:assert the service order status."):
-                report = record_list[0]["report_content"]
-                allure.attach("Expect service order status report:", str(send_payload))
-                allure.attach("Actual service order status report:", str(report))
-                self.logger.info("Actual service order status report:{0}".format(report))
-                assert str(report) == str(send_payload)
+                already_count = service_order_list[0]["already_count"]
+                record = record_list[0]
+                device_id_in_record = record["device_id"]
+                service_order_id_in_record = record["service_order_id"]
+                check_time = record["check_time"]
+                in_out_in_record = record["in_out"]
+            with allure.step("teststep4:assert the record."):
+                allure.attach("Expect device id:", str(self.device_id))
+                allure.attach("Actual device id:", str(device_id_in_record))
+                self.logger.info("Actual device id:{0}".format(device_id_in_record))
+                allure.attach("Expect service order id:", str(self.service_order_id))
+                allure.attach("Actual service order id:", str(service_order_id_in_record))
+                self.logger.info("Actual service order id:{0}".format(service_order_id_in_record))
+                allure.attach("Expect in_out:", str(in_out))
+                allure.attach("Actual in_out:", str(in_out_in_record))
+                self.logger.info("Actual in_out:{0}".format(in_out_in_record))
+                allure.attach("Expect timestamp:", str(time_stamp))
+                allure.attach("Actual timestamp:", str(check_time))
+                self.logger.info("Actual timestamp:{0}".format(check_time))
+                allure.attach("Actual already_count:", str(already_count))
+                self.logger.info("Actual already_count:{0}".format(already_count))
+                assert str(device_id_in_record) == str(self.device_id)
+                assert str(service_order_id_in_record) == str(self.service_order_id)
+                assert int(in_out) == in_out_in_record
+                assert time_stamp == check_time
                 assert already_count > 0
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -298,24 +397,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str(result))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -416,24 +510,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str(result))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -458,7 +547,7 @@ class TestServiceOrderReport(object):
                               ('1A', []), ('1中', []), ('1*', []), (' ', []), ('', [])],
                              ids=["in_out(非0、1、-1)", "in_out(非0、1、-1)_2", "in_out(超长值)", "in_out(小数)",
                                   "in_out(中文)", "in_out(字母)", "in_out(特殊字符)", "in_out(数字字母)",
-                                  "in_out(数字中文)","in_out(数字特殊字符)", "in_out(空格)", "in_out(空)"])
+                                  "in_out(数字中文)", "in_out(数字特殊字符)", "in_out(空格)", "in_out(空)"])
     def test_003058_report_service_order_status_incorrect_in_out(self, in_out, result):
         self.logger.info(".... test_003058_report_service_order_status_incorrect_in_out ....")
         topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
@@ -478,24 +567,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str(result))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -527,53 +611,80 @@ class TestServiceOrderReport(object):
                 self.mqtt_client.loopstart()
             with allure.step("teststep2:report service order status"):
                 self.logger.info("report service order status.")
+                time_stamp = get_timestamp()
+                in_out = 1
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
-                                         "in_out": 1,
-                                         "exrea": exrea}, "timestamp": str(get_timestamp())}
+                                         "in_out": in_out,
+                                         "exrea": exrea}, "timestamp": str(time_stamp)}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                record_list = service_order_records["data"]
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
+                    self.logger.error("get recognized record failed.")
+                    assert False
+                record_list = recognize_record["data"]
                 start_time = datetime.datetime.now()
                 while record_list == []:
                     time.sleep(5)
-                    service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                         self.service_order_id, self.system_code, 0, 20,
-                                                                         get_timestamp(), self.logger)
-                    if service_order_records == {}:
+                    recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                                  logger=self.logger)
+                    if recognize_record == {}:
                         self.logger.error("get service order records failed.")
                         assert False
-                    record_list = service_order_records["data"]
+                    record_list = recognize_record["data"]
                     end_time = datetime.datetime.now()
                     during = (end_time - start_time).seconds
                     if during > 60:
                         self.logger.error("business system has not receive the service order report")
                         assert False
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
                     assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
-            with allure.step("teststep4:assert the service order status."):
-                report = record_list[0]["report_content"]
-                allure.attach("Expect service order status report:", str(send_payload))
-                allure.attach("Actual service order status report:", str(report))
-                self.logger.info("Actual service order status report:{0}".format(report))
-                assert str(report) == str(send_payload)
+                already_count = service_order_list[0]["already_count"]
+                record = record_list[0]
+                device_id_in_record = record["device_id"]
+                service_order_id_in_record = record["service_order_id"]
+                check_time = record["check_time"]
+                in_out_in_record = record["in_out"]
+            with allure.step("teststep4:assert the record."):
+                table = 'mem_order_record'
+                condition = ("service_order_id", self.service_order_id)
+                select_result = self.mysql.execute_select_condition(table, condition)
+                if not select_result:
+                    self.logger.error("no record!")
+                    assert False
+                report_content = select_result[0][6]
+                allure.attach("Expect report_content:", str(send_payload))
+                allure.attach("Actual report_content:", str(report_content))
+                self.logger.info("Actual report_content:{0}".format(report_content))
+                allure.attach("Expect device id:", str(self.device_id))
+                allure.attach("Actual device id:", str(device_id_in_record))
+                self.logger.info("Actual device id:{0}".format(device_id_in_record))
+                allure.attach("Expect service order id:", str(self.service_order_id))
+                allure.attach("Actual service order id:", str(service_order_id_in_record))
+                self.logger.info("Actual service order id:{0}".format(service_order_id_in_record))
+                allure.attach("Expect in_out:", str(in_out))
+                allure.attach("Actual in_out:", str(in_out_in_record))
+                self.logger.info("Actual in_out:{0}".format(in_out_in_record))
+                allure.attach("Expect timestamp:", str(time_stamp))
+                allure.attach("Actual timestamp:", str(check_time))
+                self.logger.info("Actual timestamp:{0}".format(check_time))
+                allure.attach("Actual already_count:", str(already_count))
+                self.logger.info("Actual already_count:{0}".format(already_count))
+                assert report_content == str(send_payload)
+                assert str(device_id_in_record) == str(self.device_id)
+                assert str(service_order_id_in_record) == str(self.service_order_id)
+                assert int(in_out) == in_out_in_record
+                assert time_stamp == check_time
                 assert already_count > 0
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -613,24 +724,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str(result))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -661,10 +767,11 @@ class TestServiceOrderReport(object):
                 self.mqtt_client.loopstart()
             with allure.step("teststep2:report service order status"):
                 self.logger.info("report service order status.")
+                in_out = 1
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
-                                         "in_out": 1,
+                                         "in_out": in_out,
                                          "exrea": ""}, "timestamp": timestamp}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
@@ -672,42 +779,56 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                record_list = service_order_records["data"]
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
+                    self.logger.error("get recognized record failed.")
+                    assert False
+                record_list = recognize_record["data"]
                 start_time = datetime.datetime.now()
                 while record_list == []:
                     time.sleep(5)
-                    service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                         self.service_order_id, self.system_code, 0, 20,
-                                                                         get_timestamp(), self.logger)
-                    if service_order_records == {}:
+                    recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                                  logger=self.logger)
+                    if recognize_record == {}:
                         self.logger.error("get service order records failed.")
                         assert False
-                    record_list = service_order_records["data"]
+                    record_list = recognize_record["data"]
                     end_time = datetime.datetime.now()
                     during = (end_time - start_time).seconds
                     if during > 60:
                         self.logger.error("business system has not receive the service order report")
                         assert False
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
                     assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
-            with allure.step("teststep4:assert the service order status."):
-                report = record_list[0]["report_content"]
-                allure.attach("Expect service order status report:", str(send_payload))
-                allure.attach("Actual service order status report:", str(report))
-                self.logger.info("Actual service order status report:{0}".format(report))
-                assert str(report) == str(send_payload)
+                already_count = service_order_list[0]["already_count"]
+                record = record_list[0]
+                device_id_in_record = record["device_id"]
+                service_order_id_in_record = record["service_order_id"]
+                check_time = record["check_time"]
+                in_out_in_record = record["in_out"]
+            with allure.step("teststep4:assert the record."):
+                allure.attach("Expect device id:", str(self.device_id))
+                allure.attach("Actual device id:", str(device_id_in_record))
+                self.logger.info("Actual device id:{0}".format(device_id_in_record))
+                allure.attach("Expect service order id:", str(self.service_order_id))
+                allure.attach("Actual service order id:", str(service_order_id_in_record))
+                self.logger.info("Actual service order id:{0}".format(service_order_id_in_record))
+                allure.attach("Expect in_out:", str(in_out))
+                allure.attach("Actual in_out:", str(in_out_in_record))
+                self.logger.info("Actual in_out:{0}".format(in_out_in_record))
+                allure.attach("Expect timestamp:", str(timestamp))
+                allure.attach("Actual timestamp:", str(check_time))
+                self.logger.info("Actual timestamp:{0}".format(check_time))
+                allure.attach("Actual already_count:", str(already_count))
+                self.logger.info("Actual already_count:{0}".format(already_count))
+                assert str(device_id_in_record) == str(self.device_id)
+                assert str(service_order_id_in_record) == str(self.service_order_id)
+                assert int(in_out) == in_out_in_record
+                assert timestamp == check_time
                 assert already_count > 0
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -750,24 +871,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str(result))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -805,24 +921,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str([]))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -908,24 +1019,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str([]))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -965,24 +1071,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str([]))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -1014,7 +1115,7 @@ class TestServiceOrderReport(object):
                                 "data": {"device_id": self.device_id,
                                          "service_order_id": str(self.service_order_id),
                                          "in_out": 1,
-                                         "exrea":""}
+                                         "exrea": ""}
                                 }
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
@@ -1022,24 +1123,19 @@ class TestServiceOrderReport(object):
                 self.logger.info("finish report service order status. ")
             with allure.step("teststep3:get service order status from business system."):
                 time.sleep(5)
-                service_order_records = bs_get_service_order_records(self.httpclient, self.system_id,
-                                                                     self.service_order_id, self.system_code, 0, 20,
-                                                                     get_timestamp(), self.logger)
-                if service_order_records == {}:
+                service_order_list = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3,
+                                                              logger=self.logger)
+                if service_order_list == []:
+                    self.logger.error("get service order list failed.")
+                    assert False
+                already_count = service_order_list[0]["already_count"]
+                self.logger.info("already_count:{0}".format(already_count))
+                recognize_record = get_recognized_record_list(self.httpclient, self.member_id, 0, 20,
+                                                              logger=self.logger)
+                if recognize_record == {}:
                     self.logger.error("get service order records failed.")
                     assert False
-                record_list = service_order_records["data"]
-                allure.attach("service order records content", str(service_order_records))
-                self.logger.info("service order records content:{0}".format(service_order_records))
-                service_order_status = bs_get_service_order_status(self.httpclient, self.system_id,
-                                                                   self.service_order_id, self.system_code,
-                                                                   get_timestamp(), self.logger)
-                if service_order_status == {}:
-                    self.logger.error("get service order status failed.")
-                    assert False
-                allure.attach("service order status content", str(service_order_status))
-                self.logger.info("service order status content:{0}".format(service_order_status))
-                already_count = service_order_status["already_count"]
+                record_list = recognize_record["data"]
             with allure.step("teststep4:assert the service order status."):
                 allure.attach("Expect service order status report:", str([]))
                 allure.attach("Actual service order status report:", str(record_list))
@@ -1059,4 +1155,5 @@ class TestServiceOrderReport(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003054_report_service_order_status'])
+    # pytest.main(['-s',
+    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003066_report_service_order_status_no_exrea'])

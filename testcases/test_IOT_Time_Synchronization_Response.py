@@ -160,8 +160,8 @@ class TestTimeSynchronizationResponse(object):
                 allure.attach("Expect timestamp:", str(local_timestamp))
                 allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
-                self.logger.info("Actual action id:{0}".format(timestamp_payload))
-                assert int(timestamp_payload) == local_timestamp
+                self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
+                assert local_timestamp-10 <=int(timestamp_payload) <= local_timestamp
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
