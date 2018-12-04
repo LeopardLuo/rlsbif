@@ -14,8 +14,8 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 @pytest.mark.H5
-@allure.feature("H5-增加常驻人员服务单")
-class TestShoppingAddMemberResult(object):
+@allure.feature("H5-邀请访客服务单")
+class TestShoppingAddVisitorResult(object):
 
     @allure.step("+++ setup class +++")
     def setup_class(cls):
@@ -27,7 +27,7 @@ class TestShoppingAddMemberResult(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'H5ShoppingAddMemberResult')
+                cls.URI = cls.config.getItem('uri', 'H5ShoppingAddVisitorResult')
                 allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):
@@ -77,9 +77,9 @@ class TestShoppingAddMemberResult(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
-    def test_add_member_result_other_with_whitelist(self):
-        """ Test add member result interface add other with whitelist"""
-        self.logger.info(".... Start test_add_member_result_other_with_whitelist ....")
+    def test_add_visitor_result_other_with_whitelist(self):
+        """ Test add visitor result interface add other with whitelist"""
+        self.logger.info(".... Start test_add_visitor_result_other_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -109,13 +109,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -127,7 +121,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -138,7 +132,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -163,7 +157,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -174,14 +168,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -199,14 +186,27 @@ class TestShoppingAddMemberResult(object):
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", time.strftime("%Y-%m-%d"), "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                features_id1 = select_result[0][0]
+                relationship = select_result[0][3]
+                assert relationship == 99
+
+            with allure.step("teststep10: get bus_service_order info"):
                 table = 'bus_service_order'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -224,12 +224,12 @@ class TestShoppingAddMemberResult(object):
                 assert select_result[0][2] == provider_name
                 assert select_result[0][6] == features_id1
                 assert select_result[0][7] == 'kuli1'
-                assert select_result[0][8] == 1
+                assert select_result[0][8] == 99
                 assert select_result[0][9] == 0
                 assert begin_time == time.strftime("%Y-%m-%d")
-                assert end_time == "2286-11-21"
+                assert end_time == "2021-02-10"
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -245,12 +245,12 @@ class TestShoppingAddMemberResult(object):
                         self.logger.info("begin_time: {0}".format(begin_time2))
                         self.logger.info("end_time: {0}".format(end_time2))
                         assert item[4] == service_order_id
-                        assert item[5] == '13511229000'
+                        assert item[5] == ''
                         assert item[6] == features_id1
-                        assert item[9] == 1
+                        assert item[9] == 3
                         assert item[12] == 1
                         assert begin_time2 == time.strftime("%Y-%m-%d")
-                        assert end_time2 == "9999-12-31"
+                        assert end_time2 == "2021-02-10"
                     else:
                         begin_time2 = str(item[15].strftime("%Y-%m-%d"))
                         end_time2 = str(item[16].strftime("%Y-%m-%d"))
@@ -264,7 +264,7 @@ class TestShoppingAddMemberResult(object):
                         assert begin_time2 == '2010-02-04'
                         assert end_time2 == '2038-02-11'
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -310,12 +310,12 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_other_with_whitelist ....")
+            self.logger.info(".... End test_add_visitor_result_other_with_whitelist ....")
             self.logger.info("")
 
-    def test_add_member_result_other_without_whitelist(self):
-        """ Test add member result interface add other without whitelist"""
-        self.logger.info(".... Start test_add_member_result_other_without_whitelist ....")
+    def test_add_visitor_result_other_without_whitelist(self):
+        """ Test add visitor result interface add other without whitelist"""
+        self.logger.info(".... Start test_add_visitor_result_other_without_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -345,18 +345,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-                identity_result2 = identity_other(self.httpclient, self.member_id, 'mm1', 'mm1.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result2))
-                self.logger.info("identity relative result: {0}".format(identity_result2))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -368,7 +357,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -379,7 +368,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -404,7 +393,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -415,15 +404,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-                features_id2 = user_info[1]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -441,25 +422,36 @@ class TestShoppingAddMemberResult(object):
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1, features_id2], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", time.strftime("%Y-%m-%d"), "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert not r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
-                table = 'bus_service_order'
-                condition = ("member_id", self.member_id)
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
+                select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert not select_result
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep10: get bus_service_order info"):
+                table = 'bus_service_order'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert not select_result
+
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -468,20 +460,9 @@ class TestShoppingAddMemberResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                begin_time2 = str(select_result[0][15].strftime("%Y-%m-%d"))
-                end_time2 = str(select_result[0][16].strftime("%Y-%m-%d"))
-                self.logger.info("begin_time: {0}".format(begin_time2))
-                self.logger.info("end_time: {0}".format(end_time2))
-                assert not select_result[0][4]
-                assert select_result[0][5] == '13511229100'
-                assert select_result[0][6] == owner_feautreid
-                assert select_result[0][7] == '本人'
-                assert select_result[0][9] == 0
-                assert select_result[0][12] == 0
-                assert begin_time2 == "2010-02-04"
-                assert end_time2 == "2038-02-11"
+                assert len(select_result) == 1
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -527,12 +508,12 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_other_without_whitelist ....")
+            self.logger.info(".... End test_add_visitor_result_other_without_whitelist ....")
             self.logger.info("")
 
-    def test_add_member_result_user_with_whitelist(self):
-        """ Test add member result interface add user with whitelist"""
-        self.logger.info(".... Start test_add_member_result_user_with_whitelist ....")
+    def test_add_visitor_result_user_with_whitelist(self):
+        """ Test add visitor result interface add user with whitelist"""
+        self.logger.info(".... Start test_add_visitor_result_user_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -562,13 +543,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -580,7 +555,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -591,7 +566,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -616,7 +591,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -627,14 +602,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -648,29 +616,40 @@ class TestShoppingAddMemberResult(object):
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid], "2010-2-4", "2038-02-11", self.logger)
+                                                              [owner_feautreid],"2010-2-4", "2038-02-11",self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请常驻人员单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [owner_feautreid], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "owner", time.strftime("%Y-%m-%d"), "2021-02-10", "face2.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert not r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
-                table = 'bus_service_order'
-                condition = ("member_id = '{}'".format(self.member_id))
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
                 select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 1
+                assert not select_result
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep10: get bus_service_order info"):
+                table = 'bus_service_order'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert not select_result
+
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -681,7 +660,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -727,12 +706,12 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_user_with_whitelist ....")
+            self.logger.info(".... End test_add_visitor_result_user_with_whitelist ....")
             self.logger.info("")
 
-    def test_add_member_result_other_with_time_or_count(self):
-        """ Test add member result interface add other with time or count"""
-        self.logger.info(".... Start test_add_member_result_other_with_time_or_count ....")
+    def test_add_visitor_result_other_with_time_or_count(self):
+        """ Test add visitor result interface add other with time or count"""
+        self.logger.info(".... Start test_add_visitor_result_other_with_time_or_count ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -762,13 +741,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -780,7 +753,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -791,7 +764,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -816,7 +789,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -827,14 +800,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -848,18 +814,31 @@ class TestShoppingAddMemberResult(object):
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid], "2010-2-4", "2038-02-11", self.logger)
+                                                              [owner_feautreid],"2010-2-4", "2038-02-11",self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", "2014-06-21", "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                features_id1 = select_result[0][0]
+                relationship = select_result[0][3]
+                assert relationship == 99
+
+            with allure.step("teststep10: get bus_service_order info"):
                 table = 'bus_service_order'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -874,12 +853,17 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("service_order_id: {0}".format(service_order_id))
                 self.logger.info("begin_time: {0}".format(begin_time))
                 self.logger.info("end_time: {0}".format(end_time))
-                assert begin_time == time.strftime("%Y-%m-%d")
-                assert end_time == "2286-11-21"
+                assert select_result[0][2] == provider_name
+                assert select_result[0][6] == features_id1
+                assert select_result[0][7] == 'kuli1'
+                assert select_result[0][8] == 99
+                assert select_result[0][9] == 0
+                assert begin_time == "2014-06-21"
+                assert end_time == "2021-02-10"
                 assert select_result[0][15] == 0
                 assert select_result[0][16] == 1
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -897,11 +881,11 @@ class TestShoppingAddMemberResult(object):
                         assert item[11] == sku_price
                         assert item[12] == 1
                         assert begin_time2 == begin_time
-                        assert end_time2 == '9999-12-31'
+                        assert end_time2 == end_time
                         assert item[17] == 0
                         assert item[19] == 1
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -947,12 +931,12 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_other_with_time_or_count ....")
+            self.logger.info(".... End test_add_visitor_result_other_with_time_or_count ....")
             self.logger.info("")
 
-    def test_add_member_result_other_with_time(self):
-        """ Test add member result interface add other with time."""
-        self.logger.info(".... Start test_add_member_result_other_with_time ....")
+    def test_add_visitor_result_other_with_time(self):
+        """ Test add visitor result interface add other with time"""
+        self.logger.info(".... Start test_add_visitor_result_other_with_time ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -982,13 +966,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -1000,7 +978,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1011,7 +989,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1036,7 +1014,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1047,14 +1025,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -1068,18 +1039,31 @@ class TestShoppingAddMemberResult(object):
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid], "2010-2-4", "2038-02-11", self.logger)
+                                                              [owner_feautreid],"2010-2-4", "2038-02-11",self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", "2014-06-21", "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                features_id1 = select_result[0][0]
+                relationship = select_result[0][3]
+                assert relationship == 99
+
+            with allure.step("teststep10: get bus_service_order info"):
                 table = 'bus_service_order'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1094,12 +1078,17 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("service_order_id: {0}".format(service_order_id))
                 self.logger.info("begin_time: {0}".format(begin_time))
                 self.logger.info("end_time: {0}".format(end_time))
-                assert begin_time == time.strftime("%Y-%m-%d")
-                assert end_time == "2286-11-21"
+                assert select_result[0][2] == provider_name
+                assert select_result[0][6] == features_id1
+                assert select_result[0][7] == 'kuli1'
+                assert select_result[0][8] == 99
+                assert select_result[0][9] == 0
+                assert begin_time == "2014-06-21"
+                assert end_time == "2021-02-10"
                 assert select_result[0][15] == 0
                 assert select_result[0][16] == 1
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1117,11 +1106,11 @@ class TestShoppingAddMemberResult(object):
                         assert item[11] == sku_price
                         assert item[12] == 1
                         assert begin_time2 == begin_time
-                        assert end_time2 == "9999-12-31"
+                        assert end_time2 == end_time
                         assert item[17] == 0
                         assert item[19] == 1
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -1167,12 +1156,12 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_other_with_time ....")
+            self.logger.info(".... End test_add_visitor_result_other_with_time ....")
             self.logger.info("")
 
-    def test_add_member_result_other_with_count(self):
-        """ Test add member result interface add other with count."""
-        self.logger.info(".... Start test_add_member_result_other_with_count ....")
+    def test_add_visitor_result_other_with_count(self):
+        """ Test add visitor result interface add other with count"""
+        self.logger.info(".... Start test_add_visitor_result_other_with_count ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -1202,13 +1191,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -1220,7 +1203,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1231,7 +1214,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1256,7 +1239,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1267,14 +1250,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -1288,18 +1264,31 @@ class TestShoppingAddMemberResult(object):
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid], "2010-2-4", "2038-02-11", self.logger)
+                                                              [owner_feautreid],"2010-2-4", "2038-02-11",self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", "2014-06-21", "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                features_id1 = select_result[0][0]
+                relationship = select_result[0][3]
+                assert relationship == 99
+
+            with allure.step("teststep10: get bus_service_order info"):
                 table = 'bus_service_order'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1314,12 +1303,17 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("service_order_id: {0}".format(service_order_id))
                 self.logger.info("begin_time: {0}".format(begin_time))
                 self.logger.info("end_time: {0}".format(end_time))
-                assert begin_time == time.strftime("%Y-%m-%d")
-                assert end_time == "2286-11-21"
+                assert select_result[0][2] == provider_name
+                assert select_result[0][6] == features_id1
+                assert select_result[0][7] == 'kuli1'
+                assert select_result[0][8] == 99
+                assert select_result[0][9] == 0
+                assert begin_time == "2014-06-21"
+                assert end_time == "2021-02-10"
                 assert select_result[0][15] == 0
                 assert select_result[0][16] == 1
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1337,11 +1331,11 @@ class TestShoppingAddMemberResult(object):
                         assert item[11] == sku_price
                         assert item[12] == 1
                         assert begin_time2 == begin_time
-                        assert end_time2 == "9999-12-31"
+                        assert end_time2 == end_time
                         assert item[17] == 0
                         assert item[19] == 1
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -1387,12 +1381,12 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_other_with_count ....")
+            self.logger.info(".... End test_add_visitor_result_other_with_count ....")
             self.logger.info("")
 
-    def test_add_member_result_other_with_forever(self):
-        """ Test add member result interface add other with forever."""
-        self.logger.info(".... Start test_add_member_result_other_with_forever ....")
+    def test_add_visitor_result_other_with_forever(self):
+        """ Test add visitor result interface add other with forever"""
+        self.logger.info(".... Start test_add_visitor_result_other_with_forever ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
@@ -1422,13 +1416,7 @@ class TestShoppingAddMemberResult(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 self.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep4: identity relative."):
-                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
-            with allure.step("teststep5: get provider id"):
+            with allure.step("teststep4: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
                 condition = ("name", provider_name)
@@ -1440,7 +1428,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 provider_id = select_result[0][0]
 
-            with allure.step("teststep6: get spu id"):
+            with allure.step("teststep5: get spu id"):
                 table = 'bus_spu'
                 condition = ("provider_id", provider_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1451,7 +1439,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 spu_id = select_result[0][0]
 
-            with allure.step("teststep7: get sku id"):
+            with allure.step("teststep6: get sku id"):
                 table = 'bus_sku'
                 condition = ("spu_id", spu_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1476,7 +1464,7 @@ class TestShoppingAddMemberResult(object):
                         sku_end_time = str(item[15].strftime("%Y-%m-%d"))
                         sku_in_count = item[16]
 
-            with allure.step("teststep8: get owner feature"):
+            with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1487,14 +1475,7 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
-                                                    logger=self.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                self.logger.info("features data list: {0}".format(user_info))
-                features_id1 = user_info[0]['features_id']
-
-            with allure.step("teststep10: create service orders"):
+            with allure.step("teststep8: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
                     h5_port = self.config.getItem('h5', 'port')
                     baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
@@ -1508,18 +1489,31 @@ class TestShoppingAddMemberResult(object):
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid], "2010-2-4", "2038-02-11", self.logger)
+                                                              [owner_feautreid],"2010-2-4", "2038-02-11",self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", "2014-06-21", "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
 
-            with allure.step("teststep11: get bus_service_order info"):
+            with allure.step("teststep9: get visitor feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                features_id1 = select_result[0][0]
+                relationship = select_result[0][3]
+                assert relationship == 99
+
+            with allure.step("teststep10: get bus_service_order info"):
                 table = 'bus_service_order'
                 condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1534,12 +1528,17 @@ class TestShoppingAddMemberResult(object):
                 self.logger.info("service_order_id: {0}".format(service_order_id))
                 self.logger.info("begin_time: {0}".format(begin_time))
                 self.logger.info("end_time: {0}".format(end_time))
-                assert begin_time == time.strftime("%Y-%m-%d")
-                assert end_time == "2286-11-21"
+                assert select_result[0][2] == provider_name
+                assert select_result[0][6] == features_id1
+                assert select_result[0][7] == 'kuli1'
+                assert select_result[0][8] == 99
+                assert select_result[0][9] == 0
+                assert begin_time == "2014-06-21"
+                assert end_time == "2021-02-10"
                 assert select_result[0][15] == 0
                 assert select_result[0][16] == 1
 
-            with allure.step("teststep12: get bus_order info"):
+            with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
                 condition = ("member_id", self.member_id)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -1557,11 +1556,11 @@ class TestShoppingAddMemberResult(object):
                         assert item[11] == sku_price
                         assert item[12] == 1
                         assert begin_time2 == begin_time
-                        assert end_time2 == "9999-12-31"
+                        assert end_time2 == end_time
                         assert item[17] == 0
                         assert item[19] == 1
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -1607,9 +1606,10 @@ class TestShoppingAddMemberResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_member_result_other_with_forever ....")
+            self.logger.info(".... End test_add_visitor_result_other_with_forever ....")
             self.logger.info("")
 
+
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_H5_Shopping_AddMemberResult.py'])
-    # pytest.main(['-s', 'test_H5_Shopping_AddMemberResult.py::TestShoppingAddMemberResult::test_add_member_result_other_with_forever'])
+    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
+    # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_add_visitor_result_other_with_forever'])

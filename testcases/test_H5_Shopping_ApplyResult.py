@@ -14,7 +14,7 @@ from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
-
+@pytest.mark.H5
 @allure.feature("APP-获取服务单列表")
 class TestShoppingApplyResult(object):
 
@@ -2177,4 +2177,4 @@ class TestShoppingApplyResult(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py::TestShoppingApplyResult::test_apply_result_user_and_others_without_whitelist'])
+    pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py::TestShoppingApplyResult::test_apply_result_other_with_whitelist'])

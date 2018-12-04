@@ -12,7 +12,7 @@ from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
-
+@pytest.mark.H5
 @allure.feature("H5-删除服务单")
 class TestOrderDelete(object):
 
@@ -26,7 +26,7 @@ class TestOrderDelete(object):
             with allure.step("初始化配置文件对象。"):
                 cls.config = ConfigParse()
             with allure.step("获取测试URI值。"):
-                cls.URI = cls.config.getItem('uri', 'GetMyServiceOrderList')
+                cls.URI = cls.config.getItem('uri', 'H5OrderDelete')
                 allure.attach("uri", str(cls.URI))
                 cls.logger.info("uri: " + cls.URI)
             with allure.step("初始化HTTP客户端。"):

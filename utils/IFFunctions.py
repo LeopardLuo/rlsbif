@@ -2255,3 +2255,50 @@ def h5_order_delete(httpclient, providerId, productId, skuId, orderId, logger=No
         return True
     else:
         return False
+
+
+@allure.step("H5-Get-ShoppingAddVisitorResult")
+def h5_shopping_add_visitor_result(httpclient, providerId, productId, skuId, visitor, beginTime, endTime, picture, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param providerId: interface defined parameter providerId long type.
+    :param productId: interface defined parameter productId long type.
+    :param skuId: interface defined parameter skuId long type.
+    :param visitor: interface defined parameter visitor String type.
+    :param beginTime: interface defined parameter beginTime String type.
+    :param endTime: interface defined parameter endTime String type.
+    :param picture: interface defined parameter picture String type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_shopping_add_visitor_result ----")
+    uri = ConfigParse().getItem("uri", "H5ShoppingAddVisitorResult")
+    data = {"providerId": providerId, "productId": productId, "skuId": skuId, "visitor": visitor,
+            "beginTime": beginTime, "endTime": endTime}
+    files = {"picture": open(get_image_path(picture), 'rb')}
+    allure.attach("request params", str(data))
+    logger and logger.info("AddVisitorResult dict: {}".format(data))
+    rsp = httpclient.post(uri, data=data, files=files)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_shopping_add_visitor_result ----")
+        logger and logger.info("")
+        return False
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_shopping_add_visitor_result ----")
+    logger and logger.info("")
+    if int(rsp_content['status']) == 1:
+        return True
+    else:
+        return False
