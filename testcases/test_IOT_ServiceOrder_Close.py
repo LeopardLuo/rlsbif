@@ -60,37 +60,46 @@ class TestServiceOrderClose(object):
                 allure.attach("db_params",
                               "{0}, {1}, {2}, {3}, {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.logger.info("db_user: {0}, db_password: {1}, db_host: {2}, db_database: {3}, "
-                                 "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
+                                "db_port: {4}".format(db_user, db_password, db_host, db_database, db_port))
                 cls.mysql = MysqlClient(db_user, db_password, db_host, db_database, db_port)
-            with allure.step("注册用户，生成member_id"):
-                code_type = 2
-                client_type = 2
-                client_version = "v1"
-                device_token = "138001380001234"
-                imei = "138001380001234"
-                phone = "13800138000"
-                sms_code = "123456"
-                login_result = make_login(cls.httpclient, code_type, client_type, client_version, device_token, imei,
-                                          phone, sms_code,logger=cls.logger)
-                if login_result == {}:
-                    cls.logger.error("user login failed!")
-                    assert False
-                cls.member_id = login_result["user_info"]["member_id"]
-                cls.token = login_result['token']
-            with allure.step("进行身份认证，获取feature_id"):
-                headers = {"authorization": cls.token}
-                identity_card_face = "fore2.jpg"
-                identity_card_emblem = "back2.jpg"
-                face_picture = "face2.jpg"
-                cls.httpclient.update_header(headers)
-                user_identity_result = user_identity(cls.httpclient, cls.member_id, identity_card_face, identity_card_emblem,
-                                                     face_picture, logger=cls.logger)
-                if not user_identity_result:
-                    cls.logger.error("user identity failed!")
-                    assert False
-                table_name = "mem_features"
-                condition = ("member_id",cls.member_id)
-                cls.features_id = cls.mysql.execute_select_condition(table_name,condition)[0][0]
+            with allure.step("get provider id"):
+                provider_name = cls.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.provider_id = select_result[0][0]
+            with allure.step("get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", cls.provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.spu_id = select_result[0][0]
+            with allure.step("get sku id"):
+                sku_name = cls.config.getItem('sku', 'single_time_or_count')
+                table = 'bus_sku'
+                condition = ("name", sku_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                cls.logger.info("")
+                cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = cls.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                cls.logger.info("query result: {0}".format(select_result))
+                cls.sku_id = select_result[0][0]
+            with allure.step("初始化HTTP客户端2。"):
+                h5_port = cls.config.getItem('h5', 'port')
+                baseurl = '{0}://{1}:{2}'.format(sv_protocol, sv_host, h5_port)
+                allure.attach("baseurl", str(baseurl))
+                cls.logger.info("baseurl: " + baseurl)
+                cls.httpclient2 = HTTPClient(baseurl)
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -102,26 +111,12 @@ class TestServiceOrderClose(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
-        with allure.step("delete member"):
-            member_table = "mem_member"
-            mem_condition = ("member_id",cls.member_id)
-            allure.attach("table name", str(member_table))
-            cls.logger.info("table: {0}".format(member_table))
-            mem_delete_result = cls.mysql.execute_delete_condition(member_table, mem_condition)
-            allure.attach("delete result", str(mem_delete_result))
-            cls.logger.info("delete result: {0}".format(mem_delete_result))
-        with allure.step("delete feature"):
-            features_table = "mem_features"
-            features_condition = ("features_id",cls.features_id)
-            allure.attach("table name", str(features_table))
-            cls.logger.info("table: {0}".format(features_table))
-            features_delete_result = cls.mysql.execute_delete_condition(features_table, features_condition)
-            allure.attach("delete result", str(features_delete_result))
-            cls.logger.info("delete result: {0}".format(features_delete_result))
         if hasattr(cls, 'mqtt_client'):
             cls.mqtt_client.close()
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
+        if hasattr(cls, 'httpclient2'):
+            cls.httpclient2.close()
         if hasattr(cls, "mysql"):
             cls.mysql.close()
         cls.logger.info("*** End teardown class ***")
@@ -132,35 +127,85 @@ class TestServiceOrderClose(object):
         self.logger.info("=== Start setup method ===")
         self.logger.info(method.__name__)
         self.logger.info("Add some datas to database.")
+        with allure.step("注册用户，生成member_id"):
+            code_type = 2
+            client_type = 2
+            client_version = "v1"
+            device_token = "138001380001234"
+            imei = "138001380001234"
+            phone = "13800138000"
+            sms_code = "123456"
+            login_result = make_login(self.httpclient, code_type, client_type, client_version, device_token, imei,
+                                      phone, sms_code, logger=self.logger)
+            if login_result == {}:
+                self.logger.error("user login failed!")
+                assert False
+            self.member_id = login_result["user_info"]["member_id"]
+            self.token = login_result['token']
+        with allure.step("进行身份认证，获取feature_id"):
+            headers = {"authorization": self.token}
+            identity_card_face = "fore2.jpg"
+            identity_card_emblem = "back2.jpg"
+            face_picture = "face2.jpg"
+            self.httpclient.update_header(headers)
+            identity_myfeature = user_myfeature(self.httpclient, self.member_id, face_picture, logger=self.logger)
+            if not identity_myfeature:
+                self.logger.error("identity myfeature failed!")
+                assert False
+            user_identity_result = user_identity(self.httpclient, self.member_id, identity_card_face,
+                                                 identity_card_emblem,
+                                                 logger=self.logger)
+            if not user_identity_result:
+                self.logger.error("user identity failed!")
+                assert False
+            table_name = "mem_features"
+            condition = ("member_id", self.member_id)
+            self.features_id = self.mysql.execute_select_condition(table_name, condition)[0][0]
         with allure.step("创建服务单"):
-            self.logger.info("strat to create service order.")
-            system_id = "15596785737138176"
-            random_num = ""
-            # 生成随机4位数
-            for i in range(4):
-                ch = chr(random.randrange(ord('0'), ord('9') + 1))
-                random_num += ch
-            business_order_id = str(get_timestamp()) + random_num
-            system_code = "ba80b269044e7501d1b4e7890d319ff5"
-            member_id = self.member_id
-            features_id = self.features_id
-            service_unit = "慧睿思通AI产品部4"
-            service_address = "广州番禺区北大街"
-            begin_time = get_timestamp() + 300
-            end_time = 9999999999
-            in_count = 4
-            verify_condition_type = 2
-            device_ids = [self.device_id]
-            create_service_order_result = h5_create_service_order(self.httpclient, system_id, business_order_id,
-                                                                  member_id, system_code, features_id, device_ids,
-                                                                  verify_condition_type, begin_time, end_time,
-                                                                  in_count, service_unit, service_address,
-                                                                  logger=self.logger)
-            if create_service_order_result:
-                self.service_order_id = create_service_order_result["service_order_id"]
-                self.logger.info("service order id:" + str(self.service_order_id))
+            with allure.step("连接H5主页"):
+                r_homeindex = h5_home_index(self.httpclient2, self.member_id, self.token, self.logger)
+                allure.attach("homeindex", str(r_homeindex))
+                self.logger.info("homeindex: " + str(r_homeindex))
+                assert not r_homeindex
+            start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
+            end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+            r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, self.sku_id,
+                                                      [self.features_id], start_time, end_time, self.logger)
+            allure.attach("apply result", str(r_applyresult1))
+            self.logger.info("apply result: " + str(r_applyresult1))
+            assert r_applyresult1
+        with allure.step("get service order id"):
+            table = 'bus_service_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("")
+            self.logger.info("table: {0}, condition: {1}".format(table, condition))
+            select_result = self.mysql.execute_select_condition(table, condition)
+            allure.attach("query result", str(select_result))
+            self.logger.info("query result: {0}".format(select_result))
+            if select_result:
+                self.service_order_id = select_result[0][0]
+                allure.attach("service order id", str(self.service_order_id))
+                self.logger.info("service order id:{0}".format(str(self.service_order_id)))
             else:
-                self.logger.info("create service order failed.")
+                self.logger.info("can not get service order id.")
+                assert False
+        with allure.step("get business order id"):
+            table = 'bus_order'
+            condition = ("service_order_id", self.service_order_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            self.logger.info("")
+            self.logger.info("table: {0}, condition: {1}".format(table, condition))
+            select_result = self.mysql.execute_select_condition(table, condition)
+            allure.attach("query result", str(select_result))
+            self.logger.info("query result: {0}".format(select_result))
+            if select_result:
+                self.bus_order_id = select_result[0][0]
+                allure.attach("business order id", str(self.bus_order_id))
+                self.logger.info("service order id:{0}".format(str(self.bus_order_id)))
+            else:
+                self.logger.info("can not get business order id.")
+                assert False
         self.logger.info("=== End setup method ===")
         self.logger.info("")
 
@@ -169,7 +214,40 @@ class TestServiceOrderClose(object):
         self.logger.info("=== Start teardown method ===")
         self.logger.info(method.__name__)
         self.logger.info("do some database clean operation.")
-        with allure.step("delete bus service order status"):
+        with allure.step("delete service order"):
+            table = 'bus_service_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete business order"):
+            table = 'bus_order'
+            condition = ("member_id", self.member_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus_service_order_device_list"):
+            bus_service_order_device_list_table = "bus_service_order_device_list"
+            bus_service_order_device_list_condition = ("device_id", self.device_id)
+            allure.attach("table name", str(bus_service_order_device_list_table))
+            self.logger.info("table: {0}".format(bus_service_order_device_list_table))
+            bus_service_order_device_list_result = self.mysql.execute_delete_condition(
+                bus_service_order_device_list_table, bus_service_order_device_list_condition)
+            allure.attach("delete result", str(bus_service_order_device_list_result))
+            self.logger.info("delete result: {0}".format(bus_service_order_device_list_result))
+        with allure.step("delete bus_order_features"):
+            table = 'bus_order_features'
+            condition = ("service_orderid", self.service_order_id)
+            allure.attach("table name", str(table))
+            self.logger.info("table: {0}".format(table))
+            delete_result = self.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(delete_result))
+            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete bus_service_order_status"):
             table = 'bus_service_order_status'
             condition = ("service_order_id", self.service_order_id)
             allure.attach("table name", str(table))
@@ -177,24 +255,29 @@ class TestServiceOrderClose(object):
             delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
-        with allure.step("delete service order"):
-            table = 'bus_service_order'
-            condition = ("service_order_id", self.service_order_id)
-            allure.attach("table name", str(table))
-            self.logger.info("table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_condition(table, condition)
-            allure.attach("delete result", str(delete_result))
-            self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete feature"):
+            features_table = "mem_features"
+            features_condition = ("features_id", self.features_id)
+            allure.attach("table name", str(features_table))
+            self.logger.info("table: {0}".format(features_table))
+            features_delete_result = self.mysql.execute_delete_condition(features_table, features_condition)
+            allure.attach("delete result", str(features_delete_result))
+            self.logger.info("delete result: {0}".format(features_delete_result))
+        with allure.step("delete member"):
+            member_table = "mem_member"
+            mem_condition = ("member_id", self.member_id)
+            allure.attach("table name", str(member_table))
+            self.logger.info("table: {0}".format(member_table))
+            mem_delete_result = self.mysql.execute_delete_condition(member_table, mem_condition)
+            allure.attach("delete result", str(mem_delete_result))
+            self.logger.info("delete result: {0}".format(mem_delete_result))
         self.logger.info("=== End teardown method ===")
         self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("服务单关闭，下发payload的action_id")
     @allure.testcase("FT-HTJK-003-033")
-    @pytest.mark.parametrize("close_code,result",
-                             [(0, '203'), (1, '203')],
-                             ids=["close_code为0(正常关闭服务单)", "close_code为1(撤销服务单)"])
-    def test_003033_get_payload_action_id_after_closed(self,close_code,result):
+    def test_003033_get_payload_action_id_after_closed(self):
         self.logger.info(".... test_003033_get_payload_action_id_after_closed ....")
         topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
         try:
@@ -204,14 +287,10 @@ class TestServiceOrderClose(object):
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:close the service order"):
                 self.logger.info("strat to close service order.")
-                system_id = "15596785737138176"
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                # close_code1 = 0
-                close_service_order_result = bs_close_service_order(self.httpclient, system_id, self.service_order_id,
-                                                                      system_code, close_code,
-                                                                      logger=self.logger)
+                close_service_order_result = h5_order_delete(self.httpclient2, self.provider_id, self.spu_id,
+                                                             self.sku_id, self.bus_order_id, logger=None)
                 if close_service_order_result:
-                    self.logger.info("close service order success." )
+                    self.logger.info("close service order success.")
                 else:
                     self.logger.info("close service order failed.")
             with allure.step("teststep3:assert the action_id in payload"):
@@ -228,11 +307,11 @@ class TestServiceOrderClose(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
-                allure.attach("Expect action id:", str(result))
+                allure.attach("Expect action id:", str(203))
                 allure.attach("Actual action id:", str(action_id))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
-                assert action_id == result
+                assert action_id == "203"
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -247,10 +326,7 @@ class TestServiceOrderClose(object):
     @allure.severity("critical")
     @allure.story("服务单关闭，下发payload的service_order_id")
     @allure.testcase("FT-HTJK-003-034")
-    @pytest.mark.parametrize("close_code",
-                             [(0), (1)],
-                             ids=["close_code为0(正常关闭服务单)", "close_code为1(撤销服务单)"])
-    def test_003034_get_payload_service_order_id_after_closed(self,close_code):
+    def test_003034_get_payload_service_order_id_after_closed(self):
         self.logger.info(".... test_003034_get_payload_service_order_id_after_closed ....")
         topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
         try:
@@ -260,12 +336,8 @@ class TestServiceOrderClose(object):
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:close the service order"):
                 self.logger.info("strat to close service order.")
-                system_id = "15596785737138176"
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                # close_code = 0
-                close_service_order_result = bs_close_service_order(self.httpclient, system_id, self.service_order_id,
-                                                                     system_code, close_code,
-                                                                     logger=self.logger)
+                close_service_order_result = h5_order_delete(self.httpclient2, self.provider_id, self.spu_id,
+                                                             self.sku_id, self.bus_order_id, logger=None)
                 if close_service_order_result:
                     self.logger.info("close service order success.")
                 else:
@@ -303,10 +375,7 @@ class TestServiceOrderClose(object):
     @allure.severity("critical")
     @allure.story("服务单关闭，下发payload的timestamp")
     @allure.testcase("FT-HTJK-003-035")
-    @pytest.mark.parametrize("close_code",
-                             [(0), (1)],
-                             ids=["close_code为0(正常关闭服务单)", "close_code为1(撤销服务单)"])
-    def test_003035_get_payload_timestamp_after_closed(self,close_code):
+    def test_003035_get_payload_timestamp_after_closed(self):
         self.logger.info(".... test_003035_get_payload_timestamp_after_closed ....")
         topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
         try:
@@ -316,13 +385,8 @@ class TestServiceOrderClose(object):
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:close the service order"):
                 self.logger.info("strat to close service order.")
-                system_id = "15596785737138176"
-                system_code = "ba80b269044e7501d1b4e7890d319ff5"
-                # close_code = 0
-                timestamp = get_timestamp()
-                close_service_order_result = bs_close_service_order(self.httpclient, system_id, self.service_order_id,
-                                                                     system_code, close_code, timestamp,
-                                                                     logger=self.logger)
+                close_service_order_result = h5_order_delete(self.httpclient2, self.provider_id, self.spu_id,
+                                                             self.sku_id, self.bus_order_id, logger=None)
                 if close_service_order_result:
                     self.logger.info("close service order success.")
                 else:
@@ -341,11 +405,12 @@ class TestServiceOrderClose(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 timestamp_payload = msg_payload_dict["timestamp"]
-                allure.attach("Expect timestamp:", str(timestamp))
+                local_timestamp = get_timestamp()
+                allure.attach("Expect timestamp:", str(local_timestamp))
                 allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
-                assert int(timestamp_payload) <= timestamp+5
+                assert local_timestamp-10 <=int(timestamp_payload) <= local_timestamp
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -360,4 +425,5 @@ class TestServiceOrderClose(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003033_get_payload_action_id_after_closed'])
+    # pytest.main(
+    #     ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003033_get_payload_action_id_after_closed'])
