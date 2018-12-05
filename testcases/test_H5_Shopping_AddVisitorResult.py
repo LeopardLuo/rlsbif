@@ -77,6 +77,9 @@ class TestShoppingAddVisitorResult(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("在白名单下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_with_whitelist(self):
         """ Test add visitor result interface add other with whitelist"""
         self.logger.info(".... Start test_add_visitor_result_other_with_whitelist ....")
@@ -313,6 +316,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("不在白名单下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_without_whitelist(self):
         """ Test add visitor result interface add other without whitelist"""
         self.logger.info(".... Start test_add_visitor_result_other_without_whitelist ....")
@@ -511,6 +517,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_without_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("给本人下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_user_with_whitelist(self):
         """ Test add visitor result interface add user with whitelist"""
         self.logger.info(".... Start test_add_visitor_result_user_with_whitelist ....")
@@ -709,6 +718,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_user_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间或次数单品下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_with_time_or_count(self):
         """ Test add visitor result interface add other with time or count"""
         self.logger.info(".... Start test_add_visitor_result_other_with_time_or_count ....")
@@ -934,6 +946,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_with_time_or_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间单品下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_with_time(self):
         """ Test add visitor result interface add other with time"""
         self.logger.info(".... Start test_add_visitor_result_other_with_time ....")
@@ -1159,6 +1174,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_with_time ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用次数单品下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_with_count(self):
         """ Test add visitor result interface add other with count"""
         self.logger.info(".... Start test_add_visitor_result_other_with_count ....")
@@ -1384,6 +1402,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_with_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用无限单品下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_with_forever(self):
         """ Test add visitor result interface add other with forever"""
         self.logger.info(".... Start test_add_visitor_result_other_with_forever ....")
@@ -1609,6 +1630,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_with_forever ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有登录下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_without_login(self):
         """ Test add visitor result interface add other without login."""
         self.logger.info(".... Start test_add_visitor_result_other_without_login ....")
@@ -1808,6 +1832,9 @@ class TestShoppingAddVisitorResult(object):
             self.logger.info(".... End test_add_visitor_result_other_without_login ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("本人没有下单下访客服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_visitor_result_other_without_apply_user(self):
         """ Test add visitor result interface add other without apply user."""
         self.logger.info(".... Start test_add_visitor_result_other_without_apply_user ....")

@@ -15,7 +15,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 @pytest.mark.H5
-@allure.feature("APP-获取服务单列表")
+@allure.feature("APP-下服务单")
 class TestShoppingApplyResult(object):
 
     @allure.step("+++ setup class +++")
@@ -78,6 +78,9 @@ class TestShoppingApplyResult(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("在白名单下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_with_whitelist(self):
         """ Test apply result for user with whitelist. """
         self.logger.info(".... Start test_apply_result_user_with_whitelist ....")
@@ -291,6 +294,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("不在白名单下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_without_whitelist(self):
         """ Test apply result for user without whitelist. """
         self.logger.info(".... Start test_apply_result_user_without_whitelist ....")
@@ -492,6 +498,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_without_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("在白名单下成员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_other_with_whitelist(self):
         """ Test apply result for other with whitelist. """
         self.logger.info(".... Start test_apply_result_other_with_whitelist ....")
@@ -699,6 +708,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_other_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("不在白名单下成员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_other_without_whitelist(self):
         """ Test apply result for other without whitelist. """
         self.logger.info(".... Start test_apply_result_other_with_whitelist ....")
@@ -894,6 +906,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_other_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间或次数单品下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_time_or_count(self):
         """ Test apply result for user with time or count sku. """
         self.logger.info(".... Start test_apply_result_user_time_or_count ....")
@@ -1112,6 +1127,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_time_or_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间单品下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_time(self):
         """ Test apply result for user with time sku. """
         self.logger.info(".... Start test_apply_result_user_time ....")
@@ -1331,6 +1349,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_time ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用次数单品下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_count(self):
         """ Test apply result for user with count sku. """
         self.logger.info(".... Start test_apply_result_user_count ....")
@@ -1549,6 +1570,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用无限单品下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_forever(self):
         """ Test apply result for user with forever sku. """
         self.logger.info(".... Start test_apply_result_user_forever ....")
@@ -1767,6 +1791,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_forever ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("在白名单同时给本人和成员下服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_and_others_with_whitelist(self):
         """ Test apply result for user and others with whitelist. """
         self.logger.info(".... Start test_apply_result_user_and_others_with_whitelist ....")
@@ -1972,6 +1999,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_and_others_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("不在白名单同时给本人和成员下服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_and_others_without_whitelist(self):
         """ Test apply result for user and others without whitelist. """
         self.logger.info(".... Start test_apply_result_user_and_others_without_whitelist ....")
@@ -2174,6 +2204,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_and_others_without_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有登录下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_without_login(self):
         """ Test apply result for user without login. """
         self.logger.info(".... Start test_apply_result_user_without_login ....")
@@ -2359,6 +2392,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_user_without_login ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有登录下成员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_other_without_login(self):
         """ Test apply result for other without login. """
         self.logger.info(".... Start test_apply_result_other_without_login ....")
@@ -2544,6 +2580,9 @@ class TestShoppingApplyResult(object):
             self.logger.info(".... End test_apply_result_other_without_login ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有认证下本人服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_apply_result_user_without_identity(self):
         """ Test apply result for user without identity. """
         self.logger.info(".... Start test_apply_result_user_without_identity ....")

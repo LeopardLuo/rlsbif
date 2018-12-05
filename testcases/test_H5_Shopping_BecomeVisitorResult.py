@@ -77,6 +77,9 @@ class TestShoppingBecomeVisitorResult(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("在白名单下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_with_whitelist(self):
         """ Test become visitor result interface with whitelist"""
         self.logger.info(".... Start test_become_visitor_result_with_whitelist ....")
@@ -281,6 +284,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("不在白名单下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_without_whitelist(self):
         """ Test become visitor result interface without whitelist"""
         self.logger.info(".... Start test_become_visitor_result_without_whitelist ....")
@@ -472,6 +478,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_without_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有登录下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_without_login(self):
         """ Test become visitor result interface without login."""
         self.logger.info(".... Start test_become_visitor_result_without_login ....")
@@ -647,6 +656,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_without_login ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间或次数单品下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_with_time_or_count(self):
         """ Test become visitor result interface with time or count"""
         self.logger.info(".... Start test_become_visitor_result_with_time_or_count ....")
@@ -847,6 +859,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_with_time_or_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间单品下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_with_time(self):
         """ Test become visitor result interface with time."""
         self.logger.info(".... Start test_become_visitor_result_with_time ....")
@@ -1047,6 +1062,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_with_time ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用次数单品下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_with_count(self):
         """ Test become visitor result interface with count."""
         self.logger.info(".... Start test_become_visitor_result_with_count ....")
@@ -1247,6 +1265,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_with_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用无限单品下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_with_forever(self):
         """ Test become visitor result interface with forever."""
         self.logger.info(".... Start test_become_visitor_result_with_forever ....")
@@ -1447,6 +1468,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_with_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有认证下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_without_identity(self):
         """ Test become visitor result interface without identity."""
         self.logger.info(".... Start test_become_visitor_result_without_identity ....")
@@ -1610,6 +1634,9 @@ class TestShoppingBecomeVisitorResult(object):
             self.logger.info(".... End test_become_visitor_result_without_identity ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有上传特征下拜访服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_become_visitor_result_without_user_feature(self):
         """ Test become visitor result interface without user feature."""
         self.logger.info(".... Start test_become_visitor_result_without_user_feature ....")

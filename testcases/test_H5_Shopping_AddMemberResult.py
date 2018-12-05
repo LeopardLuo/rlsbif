@@ -77,6 +77,9 @@ class TestShoppingAddMemberResult(object):
         cls.logger.info("*** End teardown class ***")
         cls.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("在白名单下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_with_whitelist(self):
         """ Test add member result interface add other with whitelist"""
         self.logger.info(".... Start test_add_member_result_other_with_whitelist ....")
@@ -313,6 +316,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("不在白名单下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_without_whitelist(self):
         """ Test add member result interface add other without whitelist"""
         self.logger.info(".... Start test_add_member_result_other_without_whitelist ....")
@@ -530,6 +536,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_without_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("给本人下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_user_with_whitelist(self):
         """ Test add member result interface add user with whitelist"""
         self.logger.info(".... Start test_add_member_result_user_with_whitelist ....")
@@ -730,6 +739,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_user_with_whitelist ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间或次数单品下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_with_time_or_count(self):
         """ Test add member result interface add other with time or count"""
         self.logger.info(".... Start test_add_member_result_other_with_time_or_count ....")
@@ -950,6 +962,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_with_time_or_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用时间单品下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_with_time(self):
         """ Test add member result interface add other with time."""
         self.logger.info(".... Start test_add_member_result_other_with_time ....")
@@ -1170,6 +1185,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_with_time ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用次数单品下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_with_count(self):
         """ Test add member result interface add other with count."""
         self.logger.info(".... Start test_add_member_result_other_with_count ....")
@@ -1390,6 +1408,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_with_count ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("使用无限单品下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_with_forever(self):
         """ Test add member result interface add other with forever."""
         self.logger.info(".... Start test_add_member_result_other_with_forever ....")
@@ -1610,6 +1631,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_with_forever ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("没有登录下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_without_login(self):
         """ Test add member result interface add other without login."""
         self.logger.info(".... Start test_add_member_result_other_without_login ....")
@@ -1811,6 +1835,9 @@ class TestShoppingAddMemberResult(object):
             self.logger.info(".... End test_add_member_result_other_without_login ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("本人没有下单下常驻人员服务单")
+    @allure.testcase("FT-HTJK-xxx-xxx")
     def test_add_member_result_other_without_user_apply(self):
         """ Test add member result interface add other without user apply."""
         self.logger.info(".... Start test_add_member_result_other_without_user_apply ....")
