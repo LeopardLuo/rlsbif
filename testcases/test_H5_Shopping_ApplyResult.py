@@ -15,7 +15,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 @pytest.mark.H5
-@allure.feature("APP-下服务单")
+@allure.feature("H5-下服务单")
 class TestShoppingApplyResult(object):
 
     @allure.step("+++ setup class +++")
@@ -2746,6 +2746,2211 @@ class TestShoppingApplyResult(object):
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_apply_result_user_without_identity ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("错误providerId值")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    @pytest.mark.parametrize("providerId, result",
+                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (11111, {"status": 200, "code": '301', "msg": "该服务商已停止服务"}),
+                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             ids=["providerId(超长值)", "providerId(小数)", "providerId(英文)", "providerId(中文)",
+                                  "providerId(特殊字符)", "providerId(数字英文)", "providerId(数字中文)",
+                                  "providerId(数字特殊字符)", "providerId(空格)", "providerId(空)",
+                                  "providerId(1)", "providerId(0)", "providerId(-1)", "providerId(超大)",
+                                  "providerId(超小)"])
+    def test_apply_result_providerid_wrong(self, providerId, result):
+        """ Test wrong providerId values (FT-HTJK-xxx-xxx).
+        :param providerId: providerId parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_apply_result_providerid_wrong ({}) ....".format(providerId))
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": providerId, "productId": spu_id, "skuId": sku_id, "features_id": [owner_featureid],
+                                "start_date": "2018-12-22", "end_date": "2022-09-08"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == result['status']
+                        if rsp.status_code == 200:
+                            rsp_content = rsp.json()
+                        else:
+                            rsp_content = rsp.text
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        if rsp.status_code == 200:
+                            if 'code' in rsp_content.keys():
+                                assert rsp_content["code"] == result['code']
+                            else:
+                                assert rsp_content["status"] == result['code']
+                            assert result['msg'] in rsp_content["message"]
+                        else:
+                            assert result['msg'] in rsp.text
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_providerid_wrong ({}) ....".format(providerId))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("错误productId值")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    @pytest.mark.parametrize("productId, result",
+                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (11111, {"status": 200, "code": '301', "msg": "该产品未上架"}),
+                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             ids=["productId(超长值)", "productId(小数)", "productId(英文)", "productId(中文)",
+                                  "productId(特殊字符)", "productId(数字英文)", "productId(数字中文)",
+                                  "productId(数字特殊字符)", "productId(空格)", "productId(空)",
+                                  "productId(1)", "productId(0)", "productId(-1)", "productId(超大)",
+                                  "productId(超小)"])
+    def test_apply_result_productid_wrong(self, productId, result):
+        """ Test wrong productId values (FT-HTJK-xxx-xxx).
+        :param productId: productId parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_apply_result_productid_wrong ({}) ....".format(productId))
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": productId, "skuId": sku_id, "features_id": [owner_featureid],
+                                "start_date": "2018-12-22", "end_date": "2022-09-08"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == result['status']
+                        if rsp.status_code == 200:
+                            rsp_content = rsp.json()
+                        else:
+                            rsp_content = rsp.text
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        if rsp.status_code == 200:
+                            if 'code' in rsp_content.keys():
+                                assert rsp_content["code"] == result['code']
+                            else:
+                                assert rsp_content["status"] == result['code']
+                            assert result['msg'] in rsp_content["message"]
+                        else:
+                            assert result['msg'] in rsp.text
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_productid_wrong ({}) ....".format(productId))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("错误skuId值")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    @pytest.mark.parametrize("skuId, result",
+                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (11111, {"status": 200, "code": '301', "msg": "该服务未上架"}),
+                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             ids=["skuId(超长值)", "skuId(小数)", "skuId(英文)", "skuId(中文)",
+                                  "skuId(特殊字符)", "skuId(数字英文)", "skuId(数字中文)",
+                                  "skuId(数字特殊字符)", "skuId(空格)", "skuId(空)",
+                                  "skuId(1)", "skuId(0)", "skuId(-1)", "skuId(超大)", "skuId(超小)"])
+    def test_apply_result_skuid_wrong(self, skuId, result):
+        """ Test wrong skuId values (FT-HTJK-xxx-xxx).
+        :param skuId: skuId parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_apply_result_skuid_wrong ({}) ....".format(skuId))
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": skuId, "features_id": [owner_featureid],
+                                "start_date": "2018-12-22", "end_date": "2022-09-08"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == result['status']
+                        if rsp.status_code == 200:
+                            rsp_content = rsp.json()
+                        else:
+                            rsp_content = rsp.text
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        if rsp.status_code == 200:
+                            if 'code' in rsp_content.keys():
+                                assert rsp_content["code"] == result['code']
+                            else:
+                                assert rsp_content["status"] == result['code']
+                            assert result['msg'] in rsp_content["message"]
+                        else:
+                            assert result['msg'] in rsp.text
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_skuid_wrong ({}) ....".format(skuId))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("错误featuresId值")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    @pytest.mark.parametrize("featuresId, result",
+                             [(['1' * 256], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (['a'], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (['中'], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (['*'], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ([' '], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ([], {"status": 200, "code": '300', "msg": "信息不符，请重新输入"}),
+                              ([11111], {"status": 200, "code": '300', "msg": "添加失败"}),
+                              ([0], {"status": 200, "code": '300', "msg": "添加失败"}),
+                              ([-1], {"status": 200, "code": '300', "msg": "添加失败"}),
+                              ([9223372036854775808], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ([-9223372036854775809], {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             ids=["featuresId(超长值)", "featuresId(小数)", "featuresId(英文)", "featuresId(中文)",
+                                  "featuresId(特殊字符)", "featuresId(数字英文)", "featuresId(数字中文)",
+                                  "featuresId(数字特殊字符)", "featuresId(空格)", "featuresId(空)",
+                                  "featuresId(1)", "featuresId(0)", "featuresId(-1)", "featuresId(超大)",
+                                  "featuresId(超小)"])
+    def test_apply_result_featuresid_wrong(self, featuresId, result):
+        """ Test wrong featuresId values (FT-HTJK-xxx-xxx).
+        :param featuresId: featuresId parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_apply_result_featuresid_wrong ({}) ....".format(featuresId))
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id, "features_id": featuresId,
+                                "start_date": "2018-12-22", "end_date": "2022-09-08"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == result['status']
+                        if rsp.status_code == 200:
+                            rsp_content = rsp.json()
+                        else:
+                            rsp_content = rsp.text
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        if rsp.status_code == 200:
+                            if 'code' in rsp_content.keys():
+                                assert rsp_content["code"] == result['code']
+                            else:
+                                assert rsp_content["status"] == result['code']
+                            assert result['msg'] in rsp_content["message"]
+                        else:
+                            assert result['msg'] in rsp.text
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_featuresid_wrong ({}) ....".format(featuresId))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("错误startDate值")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    @pytest.mark.parametrize("startDate, result",
+                             [(1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (2000000000, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "提交邀请失败"}),
+                              ('a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('*', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('1a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('1中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (' ', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (-9223372036854775809, {"status": 200, "code": '300', "msg": "输入时间格式有误"})],
+                             ids=["startDate(1.5)", "startDate(1)", "startDate(20000000000)", "startDate(格式化)",
+                                  "startDate(英文)", "startDate(中文)",
+                                  "startDate(特殊字符)", "startDate(数字英文)", "startDate(数字中文)",
+                                  "startDate(数字特殊字符)", "startDate(空格)", "startDate(空)",
+                                  "startDate(1)", "startDate(0)", "startDate(-1)", "startDate(超大)", "startDate(超小)"])
+    def test_apply_result_startdate_wrong(self, startDate, result):
+        """ Test wrong startDate values (FT-HTJK-xxx-xxx).
+        :param startDate: startDate parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_apply_result_startdate_wrong ({}) ....".format(startDate))
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id, "features_id": [owner_featureid],
+                                "start_date": startDate, "end_date": "2030-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == result['status']
+                        if rsp.status_code == 200:
+                            rsp_content = rsp.json()
+                        else:
+                            rsp_content = rsp.text
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        if rsp.status_code == 200:
+                            if 'code' in rsp_content.keys():
+                                assert rsp_content["code"] == result['code']
+                            else:
+                                assert rsp_content["status"] == result['code']
+                            assert result['msg'] in rsp_content["message"]
+                        else:
+                            assert result['msg'] in rsp.text
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_startdate_wrong ({}) ....".format(startDate))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("错误endDate值")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    @pytest.mark.parametrize("endDate, result",
+                             [(1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (2000000000, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "提交邀请失败"}),
+                              ('a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('*', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('1a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('1中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (' ', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (-9223372036854775809, {"status": 200, "code": '300', "msg": "输入时间格式有误"})],
+                             ids=["endDate(1.5)", "endDate(1)", "endDate(20000000000)", "endDate(格式化)",
+                                  "endDate(英文)", "endDate(中文)",
+                                  "endDate(特殊字符)", "endDate(数字英文)", "endDate(数字中文)",
+                                  "endDate(数字特殊字符)", "endDate(空格)", "endDate(空)",
+                                  "endDate(1)", "endDate(0)", "endDate(-1)", "endDate(超大)", "endDate(超小)"])
+    def test_apply_result_enddate_wrong(self, endDate, result):
+        """ Test wrong endDate values (FT-HTJK-xxx-xxx).
+        :param endDate: endDate parameter value.
+        :param result: expect result.
+        """
+        self.logger.info(".... Start test_apply_result_enddate_wrong ({}) ....".format(endDate))
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id, "features_id": [owner_featureid],
+                                "start_date": "2025-01-01", "end_date": endDate}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == result['status']
+                        if rsp.status_code == 200:
+                            rsp_content = rsp.json()
+                        else:
+                            rsp_content = rsp.text
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        if rsp.status_code == 200:
+                            if 'code' in rsp_content.keys():
+                                assert rsp_content["code"] == result['code']
+                            else:
+                                assert rsp_content["status"] == result['code']
+                            assert result['msg'] in rsp_content["message"]
+                        else:
+                            assert result['msg'] in rsp.text
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_enddate_wrong ({}) ....".format(endDate))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("缺少providerId参数")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    def test_apply_result_without_providerid(self):
+        """ Test apply result without providerid (FT-HTJK-xxx-xxx)."""
+        self.logger.info(".... Start test_apply_result_without_providerid ....")
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"productId": spu_id, "skuId": sku_id, "features_id": [owner_featureid],
+                                "start_date": "2020-01-01", "end_date": "2022-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.json()
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        assert rsp_content["status"] == ''
+                        assert '' in rsp_content["message"]
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_without_providerid ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("缺少productId参数")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    def test_apply_result_without_productid(self):
+        """ Test apply result without productid (FT-HTJK-xxx-xxx)."""
+        self.logger.info(".... Start test_apply_result_without_productid ....")
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "skuId": sku_id, "features_id": [owner_featureid],
+                                "start_date": "2020-01-01", "end_date": "2022-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.json()
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        assert rsp_content["status"] == ''
+                        assert '' in rsp_content["message"]
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_without_productid ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("缺少skuId参数")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    def test_apply_result_without_skuid(self):
+        """ Test apply result without skuid (FT-HTJK-xxx-xxx)."""
+        self.logger.info(".... Start test_apply_result_without_skuid ....")
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "features_id": [owner_featureid],
+                                "start_date": "2020-01-01", "end_date": "2022-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.json()
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        assert rsp_content["status"] == ''
+                        assert '' in rsp_content["message"]
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_without_skuid ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("缺少featuresid参数")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    def test_apply_result_without_featuresid(self):
+        """ Test apply result without featuresid (FT-HTJK-xxx-xxx)."""
+        self.logger.info(".... Start test_apply_result_without_featuresid ....")
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id,
+                                "start_date": "2020-01-01", "end_date": "2022-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.json()
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        assert rsp_content["status"] == ''
+                        assert '' in rsp_content["message"]
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_without_featuresid ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("缺少startdate参数")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    def test_apply_result_without_startdate(self):
+        """ Test apply result without startdate (FT-HTJK-xxx-xxx)."""
+        self.logger.info(".... Start test_apply_result_without_startdate ....")
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id,
+                                "features_id": [owner_featureid], "end_date": "2022-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.json()
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        assert rsp_content["status"] == ''
+                        assert '' in rsp_content["message"]
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_without_startdate ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("缺少enddate参数")
+    @allure.testcase("FT-HTJK-xxx-xxx")
+    def test_apply_result_without_enddate(self):
+        """ Test apply result without enddate (FT-HTJK-xxx-xxx)."""
+        self.logger.info(".... Start test_apply_result_without_enddate ....")
+        try:
+            with allure.step("teststep1: user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
+
+            with allure.step("teststep2: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger)
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: get provider id"):
+                provider_name = self.config.getItem('h5', 'name')
+                table = 'bus_provider'
+                condition = ("name", provider_name)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                provider_id = select_result[0][0]
+
+            with allure.step("teststep5: get spu id"):
+                table = 'bus_spu'
+                condition = ("provider_id", provider_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                spu_id = select_result[0][0]
+
+            with allure.step("teststep6: get sku id"):
+                table = 'bus_sku'
+                condition = ("spu_id", spu_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        sku_id = item[0]
+
+            with allure.step("teststep7: get owner feature"):
+                table = 'mem_features'
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_conditions(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                owner_featureid = select_result[0][0]
+
+            with allure.step("teststep8: create service orders"):
+                with allure.step("初始化HTTP客户端。"):
+                    h5_port = self.config.getItem('h5', 'port')
+                    baseurl = '{0}://{1}:{2}'.format(self.sv_protocol, self.sv_host, h5_port)
+                    allure.attach("baseurl", str(baseurl))
+                    self.logger.info("baseurl: " + baseurl)
+                    httpclient1 = HTTPClient(baseurl)
+                with allure.step("连接H5主页"):
+                    r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
+                    allure.attach("homeindex", str(r_homeindex))
+                    self.logger.info("homeindex: " + str(r_homeindex))
+                    assert not r_homeindex
+                with allure.step("本人申请下单"):
+                    with allure.step("teststep: get parameters."):
+                        data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id,
+                                "features_id": [owner_featureid], "start_date": "2020-01-01"}
+                        allure.attach("params value", "{0}".format(data))
+                        self.logger.info("data: {0}".format(data))
+                    with allure.step("teststep: requests http get."):
+                        rsp = httpclient1.get(uri=self.URI, params=data)
+                        allure.attach("request.headers", str(rsp.request.headers))
+                        self.logger.info("request.url: {}".format(rsp.request.url))
+                        self.logger.info("request.headers: {}".format(rsp.request.headers))
+                    with allure.step("teststep: assert the response code"):
+                        allure.attach("Actual response code：", str(rsp.status_code))
+                        self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.json()
+                    with allure.step("teststep: assert the response content"):
+                        allure.attach("response content：", str(rsp_content))
+                        self.logger.info("response content: {}".format(rsp_content))
+                        assert rsp_content["status"] == ''
+                        assert '' in rsp_content["message"]
+
+            with allure.step("teststep9: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user features"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(select_result))
+                self.logger.info("delete result: {0}".format(select_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete insert user info"):
+                table = 'mem_member'
+                condition = ("phone", "1351122%")
+                allure.attach("table name", str(table))
+                self.logger.info("table: {0}".format(table))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_apply_result_without_enddate ....")
             self.logger.info("")
 
 
