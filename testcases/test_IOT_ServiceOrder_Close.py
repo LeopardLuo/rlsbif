@@ -167,8 +167,9 @@ class TestServiceOrderClose(object):
                 allure.attach("homeindex", str(r_homeindex))
                 self.logger.info("homeindex: " + str(r_homeindex))
                 assert not r_homeindex
-            start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-            end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+            now = datetime.datetime.now()
+            start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
             r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, self.sku_id,
                                                       [self.features_id], start_time, end_time, self.logger)
             allure.attach("apply result", str(r_applyresult1))

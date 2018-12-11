@@ -167,8 +167,9 @@ class TestServiceOrderReport(object):
                 allure.attach("homeindex", str(r_homeindex))
                 self.logger.info("homeindex: " + str(r_homeindex))
                 assert not r_homeindex
-            start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-            end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+            now = datetime.datetime.now()
+            start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
             r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, self.sku_id,
                                                       [self.features_id], start_time, end_time, self.logger)
             allure.attach("apply result", str(r_applyresult1))
@@ -301,7 +302,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": in_out,
-                                         "exrea": ""}, "timestamp": str(time_stamp)}
+                                         "extra": ""}, "timestamp": str(time_stamp)}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -390,7 +391,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": 1,
-                                         "exrea": ""}, "timestamp": str(get_timestamp())}
+                                         "extra": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -454,7 +455,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": service_order_id,
                                          "device_id": self.device_id,
                                          "in_out": 1,
-                                         "exrea": ""}, "timestamp": str(get_timestamp())}
+                                         "extra": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -503,7 +504,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": device_id,
                                          "in_out": 1,
-                                         "exrea": ""}, "timestamp": str(get_timestamp())}
+                                         "extra": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -560,7 +561,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": in_out,
-                                         "exrea": ""}, "timestamp": str(get_timestamp())}
+                                         "extra": ""}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -597,14 +598,14 @@ class TestServiceOrderReport(object):
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("正确exrea值，正常设备上报服务单状态")
+    @allure.story("正确extra值，正常设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-59")
-    @pytest.mark.parametrize("exrea",
+    @pytest.mark.parametrize("extra",
                              [(''), ('{"action_id":123,"data":"abc","timestamp":123456}'),
                               ('{"action_id":123,"data":{"sub":"abc","sub2":123},"timestamp":123456}')],
-                             ids=["exrea(空值)", "exrea(JSON格式数据)_1", "exrea(JSON格式数据)_2"])
-    def test_003059_report_service_order_status_correct_exrea(self, exrea):
-        self.logger.info(".... test_003059_report_service_order_status_correct_exrea ....")
+                             ids=["extra(空值)", "extra(JSON格式数据)_1", "extra(JSON格式数据)_2"])
+    def test_003059_report_service_order_status_correct_extra(self, extra):
+        self.logger.info(".... test_003059_report_service_order_status_correct_extra ....")
         topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: start mqtt_client."):
@@ -617,7 +618,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": in_out,
-                                         "exrea": exrea}, "timestamp": str(time_stamp)}
+                                         "extra": extra}, "timestamp": str(time_stamp)}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -693,20 +694,20 @@ class TestServiceOrderReport(object):
             assert False
         finally:
             self.mqtt_client.loopstop()
-            self.logger.info("....End test_003059_report_service_order_status_correct_exrea ....")
+            self.logger.info("....End test_003059_report_service_order_status_correct_extra ....")
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("设置错误exrea,设备上报服务单状态")
+    @allure.story("设置错误extra,设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-60")
-    @pytest.mark.parametrize("exrea, result",
+    @pytest.mark.parametrize("extra, result",
                              [('{123}', []), ('100' * 10, []), (1.5, []), ('中', []), ('a', []), ('*', []),
                               ('1A', []), ('1中', []), ('1*', []), (' ', [])],
-                             ids=["exrea(非JSON格式数据)", "exrea(超长值)", "exrea(小数)",
-                                  "exrea(中文)", "exrea(字母)", "exrea(特殊字符)", "exrea(数字字母)",
-                                  "exrea(数字中文)", "exrea(数字特殊字符)", "exrea(空格)"])
-    def test_003060_report_service_order_status_incorrect_exrea(self, exrea, result):
-        self.logger.info(".... test_003060_report_service_order_status_incorrect_exrea ....")
+                             ids=["extra(非JSON格式数据)", "extra(超长值)", "extra(小数)",
+                                  "extra(中文)", "extra(字母)", "extra(特殊字符)", "extra(数字字母)",
+                                  "extra(数字中文)", "extra(数字特殊字符)", "extra(空格)"])
+    def test_003060_report_service_order_status_incorrect_extra(self, extra, result):
+        self.logger.info(".... test_003060_report_service_order_status_incorrect_extra ....")
         topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: start mqtt_client."):
@@ -717,7 +718,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": 1,
-                                         "exrea": exrea}, "timestamp": str(get_timestamp())}
+                                         "extra": extra}, "timestamp": str(get_timestamp())}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -750,7 +751,7 @@ class TestServiceOrderReport(object):
             assert False
         finally:
             self.mqtt_client.loopstop()
-            self.logger.info("....End test_003060_report_service_order_status_incorrect_exrea ....")
+            self.logger.info("....End test_003060_report_service_order_status_incorrect_extra ....")
             self.logger.info("")
 
     @allure.severity("critical")
@@ -772,7 +773,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": in_out,
-                                         "exrea": ""}, "timestamp": timestamp}
+                                         "extra": ""}, "timestamp": timestamp}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -864,7 +865,7 @@ class TestServiceOrderReport(object):
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": 1,
-                                         "exrea": ""}, "timestamp": timestamp}
+                                         "extra": ""}, "timestamp": timestamp}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -914,7 +915,7 @@ class TestServiceOrderReport(object):
                 send_payload = {"data": {"service_order_id": str(self.service_order_id),
                                          "device_id": self.device_id,
                                          "in_out": 1,
-                                         "exrea": ""}, "timestamp": get_timestamp()}
+                                         "extra": ""}, "timestamp": get_timestamp()}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -970,7 +971,7 @@ class TestServiceOrderReport(object):
                 send_payload = {"action_id": "100",
                                 "data": {"device_id": self.device_id,
                                          "in_out": 1,
-                                         "exrea": ""}, "timestamp": get_timestamp()}
+                                         "extra": ""}, "timestamp": get_timestamp()}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 self.mqtt_client.publish(topic, str(send_payload), 1)
@@ -1011,7 +1012,7 @@ class TestServiceOrderReport(object):
                 send_payload = {"action_id": "100",
                                 "data": {"service_order_id": str(self.service_order_id),
                                          "in_out": 1,
-                                         "exrea": ""},
+                                         "extra": ""},
                                 "timestamp": get_timestamp()}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
@@ -1049,10 +1050,10 @@ class TestServiceOrderReport(object):
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("缺少exrea,设备上报服务单状态")
+    @allure.story("缺少extra,设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-066")
-    def test_003066_report_service_order_status_no_exrea(self):
-        self.logger.info(".... test_003066_report_service_order_status_no_exrea ....")
+    def test_003066_report_service_order_status_no_extra(self):
+        self.logger.info(".... test_003066_report_service_order_status_no_extra ....")
         topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: start mqtt_client."):
@@ -1097,7 +1098,7 @@ class TestServiceOrderReport(object):
             assert False
         finally:
             self.mqtt_client.loopstop()
-            self.logger.info("....End test_003066_report_service_order_status_no_exrea ....")
+            self.logger.info("....End test_003066_report_service_order_status_no_extra ....")
             self.logger.info("")
 
     @allure.severity("critical")
@@ -1115,7 +1116,7 @@ class TestServiceOrderReport(object):
                                 "data": {"device_id": self.device_id,
                                          "service_order_id": str(self.service_order_id),
                                          "in_out": 1,
-                                         "exrea": ""}
+                                         "extra": ""}
                                 }
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
@@ -1156,4 +1157,4 @@ class TestServiceOrderReport(object):
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
     # pytest.main(['-s',
-    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003066_report_service_order_status_no_exrea'])
+    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003066_report_service_order_status_no_extra'])
