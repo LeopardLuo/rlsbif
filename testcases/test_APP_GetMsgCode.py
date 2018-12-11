@@ -178,7 +178,7 @@ class TestGetMsgCode(object):
     @allure.testcase("FT-HTJK-101-003")
     @pytest.mark.parametrize("code_type, phone, result",
                              [(-1, "13511220007", {"status": 200, "msg": "code_type值非法", "code": 101000}),
-                              (5, "13511220008", {"status": 200, "msg": "code_type值非法", "code": 101000}),
+                              (5, "13511220008", {"status": 200, "msg": "code_type非法", "code": 101000}),
                               (-2147483649, "13511220009", {"status": 400, "msg": "", "code": ""}),
                               (2147483648, "13511220010", {"status": 400, "msg": "", "code": ""}),
                               (1.0, "13511220011", {"status": 400, "msg": "", "code": ""}),
@@ -462,7 +462,7 @@ class TestGetMsgCode(object):
                               ("13511220027", 1, {"status": 200, "msg": "不正确", "code": 0}),
                               ("13511220028", -9223372036854775809, {"status": 400, "msg": "", "code": ""}),
                               ("13511220029", 9223372036854775808, {"status": 400, "msg": "", "code": ""}),
-                              ("13511220030", 1.0, {"status": 400, "msg": "", "code": ""}),
+                              ("13511220030", 1.5, {"status": 200, "msg": "", "code": ""}),
                               ("13511220031", "a", {"status": 400, "msg": "", "code": ""}),
                               ("13511220032", "中", {"status": 400, "msg": "", "code": ""}),
                               ("13511220033", "*", {"status": 400, "msg": "", "code": ""}),

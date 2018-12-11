@@ -531,7 +531,7 @@ class TestLogin(object):
     @allure.story("错误client_version值")
     @allure.testcase("FT-HTJK-103-006")
     @pytest.mark.parametrize("client_version, result",
-                             [('1' * 1001, {"msg": "", "code": 0}),
+                             [('1' * 1001, {"msg": "", "code": 101000}),
                               (' ', {"msg": "client_version不能为空", "code": 101000}), ('', {"msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)",  "client_version(空格)", "client_version(空)"])
     def test_103006_clientversion_wrong(self, client_version, result):
@@ -614,7 +614,7 @@ class TestLogin(object):
     @allure.testcase("FT-HTJK-103-007")
     @pytest.mark.parametrize("device_token, result",
                              [('1', {"code": 1, "msg": "登录成功"}), ('a' * 50, {"code": 1, "msg": "登录成功"}),
-                              (1.0, {"code": 1, "msg": "登录成功"}),
+                              (1.5, {"code": 1, "msg": "登录成功"}),
                               ('a', {"code": 1, "msg": "登录成功"}), ('中', {"code": 1, "msg": "登录成功"}),
                               ('*', {"code": 1, "msg": "登录成功"}), ('1a', {"code": 1, "msg": "登录成功"}),
                               ('1中', {"code": 1, "msg": "登录成功"}), ('1*', {"code": 1, "msg": "登录成功"}),
@@ -700,7 +700,7 @@ class TestLogin(object):
     @allure.story("错误device_token值")
     @allure.testcase("FT-HTJK-103-008")
     @pytest.mark.parametrize("device_token, result",
-                             [('1' * 1001, {"code": 0, "msg": ""}),
+                             [('1' * 1001, {"code": 101000, "msg": ""}),
                               (' ', {"code": 101000, "msg": "device_token不能为空"}), ('', {"code": 101000, "msg": "device_token不能为空"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_103008_devicetoken_wrong(self, device_token, result):
@@ -780,7 +780,7 @@ class TestLogin(object):
     @allure.story("正确imei值")
     @allure.testcase("FT-HTJK-103-009")
     @pytest.mark.parametrize("imei, result",
-                             [('460011234567890', {"code": 1, "msg": "登录成功"}),
+                             [('1234567890', {"code": 1, "msg": "登录成功"}),
                               ('46001123456789012', {"code": 1, "msg": "登录成功"})],
                              ids=["imei(最小长度值)", "imei(最大长度值)"])
     def test_103009_imei_correct(self, imei, result):
@@ -1452,7 +1452,7 @@ class TestLogin(object):
                               (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}), (-1, {"status": 200, "code": 0, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 400, "code": 0, "msg": ""}), ('a', {"status": 400, "code": 0, "msg": ""}),
+                              (1.5, {"status": 200, "code": 0, "msg": ""}), ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}), ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1a', {"status": 400, "code": 0, "msg": ""}), ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}), (' ', {"status": 400, "code": 0, "msg": ""}),

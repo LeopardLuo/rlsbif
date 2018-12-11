@@ -4906,4 +4906,4 @@ class TestShoppingAddVisitorResult(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_add_visitor_result_picture_wrong'])
+    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_add_visitor_result_other_with_whitelist'])
