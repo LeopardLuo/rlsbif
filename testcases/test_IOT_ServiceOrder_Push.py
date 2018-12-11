@@ -173,6 +173,22 @@ class TestServiceOrderPush(object):
             delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
+        with allure.step("delete member"):
+            member_table = "mem_member"
+            mem_condition = ("member_id", self.member_id)
+            allure.attach("table name", str(member_table))
+            self.logger.info("table: {0}".format(member_table))
+            mem_delete_result = self.mysql.execute_delete_condition(member_table, mem_condition)
+            allure.attach("delete result", str(mem_delete_result))
+            self.logger.info("delete result: {0}".format(mem_delete_result))
+        with allure.step("delete feature"):
+            features_table = "mem_features"
+            features_condition = ("features_id", self.features_id)
+            allure.attach("table name", str(features_table))
+            self.logger.info("table: {0}".format(features_table))
+            features_delete_result = self.mysql.execute_delete_condition(features_table, features_condition)
+            allure.attach("delete result", str(features_delete_result))
+            self.logger.info("delete result: {0}".format(features_delete_result))
         with allure.step("delete bus_service_order_device_list"):
             bus_service_order_device_list_table = "bus_service_order_device_list"
             bus_service_order_device_list_condition = ("device_id", self.device_id)
@@ -198,22 +214,6 @@ class TestServiceOrderPush(object):
             delete_result = self.mysql.execute_delete_condition(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
-        with allure.step("delete member"):
-            member_table = "mem_member"
-            mem_condition = ("member_id", self.member_id)
-            allure.attach("table name", str(member_table))
-            self.logger.info("table: {0}".format(member_table))
-            mem_delete_result = self.mysql.execute_delete_condition(member_table, mem_condition)
-            allure.attach("delete result", str(mem_delete_result))
-            self.logger.info("delete result: {0}".format(mem_delete_result))
-        with allure.step("delete feature"):
-            features_table = "mem_features"
-            features_condition = ("features_id", self.features_id)
-            allure.attach("table name", str(features_table))
-            self.logger.info("table: {0}".format(features_table))
-            features_delete_result = self.mysql.execute_delete_condition(features_table, features_condition)
-            allure.attach("delete result", str(features_delete_result))
-            self.logger.info("delete result: {0}".format(features_delete_result))
         self.logger.info("=== End teardown method ===")
         self.logger.info("")
 
@@ -223,6 +223,7 @@ class TestServiceOrderPush(object):
     def test_003001_get_payload_action_id(self):
         self.logger.info(".... test_003001_get_payload_action_id ....")
         topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        self.logger.info("topic:{0}".format(topic))
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -245,8 +246,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days = 1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days = 2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -325,8 +327,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -405,8 +408,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -488,8 +492,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -571,8 +576,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-29 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-28 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -661,8 +667,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -697,7 +704,7 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
-                begin_time = int(time.mktime(start_time.timetuple()))
+                begin_time = int(time.mktime(time.strptime(start_time, '%Y-%m-%d')))
                 allure.attach("Expect begin time:", str(begin_time))
                 allure.attach("Actual begin time:", str(begin_time_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -742,8 +749,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -778,7 +786,7 @@ class TestServiceOrderPush(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 end_time_payload = msg_payload_dict["data"]["end_time"]
-                end_time_stamp = int(time.mktime(end_time.timetuple()))
+                end_time_stamp = int(time.mktime(time.strptime(end_time, '%Y-%m-%d')))
                 allure.attach("Expect end time:", str(end_time_stamp))
                 allure.attach("Actual end time:", str(end_time_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -823,8 +831,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -861,8 +870,8 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                begin_time = int(time.mktime(start_time.timetuple()))
-                end_time_stamp = int(time.mktime(end_time.timetuple()))
+                begin_time = int(time.mktime(time.strptime(start_time, '%Y-%m-%d')))
+                end_time_stamp = int(time.mktime(time.strptime(end_time, '%Y-%m-%d')))
                 allure.attach("Expect begin time stamp:", str(begin_time))
                 allure.attach("Actual begin time stamp:", str(begin_time_payload))
                 allure.attach("Expect end time stamp:", str(end_time_stamp))
@@ -915,8 +924,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -953,8 +963,8 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                begin_time = int(time.mktime(start_time.timetuple()))
-                allure.attach("Expect begin time stamp:", str(begin_time))
+                # begin_time = int(time.mktime(time.strptime(start_time, '%Y-%m-%d')))
+                # allure.attach("Expect begin time stamp:", str(begin_time))
                 allure.attach("Actual begin time stamp:", str(begin_time_payload))
                 allure.attach("Expect end time stamp:", str(9999999999))
                 allure.attach("Actual end time stamp:", str(end_time_payload))
@@ -964,7 +974,7 @@ class TestServiceOrderPush(object):
                 self.logger.info("Actual begin time stamp:{0}".format(begin_time_payload))
                 self.logger.info("Actual end time stamp:{0}".format(end_time_payload))
                 self.logger.info("Actual verify condition type:{0}".format(verify_condition_type_payload))
-                assert begin_time_payload == str(begin_time)
+                # assert begin_time_payload == str(begin_time)
                 assert end_time_payload == str(9999999999)
                 assert verify_condition_type_payload == str(2)
         except Exception as e:
@@ -1006,8 +1016,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1044,8 +1055,8 @@ class TestServiceOrderPush(object):
                 begin_time_payload = msg_payload_dict["data"]["begin_time"]
                 end_time_payload = msg_payload_dict["data"]["end_time"]
                 verify_condition_type_payload = msg_payload_dict["data"]["verify_condition_type"]
-                begin_time = int(time.mktime(start_time.timetuple()))
-                end_time_stamp = int(time.mktime(end_time.timetuple()))
+                begin_time = int(time.mktime(time.strptime(start_time, '%Y-%m-%d')))
+                end_time_stamp = int(time.mktime(time.strptime(end_time, '%Y-%m-%d')))
                 allure.attach("Expect begin time stamp:", str(begin_time))
                 allure.attach("Actual begin time stamp:", str(begin_time_payload))
                 allure.attach("Expect end time stamp:", str(end_time_stamp))
@@ -1098,8 +1109,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1188,8 +1200,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1283,8 +1296,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1379,8 +1393,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1448,10 +1463,10 @@ class TestServiceOrderPush(object):
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("服务单下发payload的exrea")
+    @allure.story("服务单下发payload的extra")
     @allure.testcase("FT-HTJK-003-015")
-    def test_003015_get_payload_exrea(self):
-        self.logger.info("....test_get_payload_exrea ....")
+    def test_003015_get_payload_extra(self):
+        self.logger.info("....test_get_payload_extra ....")
         topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
         try:
             with allure.step("teststep1: subscribe the topic."):
@@ -1475,8 +1490,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1498,7 +1514,7 @@ class TestServiceOrderPush(object):
                 else:
                     self.logger.info("can not get service order id.")
                     assert False
-            with allure.step("teststep5:assert the exrea in payload"):
+            with allure.step("teststep5:assert the extra in payload"):
                 d_start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
                     time.sleep(5)
@@ -1510,12 +1526,12 @@ class TestServiceOrderPush(object):
                 mqtt_msg = self.mqtt_client.rcv_msg.pop()
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
-                exrea_payload = msg_payload_dict["data"]["exrea"]
-                allure.attach("Expect exrea:", "")
-                allure.attach("Actual exrea:", str(exrea_payload))
+                extra_payload = msg_payload_dict["data"]["extra"]
+                allure.attach("Expect len of extra:", "more than 0")
+                allure.attach("Actual extra:", str(extra_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
-                self.logger.info("Actual exrea:{0}".format(exrea_payload))
-                assert exrea_payload is not None
+                self.logger.info("Actual extra:{0}".format(extra_payload))
+                assert len(extra_payload) > 0
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1524,7 +1540,7 @@ class TestServiceOrderPush(object):
         finally:
             self.mqtt_client.unsubscribe(topic)
             self.mqtt_client.loopstop()
-            self.logger.info("....End test_get_payload_exrea ....")
+            self.logger.info("....End test_get_payload_extra ....")
             self.logger.info("")
 
     @allure.severity("critical")
@@ -1555,8 +1571,9 @@ class TestServiceOrderPush(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                start_time = datetime.datetime.strptime("2018-11-27 00:00:00", "%Y-%m-%d %H:%M:%S")
-                end_time = datetime.datetime.strptime("2019-11-26 23:59:59", "%Y-%m-%d %H:%M:%S")
+                now = datetime.datetime.now()
+                start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
                 r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, sku_id,
                                                           [self.features_id], start_time, end_time, self.logger)
                 allure.attach("apply result", str(r_applyresult1))
@@ -1593,7 +1610,7 @@ class TestServiceOrderPush(object):
                 timestamp_payload = int(msg_payload_dict["timestamp"])
                 table_name = "bus_service_order"
                 condition = ("service_order_id", self.service_order_id)
-                timestamp = self.mysql.execute_select_condition(table_name, condition)[0][17]
+                timestamp = self.mysql.execute_select_condition(table_name, condition)[0][19]
                 allure.attach("Expect timestamp:", str(timestamp))
                 allure.attach("Actual timestamp:", str(timestamp_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
@@ -1613,4 +1630,4 @@ class TestServiceOrderPush(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003015_get_payload_exrea'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003001_get_payload_action_id'])
