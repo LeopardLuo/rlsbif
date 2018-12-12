@@ -319,8 +319,9 @@ class TestIdentityRelatives(object):
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
-                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}),
+                              ('', {"status": 400, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 201307, "msg": "请先完成本人照片采集"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -586,7 +587,7 @@ class TestIdentityRelatives(object):
                               ("case.xlsx", {"code": 201412, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201412, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201412, "msg": "照片不合格"}),
-                              ("fore1.PNG", {"code": 201412, "msg": "照片不合格"}), ],
+                              ("dog5.jpg", {"code": 201412, "msg": "照片不合格"}), ],
                              ids=["other_photo(gif)", "other_photo(xlsx)", "other_photo(txt)",
                                   "other_photo(mp4)", "other_photo(other)"])
     def test_117008_other_photo_type_wrong(self, other_photo, result):
@@ -720,7 +721,7 @@ class TestIdentityRelatives(object):
                               ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201307, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201307, "msg": "照片不合格"}),
-                              ("face1.PNG", {"code": 201307, "msg": "验证不通过"}), ],
+                              ("face1.PNG", {"code": 201307, "msg": "照片不合格"}), ],
                              ids=["my_photo(gif)", "my_photo(xlsx)", "my_photo(txt)",
                                   "my_photo(mp4)", "my_photo(other)"])
     def test_117010_my_photo_type_wrong(self, my_photo, result):
@@ -820,8 +821,8 @@ class TestIdentityRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert '添加成员成功' in rsp_content['message']
+                assert rsp_content["code"] == 201412
+                assert '照片不合格' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -873,7 +874,7 @@ class TestIdentityRelatives(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201307
-                assert '验证不通过' in rsp_content['message']
+                assert '照片不合格' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -925,7 +926,7 @@ class TestIdentityRelatives(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201307
-                assert '验证不通过' in rsp_content['message']
+                assert '照片不合格' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1002,10 +1003,10 @@ class TestIdentityRelatives(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-117-015")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is not valid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is not valid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is not valid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is not valid"}),
+                             [(1, {"status": 200, "code": 1, "msg": "添加成员成功"}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": "添加成员成功"}),
+                              (0, {"status": 200, "code": 1, "msg": "添加成员成功"}),
+                              (-1, {"status": 200, "code": 1, "msg": "添加成员成功"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is not valid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is not valid"}),
@@ -1059,7 +1060,7 @@ class TestIdentityRelatives(object):
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 allure.attach("Actual response content：", str(rsp.text))
                 self.logger.info("Actual response content：{0}".format(rsp.text))
-                assert rsp.status_code == 200
+                assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
             with allure.step("teststep5: assert the response content"):
@@ -1265,14 +1266,8 @@ class TestIdentityRelatives(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == 500
 
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1315,14 +1310,8 @@ class TestIdentityRelatives(object):
             with allure.step("teststep4: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == 500
 
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1372,8 +1361,8 @@ class TestIdentityRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'timestamp' in rsp_content['message']
+                assert rsp_content["code"] == 1
+                assert '添加成员成功' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

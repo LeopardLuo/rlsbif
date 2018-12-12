@@ -268,13 +268,13 @@ class TestModifyPhoneCheckPhone(object):
     @allure.testcase("FT-HTJK-111-004")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -626,12 +626,13 @@ class TestModifyPhoneCheckPhone(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-111-009")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}), (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": ""}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 1, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
@@ -797,8 +798,8 @@ class TestModifyPhoneCheckPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201301
-                assert '手机号码非该用户的认证手机号码' in rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'member_id值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

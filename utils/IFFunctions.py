@@ -817,7 +817,7 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
 
 
 @allure.step("associates-InfoList")
-def get_identity_other_list(httpclient, member_id, page_index, page_size, timestamp=None, orderby=None, relationships=None, logger=None):
+def get_identity_other_list(httpclient, member_id, page_index, page_size, timestamp=None, orderby=None, relationships=0, logger=None):
     """ Get related peoples of user list.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.

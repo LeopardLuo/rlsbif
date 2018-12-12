@@ -436,9 +436,9 @@ class TestGetIndexInfo(object):
                              [(-180, {"code": 1, "msg": ""}), (-100.5, {"code": 1, "msg": ""}),
                               (0, {"code": 1, "msg": ""}), (1, {"code": 1, "msg": ""}),
                               (100.5, {"code": 1, "msg": ""}), (180, {"code": 1, "msg": ""}),
-                              (999, {"code": 1, "msg": ""})],
+                              (-1, {"code": 1, "msg": ""})],
                              ids=["longitude(-180)", "longitude(-100.5)", "longitude(0)", "longitude(1)",
-                                  "longitude(100.5)", "longitude(180)", "longitude(999)"])
+                                  "longitude(100.5)", "longitude(180)", "longitude(-1)"])
     def test_127007_longitude_correct(self, longitude, result):
         """ Test correct longitude values (-180、-100.5、0、1、100.5、180、999）(FT-HTJK-127-007).
         :param longitude: longitude parameter value.
@@ -448,7 +448,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 999,
+                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 10,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -513,7 +513,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 999,
+                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 10,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -558,9 +558,9 @@ class TestGetIndexInfo(object):
                              [(-90, {"code": 1, "msg": ""}), (-10.5, {"code": 1, "msg": ""}),
                               (0, {"code": 1, "msg": ""}), (1, {"code": 1, "msg": ""}),
                               (10.5, {"code": 1, "msg": ""}), (90, {"code": 1, "msg": ""}),
-                              (999, {"code": 1, "msg": ""})],
+                              (-1, {"code": 1, "msg": ""})],
                              ids=["latitude(-90)", "latitude(-10.5)", "latitude(0)", "latitude(1)",
-                                  "latitude(10.5)", "latitude(90)", "latitude(999)"])
+                                  "latitude(10.5)", "latitude(90)", "latitude(-1)"])
     def test_127009_latitude_correct(self, latitude, result):
         """ Test correct latitude values (-90、-10.5、0、1、10.5、90、999）(FT-HTJK-127-009).
         :param latitude: latitude parameter value.
@@ -570,7 +570,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": 999, "latitude": latitude,
+                data = {"member_id": self.member_id, "category": 0, "longitude": 10, "latitude": latitude,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -635,7 +635,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": 999, "latitude": latitude,
+                data = {"member_id": self.member_id, "category": 0, "longitude": 10, "latitude": latitude,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -1066,4 +1066,4 @@ class TestGetIndexInfo(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_GetIndexInfo.py'])
-    pytest.main(['-s', 'test_APP_GetIndexInfo.py::TestGetIndexInfo::test_127018_no_timestamp'])
+    pytest.main(['-s', 'test_APP_GetIndexInfo.py::TestGetIndexInfo::test_127010_latitude_wrong'])

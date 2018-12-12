@@ -139,7 +139,7 @@ class TestWXLogin(object):
     @allure.testcase("FT-HTJK-104-003")
     @pytest.mark.parametrize("client_type, result",
                              [(-1, {"status": 200, "msg": "client_type值非法", "code": 101000}),
-                              (15, {"status": 200, "msg": "client_type值非法", "code": 101000}),
+                              (15, {"status": 200, "msg": "获取授权失败", "code": 201103}),
                               (-2147483649, {"status": 400, "msg": "", "code": 0}),
                               (2147483648, {"status": 400, "msg": "", "code": 0}),
                               (1.0, {"status": 400, "msg": "", "code": 0}),
@@ -204,7 +204,7 @@ class TestWXLogin(object):
     @allure.story("错误client_version值")
     @allure.testcase("FT-HTJK-104-005")
     @pytest.mark.parametrize("client_version, result",
-                             [('1' * 1001, {"msg": "", "code": 101000}),
+                             [('1' * 1001, {"msg": "获取授权失败", "code": 201103}),
                               (' ', {"msg": "client_version不能为空", "code": 101000}),
                               ('', {"msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)", "client_version(空格)", "client_version(空)"])
@@ -423,13 +423,13 @@ class TestWXLogin(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-104-012")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
-                              (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (9223372036854775807, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),

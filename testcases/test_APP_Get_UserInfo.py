@@ -250,10 +250,14 @@ class TestGetUserInfo(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-106-004")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"code": 0, "msg": "is not valid"}), (1.0, {"code": 0, "msg": "is not valid"}),
-                              ('中', {"code": 0, "msg": "is not valid"}), ('*', {"code": 0, "msg": "is not valid"}),
-                              ('1中', {"code": 0, "msg": "is not valid"}), ('1*', {"code": 0, "msg": "is not valid"}),
-                              (' ', {"code": 0, "msg": "is not valid"}), ('', {"code": 0, "msg": "is invalid"})],
+                             [('1' * 256, {"status": 400, "code": 0, "msg": "is not valid"}),
+                              (1.0, {"status": 400,"code": 0, "msg": "is not valid"}),
+                              ('中', {"status": 400,"code": 0, "msg": "is not valid"}),
+                              ('*', {"status": 400,"code": 0, "msg": "is not valid"}),
+                              ('1中', {"status": 400,"code": 0, "msg": "is not valid"}),
+                              ('1*', {"status": 400,"code": 0, "msg": "is not valid"}),
+                              (' ', {"status": 400,"code": 0, "msg": "is not valid"}),
+                              ('', {"status": 400,"code": 0, "msg": "is invalid"})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)"])
@@ -282,14 +286,18 @@ class TestGetUserInfo(object):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 if rsp.status_code != 200:
-                    self.logger.info("rsp.text: {}".format(rsp.text))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                    rsp_content = rsp.text
+                    self.logger.info("response content：{0}".format(rsp_content))
+                else:
+                    rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert result['msg'] in str(rsp_content["member_id"])
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -303,9 +311,9 @@ class TestGetUserInfo(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-106-005")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}), (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": ""}), (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is not valid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is not valid"}),
@@ -348,9 +356,11 @@ class TestGetUserInfo(object):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 if rsp.status_code != 200:
-                    self.logger.info("rsp.text: {}".format(rsp.text))
+                    rsp_content = rsp.text
+                    self.logger.info("response content：{0}".format(rsp_content))
+                else:
+                    rsp_content = rsp.json()
                 assert rsp.status_code == result['status']
-                rsp_content = rsp.json()
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
@@ -358,8 +368,6 @@ class TestGetUserInfo(object):
                 if rsp.status_code == 200:
                     assert rsp_content["code"] == result['code']
                     assert result['msg'] in rsp_content["message"]
-                else:
-                    assert result['msg'] in str(rsp_content["timestamp"])
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -481,8 +489,8 @@ class TestGetUserInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content['code'] == 101000
-                assert 'timestamp不能为空' in rsp_content['message']
+                assert rsp_content['code'] == 1
+                assert '拉取用户信息成功' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
