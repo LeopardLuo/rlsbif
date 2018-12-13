@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*-coding:utf-8-*-
 
-import random
+import random, datetime
+from datetime import timedelta
 import pytest
 import allure
 
@@ -137,7 +138,7 @@ class TestCetServiceOrderList(object):
 
             with allure.step("teststep: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(cls.member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(cls.member_id, ""))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 cls.logger.info("")
                 cls.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -166,8 +167,10 @@ class TestCetServiceOrderList(object):
                     cls.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
+                    begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
+                    end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
                     r_applyresult1 = h5_shopping_apply_result(cls.httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
-                                                           [cls.owner_feautreid], "2010-2-4", "2038-02-11", cls.logger)
+                                                           [cls.owner_feautreid], begin_time_a, end_time_a, cls.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     cls.logger.info("apply result: " + str(r_applyresult1))
                 with allure.step("本人申请成员下单"):
@@ -1463,4 +1466,4 @@ class TestCetServiceOrderList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Service_Order_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119024_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119001_get_0index_of_2page'])

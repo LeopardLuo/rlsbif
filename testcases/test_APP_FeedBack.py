@@ -237,16 +237,16 @@ class TestFeedBack(object):
     @allure.testcase("FT-HTJK-120-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (1.0, {"status": 200, "code": 0, "msg": "授权非法"}),
+                              (1, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
+                              (9223372036854775807, {"status": 200, "code": 201100, "msg": "用户账户不存在"}),
+                              (1.0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}),
                               ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "授权非法"}),
+                              (0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(最小值)", "member_id(最大值)", "member_id(小数)",
                                   "member_id(中文)", "member_id(特殊字符)", "member_id(数字中文)",
@@ -385,7 +385,7 @@ class TestFeedBack(object):
     @allure.testcase("FT-HTJK-120-005")
     @pytest.mark.parametrize("comment, result",
                              [('成' * 9, {"code": 101000, "msg": "必须大于或等于10个字符"}),
-                              ('成' * 501, {"code": 101000, "msg": "comment长度10-500"}),
+                              ('成' * 501, {"code": 101000, "msg": "长度10到500个字符"}),
                               ('', {"code": 101000, "msg": "必须大于或等于10个字符"})],
                              ids=["comment(超短值)", "comment(超长值)", "comment(空)"])
     def test_120005_comment_wrong(self, comment, result):
@@ -513,13 +513,13 @@ class TestFeedBack(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-120-007")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": "保存反馈意见成功"}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": "保存反馈意见成功"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": "保存反馈意见成功"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.5, {"status": 200, "code": 0, "msg": "is invalid"}),
+                              (1.5, {"status": 200, "code": 1, "msg": "保存反馈意见成功"}),
                               ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -581,7 +581,8 @@ class TestFeedBack(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                if result['code'] != 1:
+                    assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

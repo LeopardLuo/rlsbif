@@ -604,7 +604,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != 'kuli1':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -619,13 +619,13 @@ class TestDeleteRelatives(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-118-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
                               (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
+                              (1.0, {"status": 200, "code": 1, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -693,19 +693,6 @@ class TestDeleteRelatives(object):
                 else:
                     assert rsp_content
 
-            with allure.step("teststep6: query database records"):
-                table = 'mem_features'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 2
-                match_list = list(filter(lambda x: x[0] == features_id, select_result))
-                self.logger.info("match list: {}".format(match_list))
-                assert match_list
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1071,4 +1058,4 @@ class TestDeleteRelatives(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
-    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118001_relatives_delete_correct'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118010_no_timestamp'])
