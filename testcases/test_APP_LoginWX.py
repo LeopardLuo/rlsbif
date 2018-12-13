@@ -58,7 +58,7 @@ class TestWXLogin(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222401", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -101,7 +101,7 @@ class TestWXLogin(object):
     #     self.logger.info(".... Start test_104001_WXlogin_correct ....")
     #     try:
     #         with allure.step("teststep1: get parameters."):
-    #             json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+    #             json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
     #                     "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe", "timestamp": get_timestamp()}
     #             allure.attach("params value", str(json))
     #             self.logger.info("params: {0}".format(json))
@@ -164,7 +164,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104003_clienttype_wrong ({}) ....".format(client_type))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": client_type, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": client_type, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -217,7 +217,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104005_clientversion_wrong ({}) ....".format(client_version))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": client_version, "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": client_version, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -326,7 +326,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104009_imei_wrong ({}) ....".format(imei))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": imei, "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -383,7 +383,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104010_code_wrong ({}) ....".format(code))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": code,
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -453,7 +453,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104012_timestamp_wrong ({}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": timestamp}
                 allure.attach("params value", str(json))
@@ -498,7 +498,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104013_no_clienttype ....")
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -543,7 +543,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104014_no_client_version ....")
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "device_token": "460011234567890",
+                json = {"client_type": 1, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -634,7 +634,7 @@ class TestWXLogin(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": "v1",
-                        "device_token": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
+                        "device_token": "12345678901"*4, "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
@@ -679,7 +679,7 @@ class TestWXLogin(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": "v1",
-                        "device_token": "460011234567890", "imei": "460011234567890",
+                        "device_token": "12345678901"*4, "imei": "460011234567890",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
@@ -724,7 +724,7 @@ class TestWXLogin(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": "v1",
-                        "device_token": "460011234567890", "imei": "460011234567890",
+                        "device_token": "12345678901"*4, "imei": "460011234567890",
                         "code": '071mBhQ108XUcE1jblN105mSP10mBhe'}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))

@@ -13,6 +13,7 @@ from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
+
 @pytest.mark.H5
 @allure.feature("H5-登录")
 class TestHomeIndex(object):
@@ -85,7 +86,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_correct ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -185,7 +186,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_userid_wrong ({}) ....".format(userId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -285,7 +286,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_token_wrong ({}) ....".format(token))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -361,7 +362,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_without_userid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -437,7 +438,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_without_token ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))

@@ -286,7 +286,7 @@ class TestGetMsgCode(object):
         try:
             with allure.step("teststep1: register first."):
                 params = {"code_type": 0, "phone": "13511220021", "client_type": 1, "client_version": "0.1",
-                          "device_token": "1234567890", "imei": "460011234567890", "sms_code": "123456", "timestamp": get_timestamp()}
+                          "device_token": "12345678901"*4, "imei": "460011234567890", "sms_code": "123456", "timestamp": get_timestamp()}
                 allure.attach("params value", "{0}".format(params))
                 self.logger.info("params: {0}".format(params))
                 register_result = make_register(self.httpclient, params["client_type"], params["client_version"],
