@@ -259,7 +259,7 @@ class TestWXLogin(object):
     @allure.testcase("FT-HTJK-104-007")
     @pytest.mark.parametrize("device_token, result",
                              [('1' * 256, {"code": 101000, "msg": "device_token值非法"}),
-                              (' ', {"code": 101000, "msg": "不能为空"}), ('', {"code": 101000, "msg": "不能为空"})],
+                              (' ', {"code": 101000, "msg": "必须大于或等于44个字符"}), ('', {"code": 101000, "msg": "必须大于或等于44个字符"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_104007_devicetoken_wrong(self, device_token, result):
         """ Test wrong device_token values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-104-007).
@@ -612,8 +612,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 101000
-                    assert '不能为空' in rsp_content["message"]
+                    assert rsp_content["code"] == 201103
+                    assert '获取授权失败' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -763,4 +763,4 @@ class TestWXLogin(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_LoginWX.py'])
-    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104018_no_timestamp'])
+    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104015_no_device_token'])

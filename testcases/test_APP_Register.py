@@ -459,7 +459,7 @@ class TestRegister(object):
     @allure.story("正确device_token值")
     @allure.testcase("FT-HTJK-102-006")
     @pytest.mark.parametrize("device_token, phone, result",
-                             [('1' * 100, "13511221034", {"msg": "登录成功", "code": 1}),
+                             [('1' * 50, "13511221034", {"msg": "登录成功", "code": 1}),
                               ('1.0'*15, "13511221035", {"msg": "登录成功", "code": 1}),
                               ('a'*44, "13511221036", {"msg": "登录成功", "code": 1}),
                               ('中'*44, "13511221037", {"msg": "登录成功", "code": 1}),
@@ -536,8 +536,8 @@ class TestRegister(object):
     @allure.testcase("FT-HTJK-102-007")
     @pytest.mark.parametrize("device_token, phone, result",
                              [('a' * 101, "13511221033", {"code": 201110, "msg": "用户注册失败"}),
-                              (' ', "13511221042", {"code": 101000, "msg": "device_token不能为空"}),
-                              ('', "13511221043", {"code": 101000, "msg": "device_token不能为空"})],
+                              (' '*44, "13511221042", {"code": 101000, "msg": "device_token不能为空"}),
+                              ('', "13511221043", {"code": 101000, "msg": "必须大于或等于44个字符"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_102007_devicetoken_wrong(self, device_token, phone, result):
         """ Test wrong device_token values (超长值、空格、空）(FT-HTJK-102-007).
@@ -757,7 +757,7 @@ class TestRegister(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": '1.0', "device_token": "12345678901"*4,
-                        "imei": '46001123456789', "phone": '13511221056', "code_token": '123456789',
+                        "imei": '46001123456789', "phone": '13511221056', "code_token": '12345678901'*4,
                         "sms_code": "123456", "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
@@ -800,7 +800,7 @@ class TestRegister(object):
                 params = {"code_type": 0, "phone": '13511221057', "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
-                register_result = make_register(self.httpclient, 1, '1.0', '123456789', '46001123456789', 0,
+                register_result = make_register(self.httpclient, 1, '1.0', '12345678901'*4, '46001123456789', 0,
                                                 '13511221057', '123456', get_timestamp(), self.logger)
                 allure.attach("register_result result", str(register_result))
                 self.logger.info("register_result result: {0}".format(register_result))
@@ -857,7 +857,7 @@ class TestRegister(object):
                 params = {"code_type": 0, "phone": '13511221058', "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
-                register_result = make_register(self.httpclient, 1, '1.0', '123456789', '46001123456789', 0,
+                register_result = make_register(self.httpclient, 1, '1.0', '12345678901'*4, '46001123456789', 0,
                                                 '13511221058', '123456', get_timestamp(), self.logger)
                 allure.attach("register_result result", str(register_result))
                 self.logger.info("register_result result: {0}".format(register_result))
@@ -1659,5 +1659,5 @@ class TestRegister(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Register.py'])
-    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102017_timestamp_wrong'])
+    # pytest.main(['-s', 'test_APP_Register.py'])
+    pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102007_devicetoken_wrong'])
