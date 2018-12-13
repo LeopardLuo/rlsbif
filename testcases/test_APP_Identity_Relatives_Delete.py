@@ -200,7 +200,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if 'kuli' in member[2]:
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -1058,5 +1058,5 @@ class TestDeleteRelatives(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
-    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118010_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
+    # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118001_relatives_delete_correct'])
