@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-注册-完成注册")
 class TestRegister(object):
 
@@ -1165,13 +1166,13 @@ class TestRegister(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-102-017")
     @pytest.mark.parametrize("timestamp, phone, result",
-                             [(1, "13511221081", {"status": 200, "code": 101000, "msg": ""}),
-                              (9223372036854775807, "13511221082", {"status": 200, "code": 101000, "msg": ""}),
+                             [(1, "13511221081", {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, "13511221082", {"status": 200, "code": 1, "msg": ""}),
                               (0, "13511221083", {"status": 200, "code": 101000, "msg": ""}),
-                              (-1, "13511221084", {"status": 200, "code": 101000, "msg": ""}),
+                              (-1, "13511221084", {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, "13511221085", {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, "13511221086", {"status": 400, "code": 0, "msg": ""}),
-                              (1.5, "13511221087", {"status": 200, "code": 0, "msg": ""}),
+                              (1.5, "13511221087", {"status": 200, "code": 1, "msg": ""}),
                               ('a', "13511221088", {"status": 400, "code": 0, "msg": ""}),
                               ('中', "13511221089", {"status": 400, "code": 0, "msg": ""}),
                               ('*', "13511221090", {"status": 400, "code": 0, "msg": ""}),
@@ -1658,5 +1659,5 @@ class TestRegister(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Register.py'])
-    pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102025_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Register.py'])
+    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102017_timestamp_wrong'])

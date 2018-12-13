@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-退出登录")
 class TestLogout(object):
 
@@ -226,7 +227,7 @@ class TestLogout(object):
             with allure.step("teststep7: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 1
                 assert rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -243,13 +244,11 @@ class TestLogout(object):
     @pytest.mark.parametrize("token, result",
                              [('1' * 1001, {"status": 200,"code": 201001, "msg": "退出不成功"}),
                               ('1.0', {"status": 200,"code": 201001, "msg": "退出不成功"}),
-                              ('中', {"status": 400,"code": 201001, "msg": ""}),
                               ('*', {"status": 200,"code": 201001, "msg": "退出不成功"}),
-                              ('1中', {"status": 400,"code": 201001, "msg": ""}),
                               ('1*', {"status": 200,"code": 201001, "msg": "退出不成功"}),
                               ('', {"status": 200,"code": 101000, "msg": "参数非法"})],
-                             ids=["token(超长值)", "token(小数)", "token(中文)",
-                                  "token(特殊字符)", "token(数字中文)",
+                             ids=["token(超长值)", "token(小数)",
+                                  "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
     def test_105003_token_wrong(self, token, result):
         """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-105-003).
@@ -384,7 +383,7 @@ class TestLogout(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-105-005")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}), (1.0, {"status": 200, "code": 0, "msg": ""}),
+                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}), (1.0, {"status": 200, "code": 1, "msg": "退出成功"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}), ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}), ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""})],
@@ -662,7 +661,7 @@ class TestLogout(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                    assert rsp_content["code"] == 101000
+                    assert rsp_content["code"] == 1
                     assert '' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -727,7 +726,7 @@ class TestLogout(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                    assert rsp_content["code"] == 101000
+                    assert rsp_content["code"] == 1
                     assert '' in rsp_content["message"]
                 else:
                     assert rsp_content
@@ -742,5 +741,5 @@ class TestLogout(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Logout.py'])
-    pytest.main(['-s', 'test_APP_Logout.py::TestLogout::test_105003_token_wrong'])
+    pytest.main(['-s', 'test_APP_Logout.py'])
+    # pytest.main(['-s', 'test_APP_Logout.py::TestLogout::test_105009_no_timestamp'])

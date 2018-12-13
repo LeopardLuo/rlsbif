@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-修改手机号-验证手机")
 class TestModifyPhoneCheckPhone(object):
 

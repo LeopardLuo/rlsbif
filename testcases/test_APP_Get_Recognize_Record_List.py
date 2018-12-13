@@ -13,6 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-获取识别记录")
 class TestGetRecognizeRecordList(object):
 
