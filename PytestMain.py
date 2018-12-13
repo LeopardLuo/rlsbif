@@ -44,4 +44,4 @@ if __name__ == '__main__':
     os.system("del /s /q /f report\\*.txt")
     os.system("del /s /q /f report\\*.xml")
     # cleardb()
-    pytest.main(['-s', 'testcases/', '-k', 'APP' '--alluredir', 'report'])
+    pytest.main(['-s', 'testcases/', '-m=APP', '--alluredir', 'report'])
