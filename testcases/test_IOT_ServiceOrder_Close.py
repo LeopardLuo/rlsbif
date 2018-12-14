@@ -131,7 +131,7 @@ class TestServiceOrderClose(object):
             code_type = 2
             client_type = 2
             client_version = "v1"
-            device_token = "138001380001234"
+            device_token = "1"*44
             imei = "138001380001234"
             phone = "13800138000"
             sms_code = "123456"
@@ -425,6 +425,6 @@ class TestServiceOrderClose(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])
-    # pytest.main(
-    #     ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003033_get_payload_action_id_after_closed'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])
+    pytest.main(
+        ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003033_get_payload_action_id_after_closed'])

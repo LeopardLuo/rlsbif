@@ -131,7 +131,7 @@ class TestServiceOrderReport(object):
             code_type = 2
             client_type = 2
             client_version = "v1"
-            device_token = "138001380001234"
+            device_token = "1234"*11
             imei = "138001380001234"
             phone = "13800138000"
             sms_code = "123456"
