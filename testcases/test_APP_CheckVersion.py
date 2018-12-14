@@ -14,7 +14,7 @@ from utils.IFFunctions import *
 
 
 @pytest.mark.APP
-@pytest.skip
+@pytest.mark.skip
 @allure.feature("APP-获取版本信息")
 class TestCheckVersion(object):
 
@@ -505,4 +505,5 @@ class TestCheckVersion(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_CheckVersion.py::TestCheckVersion::test_126007_no_package_type'])
+    pytest.main(['-s', 'test_APP_CheckVersion.py'])
+    # pytest.main(['-s', 'test_APP_CheckVersion.py::TestCheckVersion::test_126007_no_package_type'])
