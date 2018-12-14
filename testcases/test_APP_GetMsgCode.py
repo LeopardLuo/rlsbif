@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-注册-获取验证码")
 class TestGetMsgCode(object):
 
@@ -178,7 +179,7 @@ class TestGetMsgCode(object):
     @allure.testcase("FT-HTJK-101-003")
     @pytest.mark.parametrize("code_type, phone, result",
                              [(-1, "13511220007", {"status": 200, "msg": "code_type值非法", "code": 101000}),
-                              (5, "13511220008", {"status": 200, "msg": "code_type值非法", "code": 101000}),
+                              (5, "13511220008", {"status": 200, "msg": "code_type非法", "code": 101000}),
                               (-2147483649, "13511220009", {"status": 400, "msg": "", "code": ""}),
                               (2147483648, "13511220010", {"status": 400, "msg": "", "code": ""}),
                               (1.0, "13511220011", {"status": 400, "msg": "", "code": ""}),
@@ -285,7 +286,7 @@ class TestGetMsgCode(object):
         try:
             with allure.step("teststep1: register first."):
                 params = {"code_type": 0, "phone": "13511220021", "client_type": 1, "client_version": "0.1",
-                          "device_token": "1234567890", "imei": "460011234567890", "sms_code": "123456", "timestamp": get_timestamp()}
+                          "device_token": "12345678901"*4, "imei": "460011234567890", "sms_code": "123456", "timestamp": get_timestamp()}
                 allure.attach("params value", "{0}".format(params))
                 self.logger.info("params: {0}".format(params))
                 register_result = make_register(self.httpclient, params["client_type"], params["client_version"],
@@ -318,8 +319,8 @@ class TestGetMsgCode(object):
                 rsp_content = rsp.json()
                 allure.attach("response content：", "{0}".format(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '手机号码已注册' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '短信已下发' in rsp_content["message"]
 
             with allure.step("teststep6: verify phone."):
                 json = {"code_type": 4, "phone": "13511220021", "timestamp": get_timestamp()}
@@ -456,13 +457,13 @@ class TestGetMsgCode(object):
     @allure.story("错误时间戳值")
     @allure.testcase("FT-HTJK-101-008")
     @pytest.mark.parametrize("phone, timestamp, result",
-                             [("13511220024", -1, {"status": 200, "msg": "不正确", "code": 0}),
-                              ("13511220025", 9223372036854775807, {"status": 200, "msg": "不正确", "code": 0}),
+                             [("13511220024", -1, {"status": 200, "msg": "短信已下发", "code": 1}),
+                              ("13511220025", 9223372036854775807, {"status": 200, "msg": "短信已下发", "code": 1}),
                               ("13511220026", 0, {"status": 200, "msg": "timestamp不能为空", "code": 101000}),
-                              ("13511220027", 1, {"status": 200, "msg": "不正确", "code": 0}),
+                              ("13511220027", 1, {"status": 200, "msg": "短信已下发", "code": 1}),
                               ("13511220028", -9223372036854775809, {"status": 400, "msg": "", "code": ""}),
                               ("13511220029", 9223372036854775808, {"status": 400, "msg": "", "code": ""}),
-                              ("13511220030", 1.0, {"status": 400, "msg": "", "code": ""}),
+                              ("13511220030", 1.5, {"status": 200, "msg": "短信已下发", "code": 1}),
                               ("13511220031", "a", {"status": 400, "msg": "", "code": ""}),
                               ("13511220032", "中", {"status": 400, "msg": "", "code": ""}),
                               ("13511220033", "*", {"status": 400, "msg": "", "code": ""}),
@@ -544,8 +545,8 @@ class TestGetMsgCode(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp.status_code == 200
-                assert rsp_content["code"] == 101000
-                assert "不能为空" in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert "短信已下发" in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -633,5 +634,5 @@ class TestGetMsgCode(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_GetMsgCode.py'])
-    pytest.main(['-s', 'test_APP_GetMsgCode.py::TestGetMsgCode::test_101011_no_timestamp'])
+    pytest.main(['-s', 'test_APP_GetMsgCode.py'])
+    # pytest.main(['-s', 'test_APP_GetMsgCode.py::TestGetMsgCode::test_101009_no_code_type'])

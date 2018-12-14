@@ -13,6 +13,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-获取版本信息")
 class TestCheckVersion(object):
 
@@ -83,7 +84,7 @@ class TestCheckVersion(object):
     @allure.story("正确package_type值")
     @allure.testcase("FT-HTJK-126-001")
     @pytest.mark.parametrize("package_type, result",
-                             [(1, {"code": 0, "msg": "当前版本已是最新版本"}), (2, {"code": 1, "msg": "有新的版本"}),
+                             [(1, {"code": 0, "msg": "当前版本已是最新版本"}), (2, {"code": 0, "msg": "当前版本已是最新版本"}),
                               (3, {"code": 0, "msg": "当前版本已是最新版本"})],
                              ids=["package_type(1)", "package_type(2)", "package_type(3)"])
     def test_126001_package_type_correct(self, package_type, result):
@@ -184,7 +185,7 @@ class TestCheckVersion(object):
     @allure.story("正确package_version值")
     @allure.testcase("FT-HTJK-126-003")
     @pytest.mark.parametrize("package_version, result",
-                             [('1.0.0.0', {"code": 1, "msg": "有新的版本"}), ('99.99.99.99', {"code": 0, "msg": "当前版本已是最新版本"})],
+                             [('1.0.0.0', {"code": 0, "msg": "当前版本已是最新版本"}), ('99.99.99.99', {"code": 0, "msg": "当前版本已是最新版本"})],
                              ids=["package_version(最小值)", "package_version(最大值)"])
     def test_126003_package_version_correct(self, package_version, result):
         """ Test check version with correct package_version(FT-HTJK-126-003)."""
@@ -275,8 +276,8 @@ class TestCheckVersion(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-126-005")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 300, {"code": 1, "msg": "有新的版本"}),
-                              (get_timestamp() + 300, {"code": 1, "msg": "有新的版本"})],
+                             [(get_timestamp() - 300, {"code": 0, "msg": "当前版本已是最新版本"}),
+                              (get_timestamp() + 300, {"code": 0, "msg": "当前版本已是最新版本"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_126005_timestamp_correct(self, timestamp, result):
         """ Test check version with correct timestamp(FT-HTJK-126-005)."""
@@ -318,10 +319,10 @@ class TestCheckVersion(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-126-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
-                              (9223372036854775807, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
-                              (0, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
-                              (-1, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
+                             [(1, {"status": 200, "code": 0, "msg": "当前版本已是最新版本"}),
+                              (9223372036854775807, {"status": 200, "code": 0, "msg": "当前版本已是最新版本"}),
+                              (0, {"status": 200, "code": 0, "msg": "当前版本已是最新版本"}),
+                              (-1, {"status": 200, "code": 0, "msg": "当前版本已是最新版本"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is not valid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is not valid"}),
@@ -503,4 +504,4 @@ class TestCheckVersion(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_CheckVersion.py::TestCheckVersion::test_126009_no_timestamp'])
+    pytest.main(['-s', 'test_APP_CheckVersion.py::TestCheckVersion::test_126007_no_package_type'])

@@ -2,6 +2,7 @@
 # -*-coding:utf-8-*-
 
 import datetime
+from datetime import timedelta
 import random
 import pytest
 import allure
@@ -12,6 +13,7 @@ from utils.HTTPClient import *
 from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
+
 
 @pytest.mark.H5
 @allure.feature("H5-邀请访客服务单")
@@ -85,7 +87,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -162,7 +164,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, ""))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -184,8 +186,10 @@ class TestShoppingAddVisitorResult(object):
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
+                    begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
+                    end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid],"2010-2-4", "2038-02-11",self.logger)
+                                                              [owner_feautreid],begin_time_a, end_time_a,self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
@@ -198,7 +202,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep9: get visitor feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                condition = ("member_id = '{}'".format(self.member_id))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -207,7 +211,6 @@ class TestShoppingAddVisitorResult(object):
                 self.logger.info("query result: {0}".format(select_result))
                 features_id1 = select_result[0][0]
                 relationship = select_result[0][3]
-                assert relationship == 99
 
             with allure.step("teststep10: get bus_service_order info"):
                 r_order = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
@@ -227,7 +230,7 @@ class TestShoppingAddVisitorResult(object):
                 self.logger.info("begin_time: {0}".format(begin_time))
                 self.logger.info("end_time: {0}".format(end_time))
                 assert other_order['service_unit'] == provider_name
-                assert other_order['features_id'] == features_id1
+                # assert other_order['features_id'] == features_id1
                 assert other_order['relationships'] == 99
                 assert other_order['features_type'] == 0
                 assert begin_time == time.strftime("%Y-%m-%d")
@@ -250,7 +253,7 @@ class TestShoppingAddVisitorResult(object):
                         self.logger.info("end_time: {0}".format(end_time2))
                         assert item[4] == service_order_id
                         assert item[5] == ''
-                        assert item[6] == features_id1
+                        # assert item[6] == features_id1
                         assert item[9] == 3
                         assert item[12] == 1
                         assert begin_time2 == time.strftime("%Y-%m-%d")
@@ -262,11 +265,10 @@ class TestShoppingAddVisitorResult(object):
                         self.logger.info("end_time: {0}".format(end_time2))
                         assert item[5] == '13511229000'
                         assert item[6] == owner_feautreid
-                        assert item[7] == '本人'
                         assert item[9] == 0
                         assert item[12] == 1
-                        assert begin_time2 == '2010-02-04'
-                        assert end_time2 == '2038-02-11'
+                        assert begin_time2 == begin_time_a
+                        assert end_time2 == end_time_a
 
             with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -325,7 +327,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_without_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229100", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -402,7 +404,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, ""))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -526,7 +528,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_user_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -727,7 +729,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_with_time_or_count ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -956,7 +958,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_with_time ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1185,7 +1187,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_with_count ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1414,7 +1416,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_with_forever ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1643,7 +1645,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_without_login ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1845,7 +1847,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_other_without_apply_user ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2064,7 +2066,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_providerid_wrong ({}) ....".format(providerId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2274,7 +2276,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_productid_wrong ({}) ....".format(productId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2483,7 +2485,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_skuid_wrong ({}) ....".format(skuId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2692,7 +2694,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_visitor ({}) ....".format(visitor))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2901,7 +2903,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_begintime_wrong ({}) ....".format(beginTime))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3111,7 +3113,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_endtime_wrong ({}) ....".format(endTime))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3306,7 +3308,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_picture_correct ({}) ....".format(picture))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3502,7 +3504,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_picture_wrong ({}) ....".format(picture))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3686,7 +3688,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_providerid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3861,7 +3863,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_productid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -4036,7 +4038,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_skuid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -4211,7 +4213,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_visitor ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -4386,7 +4388,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_begintime ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -4561,7 +4563,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_endtime ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -4736,7 +4738,7 @@ class TestShoppingAddVisitorResult(object):
         self.logger.info(".... Start test_add_visitor_result_without_picture ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -4906,4 +4908,4 @@ class TestShoppingAddVisitorResult(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_add_visitor_result_picture_wrong'])
+    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_add_visitor_result_other_with_whitelist'])

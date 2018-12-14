@@ -13,6 +13,7 @@ from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
+
 @pytest.mark.H5
 @allure.feature("H5-登录")
 class TestHomeIndex(object):
@@ -85,7 +86,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_correct ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -97,6 +98,8 @@ class TestHomeIndex(object):
                 self.logger.info("register result: {0}".format(register_result))
                 self.token = register_result['token']
                 self.member_id = register_result['user_info']['member_id']
+                headers = {"token": self.token}
+                self.httpclient.update_header(headers)
 
             with allure.step("teststep2: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -126,8 +129,8 @@ class TestHomeIndex(object):
                         self.logger.info("response content: {}".format(rsp_content))
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
-                        assert not rsp_content
-                        assert rsp_headers['Cookie']
+                        assert rsp_content
+                        assert rsp_headers['Set-Cookie']
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -183,7 +186,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_userid_wrong ({}) ....".format(userId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -195,6 +198,8 @@ class TestHomeIndex(object):
                 self.logger.info("register result: {0}".format(register_result))
                 self.token = register_result['token']
                 self.member_id = register_result['user_info']['member_id']
+                headers = {"token": self.token}
+                self.httpclient.update_header(headers)
 
             with allure.step("teststep2: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -216,22 +221,16 @@ class TestHomeIndex(object):
                     with allure.step("teststep: assert the response code"):
                         allure.attach("Actual response code：", str(rsp.status_code))
                         self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                        assert rsp.status_code == result['status']
-                        if rsp.status_code == 200:
-                            rsp_content = rsp.json()
-                        else:
-                            rsp_content = rsp.text
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.text
+                        rsp_headers = rsp.headers
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        if rsp.status_code == 200:
-                            if 'code' in rsp_content.keys():
-                                assert rsp_content["code"] == result['code']
-                            else:
-                                assert rsp_content["status"] == result['code']
-                            assert result['msg'] in rsp_content["message"]
-                        else:
-                            assert result['msg'] in rsp.text
+                        allure.attach("response headers：", str(rsp_headers))
+                        self.logger.info("response headers: {}".format(rsp_headers))
+                        assert rsp_content
+                        assert 'Set-Cookie' not in rsp_headers
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -287,7 +286,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_token_wrong ({}) ....".format(token))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -299,6 +298,8 @@ class TestHomeIndex(object):
                 self.logger.info("register result: {0}".format(register_result))
                 self.token = register_result['token']
                 self.member_id = register_result['user_info']['member_id']
+                headers = {"token": self.token}
+                self.httpclient.update_header(headers)
 
             with allure.step("teststep2: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -320,22 +321,16 @@ class TestHomeIndex(object):
                     with allure.step("teststep: assert the response code"):
                         allure.attach("Actual response code：", str(rsp.status_code))
                         self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                        assert rsp.status_code == result['status']
-                        if rsp.status_code == 200:
-                            rsp_content = rsp.json()
-                        else:
-                            rsp_content = rsp.text
+                        assert rsp.status_code == 200
+                        rsp_content = rsp.text
+                        rsp_headers = rsp.headers
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        if rsp.status_code == 200:
-                            if 'code' in rsp_content.keys():
-                                assert rsp_content["code"] == result['code']
-                            else:
-                                assert rsp_content["status"] == result['code']
-                            assert result['msg'] in rsp_content["message"]
-                        else:
-                            assert result['msg'] in rsp.text
+                        allure.attach("response headers：", str(rsp_headers))
+                        self.logger.info("response headers: {}".format(rsp_headers))
+                        assert rsp_content
+                        assert 'Set-Cookie' not in rsp_headers
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -367,7 +362,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_without_userid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -379,6 +374,8 @@ class TestHomeIndex(object):
                 self.logger.info("register result: {0}".format(register_result))
                 self.token = register_result['token']
                 self.member_id = register_result['user_info']['member_id']
+                headers = {"token": self.token}
+                self.httpclient.update_header(headers)
 
             with allure.step("teststep2: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -409,6 +406,7 @@ class TestHomeIndex(object):
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
                         assert rsp_content
+                        assert 'Set-Cookie' not in rsp_headers.keys()
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -440,7 +438,7 @@ class TestHomeIndex(object):
         self.logger.info(".... Start test_home_index_without_token ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -452,6 +450,8 @@ class TestHomeIndex(object):
                 self.logger.info("register result: {0}".format(register_result))
                 self.token = register_result['token']
                 self.member_id = register_result['user_info']['member_id']
+                headers = {"token": self.token}
+                self.httpclient.update_header(headers)
 
             with allure.step("teststep2: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -482,6 +482,7 @@ class TestHomeIndex(object):
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
                         assert rsp_content
+                        assert 'Set-Cookie' not in rsp_headers.keys()
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -508,4 +509,4 @@ class TestHomeIndex(object):
 
 if __name__ == "__main__":
     # pytest.main(['-s', 'test_H5_Home_Index.py'])
-    pytest.main(['-s', 'test_H5_Home_Index.py::TestHomeIndex::test_home_index_without_token'])
+    pytest.main(['-s', 'test_H5_Home_Index.py::TestHomeIndex::test_home_index_userid_wrong'])

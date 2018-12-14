@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-修改手机号")
 class TestModifyPhone(object):
 
@@ -81,7 +82,7 @@ class TestModifyPhone(object):
             self.logger.info("delete result: {0}".format(delete_result))
 
         with allure.step("user register."):
-            json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+            json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                     "imei": "460011234567890", "phone": "13511222141", "sms_code": "123456",
                     "timestamp": get_timestamp()}
             allure.attach("register params value", str(json))
@@ -345,13 +346,13 @@ class TestModifyPhone(object):
     @allure.testcase("FT-HTJK-112-004")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 201301, "msg": "非该用户的认证手机号码"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 201301, "msg": "非该用户的认证手机号码"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -901,12 +902,13 @@ class TestModifyPhone(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-112-010")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}), (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 1, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),

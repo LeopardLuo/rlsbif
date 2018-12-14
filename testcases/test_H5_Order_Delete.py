@@ -12,6 +12,7 @@ from utils.HTTPClient import HTTPClient
 from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
+
 @pytest.mark.H5
 @allure.feature("H5-删除服务单")
 class TestOrderDelete(object):
@@ -84,7 +85,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_apply_result_user_order ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -295,7 +296,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_add_member_other_all_order ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -514,7 +515,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_add_visitor_result_all_order ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -733,7 +734,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_become_visitor_result_order ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -943,7 +944,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_add_member_result_user_relate_other ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1163,7 +1164,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_add_visitor_result_user_relate_other ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1383,7 +1384,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_add_member_result_only_other_order ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1609,7 +1610,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_delete_add_visitor_result_only_other_order ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -1854,7 +1855,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_providerId_wrong ({}) ....".format(providerId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2114,7 +2115,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_productId_wrong ({}) ....".format(productId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2374,7 +2375,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_skuId_wrong ({}) ....".format(skuId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2624,7 +2625,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_orderId_correct ({}) ....".format(orderId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -2891,7 +2892,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_orderId_wrong ({}) ....".format(orderId))
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3130,7 +3131,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_without_providerid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3360,7 +3361,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_without_productid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3590,7 +3591,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_without_skuid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -3820,7 +3821,7 @@ class TestOrderDelete(object):
         self.logger.info(".... Start test_order_delete_without_orderid ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))

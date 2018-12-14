@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-获取第三方关联微信账号")
 class TestGetWXAcount(object):
 
@@ -58,7 +59,7 @@ class TestGetWXAcount(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222151", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -202,7 +203,7 @@ class TestGetWXAcount(object):
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "参数非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -311,10 +312,10 @@ class TestGetWXAcount(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-114-005")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
-                              (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               (1.0, {"status": 400, "code": 0, "msg": ""}),
@@ -496,8 +497,8 @@ class TestGetWXAcount(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '不能为空' in rsp_content['message']
+                assert rsp_content["code"] == 1
+                assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

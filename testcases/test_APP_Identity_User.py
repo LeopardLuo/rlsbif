@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-用户身份认证")
 class TestIdentityUser(object):
 
@@ -58,7 +59,7 @@ class TestIdentityUser(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222161", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -242,16 +243,16 @@ class TestIdentityUser(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-115-003")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 200, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
-                              ('中', {"status": 200, "code": 0, "msg": ""}),
-                              ('*', {"status": 200, "code": 0, "msg": ""}),
-                              ('1中', {"status": 200, "code": 0, "msg": ""}),
-                              ('1*', {"status": 200, "code": 0, "msg": ""}),
-                              (' ', {"status": 200, "code": 0, "msg": ""}),
-                              ('', {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775808, {"status": 200, "code": 0, "msg": ""})],
+                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 400, "code": 0, "msg": ""}),
+                              ('中', {"status": 400, "code": 0, "msg": ""}),
+                              ('*', {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', {"status": 400, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}),
+                              ('', {"status": 400, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
+                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
@@ -389,7 +390,7 @@ class TestIdentityUser(object):
                               ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201307, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201307, "msg": "照片不合格"}),
-                              ("fore1.PNG", {"code": 201307, "msg": "照片不合格"}), ],
+                              ("fore1.PNG", {"code": 201307, "msg": "验证不通过"}), ],
                              ids=["identity_card_face(gif)", "identity_card_face(xlsx)", "identity_card_face(txt)",
                                   "identity_card_face(mp4)", "identity_card_face(other)"])
     def test_115005_identity_card_face_type_wrong(self, identity_card_face, result):
@@ -658,10 +659,10 @@ class TestIdentityUser(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-115-011")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -727,7 +728,8 @@ class TestIdentityUser(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                if result['code'] != 1:
+                    assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

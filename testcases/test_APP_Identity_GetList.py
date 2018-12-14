@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-获取用户成员列表")
 class TestGetIdentityList(object):
 
@@ -58,7 +59,7 @@ class TestGetIdentityList(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222181", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -367,15 +368,15 @@ class TestGetIdentityList(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-116-005")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 200, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 0, "msg": ""}),
-                              ('中', {"status": 200, "code": 0, "msg": ""}),
-                              ('*', {"status": 200, "code": 0, "msg": ""}),
-                              ('1中', {"status": 200, "code": 0, "msg": ""}),
-                              ('1*', {"status": 200, "code": 0, "msg": ""}),
-                              (' ', {"status": 200, "code": 0, "msg": ""}),
-                              ('', {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
+                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 400, "code": 0, "msg": ""}),
+                              ('中', {"status": 400, "code": 0, "msg": ""}),
+                              ('*', {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', {"status": 400, "code": 0, "msg": ""}),
+                              (' ', {"status": 400, "code": 0, "msg": ""}),
+                              ('', {"status": 400, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 201401, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -428,7 +429,7 @@ class TestGetIdentityList(object):
     @allure.story("错误page_index值")
     @allure.testcase("FT-HTJK-116-006")
     @pytest.mark.parametrize("page_index, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "not valid"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": ""}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -544,8 +545,8 @@ class TestGetIdentityList(object):
     @allure.story("错误page_size值")
     @allure.testcase("FT-HTJK-116-008")
     @pytest.mark.parametrize("page_size, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "not valid"}),
-                              (0, {"status": 200, "code": 0, "msg": "not valid"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -662,10 +663,10 @@ class TestGetIdentityList(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-116-010")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -731,8 +732,8 @@ class TestGetIdentityList(object):
     @allure.story("正确orderby值")
     @allure.testcase("FT-HTJK-116-011")
     @pytest.mark.parametrize("orderby, result",
-                             [('asc', {"code": 1, "msg": ""}),
-                              ('desc', {"code": 1, "msg": ""})],
+                             [('features_name asc', {"code": 1, "msg": ""}),
+                              ('features_name desc', {"code": 1, "msg": ""})],
                              ids=["orderby(最小值)", "orderby(最大值)"])
     def test_116011_orderby_correct(self, orderby, result):
         """ Test correct orderby values (最小值、最大值）(FT-HTJK-116-011).
@@ -990,7 +991,7 @@ class TestGetIdentityList(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
+                assert rsp_content["code"] == 1
                 assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1070,7 +1071,7 @@ class TestGetIdentityList(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
+                assert rsp_content["code"] == 1
                 assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1128,8 +1129,6 @@ class TestGetIdentityList(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content['message']
-                assert rsp_content['result']['page']['total_count'] == relationships + 1
-                assert len(rsp_content['result']['data']) == relationships + 1
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1158,16 +1157,16 @@ class TestGetIdentityList(object):
     @pytest.mark.parametrize("relationships, result",
                              [(-1, {"status": 200, "code": 101000, "msg": "参数错误"}),
                               (2, {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('a' * 300, {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              (1.5, {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('a', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('中', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('*', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('1a', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('1中', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('1*', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              (' ', {"status": 200, "code": 101000, "msg": "参数错误"}),
-                              ('', {"status": 200, "code": 101000, "msg": "参数错误"})],
+                              ('a' * 300, {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              (1.5, {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('a', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('中', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('*', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('1a', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('1中', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('1*', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              (' ', {"status": 400, "code": 101000, "msg": "参数错误"}),
+                              ('', {"status": 400, "code": 101000, "msg": "参数错误"})],
                              ids=["relationships(-1)", "relationships(2)", "relationships(超长值)", "relationships(1.5)",
                                   "relationships(字母)", "relationships(中文)", "relationships(特殊字符)", "relationships(数字字母)",
                                   "relationships(数字中文)", "relationships(数字特殊字符)", "relationships(空格)", "relationships(空)", ])
@@ -1200,17 +1199,20 @@ class TestGetIdentityList(object):
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
-            with allure.step("teststep4: assert the response code"):
+            with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == result['status']
                 rsp_content = rsp.json()
 
-            with allure.step("teststep5: assert the response content"):
+            with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == result['code']
-                assert result['msg'] in rsp_content['message']
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                else:
+                    assert rsp_content
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

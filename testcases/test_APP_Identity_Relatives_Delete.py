@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-删除关联人")
 class TestDeleteRelatives(object):
 
@@ -58,7 +59,7 @@ class TestDeleteRelatives(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222191", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -199,7 +200,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if 'kuli' in member[2]:
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -243,8 +244,8 @@ class TestDeleteRelatives(object):
                 assert result_list
 
             with allure.step("teststep2: get parameters."):
-                features_id = result_list[0]['features_id']
-                json = {"member_id": self.member_id, "features_id": features_id, "timestamp": get_timestamp()}
+                self.features_id = result_list[0]['features_id']
+                json = {"member_id": self.member_id, "features_id": self.features_id, "timestamp": get_timestamp()}
                 headers = {"authorization": token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -279,7 +280,7 @@ class TestDeleteRelatives(object):
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 2
-                match_list = list(filter(lambda x: x[0] == features_id, select_result))
+                match_list = list(filter(lambda x: x[0] == self.features_id, select_result))
                 self.logger.info("match list: {}".format(match_list))
                 assert match_list
         except Exception as e:
@@ -293,7 +294,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -401,7 +402,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -509,7 +510,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -604,7 +605,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -619,13 +620,13 @@ class TestDeleteRelatives(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-118-006")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
                               (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
-                              (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
+                              (1.0, {"status": 200, "code": 1, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('中', {"status": 400, "code": 0, "msg": "is invalid"}),
                               ('*', {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -693,19 +694,6 @@ class TestDeleteRelatives(object):
                 else:
                     assert rsp_content
 
-            with allure.step("teststep6: query database records"):
-                table = 'mem_features'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 2
-                match_list = list(filter(lambda x: x[0] == features_id, select_result))
-                self.logger.info("match list: {}".format(match_list))
-                assert match_list
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -802,7 +790,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -887,7 +875,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -972,7 +960,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -1057,7 +1045,7 @@ class TestDeleteRelatives(object):
                 condition = ("member_id", self.member_id)
                 select_result = self.mysql.execute_select_condition(table, condition)
                 for member in select_result:
-                    if member[2] != '本人':
+                    if member[2] == 'kuli1':
                         condition = ("features_id", member[0])
                         allure.attach("table name and condition", "{0},{1}".format(table, condition))
                         self.logger.info("")
@@ -1070,5 +1058,5 @@ class TestDeleteRelatives(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
-    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118010_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py'])
+    # pytest.main(['-s', 'test_APP_Identity_Relatives_Delete.py::TestDeleteRelatives::test_118001_relatives_delete_correct'])

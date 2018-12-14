@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-获取首页信息")
 class TestGetIndexInfo(object):
 
@@ -58,7 +59,7 @@ class TestGetIndexInfo(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222333", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -141,7 +142,7 @@ class TestGetIndexInfo(object):
         self.logger.info(".... Start test_127002_get_indexinfo_without_login ....")
         try:
             with allure.step("teststep1: user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222302", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -436,9 +437,9 @@ class TestGetIndexInfo(object):
                              [(-180, {"code": 1, "msg": ""}), (-100.5, {"code": 1, "msg": ""}),
                               (0, {"code": 1, "msg": ""}), (1, {"code": 1, "msg": ""}),
                               (100.5, {"code": 1, "msg": ""}), (180, {"code": 1, "msg": ""}),
-                              (999, {"code": 1, "msg": ""})],
+                              (-1, {"code": 1, "msg": ""})],
                              ids=["longitude(-180)", "longitude(-100.5)", "longitude(0)", "longitude(1)",
-                                  "longitude(100.5)", "longitude(180)", "longitude(999)"])
+                                  "longitude(100.5)", "longitude(180)", "longitude(-1)"])
     def test_127007_longitude_correct(self, longitude, result):
         """ Test correct longitude values (-180、-100.5、0、1、100.5、180、999）(FT-HTJK-127-007).
         :param longitude: longitude parameter value.
@@ -448,7 +449,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 999,
+                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 10,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -513,7 +514,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 999,
+                data = {"member_id": self.member_id, "category": 0, "longitude": longitude, "latitude": 10,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -558,9 +559,9 @@ class TestGetIndexInfo(object):
                              [(-90, {"code": 1, "msg": ""}), (-10.5, {"code": 1, "msg": ""}),
                               (0, {"code": 1, "msg": ""}), (1, {"code": 1, "msg": ""}),
                               (10.5, {"code": 1, "msg": ""}), (90, {"code": 1, "msg": ""}),
-                              (999, {"code": 1, "msg": ""})],
+                              (-1, {"code": 1, "msg": ""})],
                              ids=["latitude(-90)", "latitude(-10.5)", "latitude(0)", "latitude(1)",
-                                  "latitude(10.5)", "latitude(90)", "latitude(999)"])
+                                  "latitude(10.5)", "latitude(90)", "latitude(-1)"])
     def test_127009_latitude_correct(self, latitude, result):
         """ Test correct latitude values (-90、-10.5、0、1、10.5、90、999）(FT-HTJK-127-009).
         :param latitude: latitude parameter value.
@@ -570,7 +571,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": 999, "latitude": latitude,
+                data = {"member_id": self.member_id, "category": 0, "longitude": 10, "latitude": latitude,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -635,7 +636,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": 999, "latitude": latitude,
+                data = {"member_id": self.member_id, "category": 0, "longitude": 10, "latitude": latitude,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -732,7 +733,7 @@ class TestGetIndexInfo(object):
     @allure.testcase("FT-HTJK-114-005")
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
                               (0, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
                               (-1, {"status": 200, "code": 101000, "msg": "timestamp值已过期"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
@@ -920,8 +921,8 @@ class TestGetIndexInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '参数错误' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert rsp_content["result"]['data']['category'] == [1, 2, 3, 5, 7]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -940,7 +941,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "latitude": 999,
+                data = {"member_id": self.member_id, "category": 0, "latitude": 10,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -964,8 +965,8 @@ class TestGetIndexInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'longitude值非法' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -984,7 +985,7 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": 999,
+                data = {"member_id": self.member_id, "category": 0, "longitude": 10,
                         "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
@@ -1008,8 +1009,8 @@ class TestGetIndexInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'latitude值非法' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1028,8 +1029,8 @@ class TestGetIndexInfo(object):
         try:
             assert self.token and self.member_id
             with allure.step("teststep1: get parameters."):
-                data = {"member_id": self.member_id, "category": 0, "longitude": 999,
-                        "latitude": 999}
+                data = {"member_id": self.member_id, "category": 0, "longitude": 1,
+                        "latitude": 1}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(data, headers))
                 self.logger.info("data: {0}, headers: {1}".format(data, headers))
@@ -1065,5 +1066,5 @@ class TestGetIndexInfo(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_GetIndexInfo.py'])
-    pytest.main(['-s', 'test_APP_GetIndexInfo.py::TestGetIndexInfo::test_127018_no_timestamp'])
+    pytest.main(['-s', 'test_APP_GetIndexInfo.py'])
+    # pytest.main(['-s', 'test_APP_GetIndexInfo.py::TestGetIndexInfo::test_127018_no_timestamp'])

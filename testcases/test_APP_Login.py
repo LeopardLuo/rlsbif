@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-登录-手机号")
 class TestLogin(object):
 
@@ -57,7 +58,7 @@ class TestLogin(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -135,7 +136,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -210,7 +211,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -298,7 +299,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": client_type, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": client_type, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -386,7 +387,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": client_type, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": client_type, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -473,7 +474,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": client_version, "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": client_version, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -531,7 +532,7 @@ class TestLogin(object):
     @allure.story("错误client_version值")
     @allure.testcase("FT-HTJK-103-006")
     @pytest.mark.parametrize("client_version, result",
-                             [('1' * 1001, {"msg": "", "code": 0}),
+                             [('1' * 1001, {"msg": "", "code": 1}),
                               (' ', {"msg": "client_version不能为空", "code": 101000}), ('', {"msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)",  "client_version(空格)", "client_version(空)"])
     def test_103006_clientversion_wrong(self, client_version, result):
@@ -553,7 +554,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": client_version, "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": client_version, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -599,7 +600,8 @@ class TestLogin(object):
                 select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                if result['code'] != 1:
+                    assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -613,11 +615,11 @@ class TestLogin(object):
     @allure.story("正确device_token值")
     @allure.testcase("FT-HTJK-103-007")
     @pytest.mark.parametrize("device_token, result",
-                             [('1', {"code": 1, "msg": "登录成功"}), ('a' * 50, {"code": 1, "msg": "登录成功"}),
-                              (1.0, {"code": 1, "msg": "登录成功"}),
-                              ('a', {"code": 1, "msg": "登录成功"}), ('中', {"code": 1, "msg": "登录成功"}),
-                              ('*', {"code": 1, "msg": "登录成功"}), ('1a', {"code": 1, "msg": "登录成功"}),
-                              ('1中', {"code": 1, "msg": "登录成功"}), ('1*', {"code": 1, "msg": "登录成功"}),
+                             [('1'*44, {"code": 1, "msg": "登录成功"}), ('a' * 50, {"code": 1, "msg": "登录成功"}),
+                              (1.5, {"code": 1, "msg": "登录成功"}),
+                              ('a'*44, {"code": 1, "msg": "登录成功"}), ('中'*44, {"code": 1, "msg": "登录成功"}),
+                              ('*'*44, {"code": 1, "msg": "登录成功"}), ('1a'*22, {"code": 1, "msg": "登录成功"}),
+                              ('1中'*22, {"code": 1, "msg": "登录成功"}), ('1*'*22, {"code": 1, "msg": "登录成功"}),
                               ],
                              ids=["device_token(最小长度值)", "device_token(最大长度值)","device_token(小数)",
                                   "device_token(字母)", "device_token(中文)",
@@ -700,7 +702,7 @@ class TestLogin(object):
     @allure.story("错误device_token值")
     @allure.testcase("FT-HTJK-103-008")
     @pytest.mark.parametrize("device_token, result",
-                             [('1' * 1001, {"code": 0, "msg": ""}),
+                             [('1' * 1001, {"code": 101000, "msg": ""}),
                               (' ', {"code": 101000, "msg": "device_token不能为空"}), ('', {"code": 101000, "msg": "device_token不能为空"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_103008_devicetoken_wrong(self, device_token, result):
@@ -780,9 +782,8 @@ class TestLogin(object):
     @allure.story("正确imei值")
     @allure.testcase("FT-HTJK-103-009")
     @pytest.mark.parametrize("imei, result",
-                             [('460011234567890', {"code": 1, "msg": "登录成功"}),
-                              ('46001123456789012', {"code": 1, "msg": "登录成功"})],
-                             ids=["imei(最小长度值)", "imei(最大长度值)"])
+                             [('1234567890', {"code": 1, "msg": "登录成功"})],
+                             ids=["imei(最小长度值)"])
     def test_103009_imei_correct(self, imei, result):
         """ Test correct imei values (最小长度值、最大长度值) (FT-HTJK-103-009).
         :param imei: imei parameter value.
@@ -802,7 +803,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '460011234567890',
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": imei, "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -858,91 +859,6 @@ class TestLogin(object):
             self.logger.info("")
 
     @allure.severity("critical")
-    @allure.story("错误imei值")
-    @allure.testcase("FT-HTJK-103-010")
-    @pytest.mark.parametrize("imei, result",
-                             [('1' * 18, {"code": 101000, "msg": "长度"}), (12345678901234.0, {"code": 101000, "msg": ""}),
-                              ('a'*15, {"code": 101000, "msg": ""}), ('中'*15, {"code": 101000, "msg": ""}),
-                              ('*'*15, {"code": 101000, "msg": ""}), ('1a'*8, {"code": 101000, "msg": ""}),
-                              ('1中'*8, {"code": 101000, "msg": ""}), ('1*'*8, {"code": 101000, "msg": ""}),
-                              (' '*15, {"code": 101000, "msg": "长度"}), ('', {"code": 101000, "msg": "长度"})],
-                             ids=["imei(超长值)", "imei(小数)", "imei(字母)", "imei(中文)",
-                                  "imei(特殊字符)", "imei(数字字母)", "imei(数字中文)",
-                                  "imei(数字特殊字符)", "imei(空格)", "imei(空)"])
-    def test_103010_imei_wrong(self, imei, result):
-        """ Test wrong imei values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-103-010).
-        :param imei: imei parameter value.
-        :param result: expect result.
-        """
-        self.logger.info(".... Start test_103010_imei_wrong ({0}) ....".format(imei))
-        try:
-            with allure.step("teststep1: get msg code."):
-                params = {"code_type": 2, "phone": "13511222001", "timestamp": get_timestamp()}
-                allure.attach("getmsgcode params value", str(params))
-                self.logger.info("getmsgcode params: {0}".format(params))
-                code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
-                                          self.logger)
-                allure.attach("getmsgcode result", str(code_token))
-                self.logger.info("getmsgcode result: {0}".format(code_token))
-                if not code_token:
-                    assert False
-
-            with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
-                        "imei": imei, "phone": "13511222001", "sms_code": "123456",
-                        "code_token": code_token, "timestamp": get_timestamp()}
-                allure.attach("params value", str(json))
-                self.logger.info("params: {0}".format(json))
-
-            with allure.step("teststep3: requests http post."):
-                rsp = self.httpclient.post(self.URI, json=json)
-                allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body))
-                self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body))
-
-            with allure.step("teststep4: assert the response code"):
-                allure.attach("Actual response code：", str(rsp.status_code))
-                self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
-
-            with allure.step("teststep5: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    if rsp_content["code"] == 1:
-                        self.member_id = rsp_content["result"]['user_info']['member_id']
-                        with allure.step("user logout"):
-                            self.httpclient.update_header({"authorization": rsp_content["result"]["token"]})
-                            logout_result = logout(self.httpclient, rsp_content['result']['user_info']['member_id'],
-                                                   get_timestamp(), self.logger)
-                            self.httpclient.update_header({"authorization": None})
-                            allure.attach("Logout result：", str(logout_result))
-                            self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == result['code']
-                assert result['msg'] in rsp_content["message"]
-
-            with allure.step("teststep6: query database records"):
-                table = 'mem_member_login'
-                condition = 'last_login_type = "{0}" and member_id = "{1}"'.format(1, self.member_id)
-                allure.attach("table name and condition", "{0}".format(table))
-                self.logger.info("")
-                self.logger.info("table: {0}".format(table))
-                select_result = self.mysql.execute_select_conditions(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
-        except Exception as e:
-            allure.attach("Exception: ", "{}".format(e))
-            self.logger.error("Error: exception ocurr: ")
-            self.logger.error(e)
-            assert False
-        finally:
-            self.logger.info(".... End test_103010_imei_wrong ({0}) ....".format(imei))
-            self.logger.info("")
-
-    @allure.severity("critical")
     @allure.story("手机号未注册未获取验证码")
     @allure.testcase("FT-HTJK-103-011")
     def test_103011_not_register_not_getmsgcode(self):
@@ -961,7 +877,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
+                json = {"client_type": 1, "client_version": "0.1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222002", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1014,7 +930,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222002", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1037,8 +953,8 @@ class TestLogin(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert rsp_content["Message"]
+                assert rsp_content["code"] == 1
+                assert rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1067,7 +983,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1090,8 +1006,8 @@ class TestLogin(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201106
-                assert '验证码不正确' in rsp_content["message"]
+                assert rsp_content["code"] == 201109
+                assert '当前手机号码与验证手机号不符' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1141,7 +1057,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": '460011234567890', "phone": phone, "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1226,7 +1142,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": '460011234567890', "phone": "13511222001", "sms_code": sms_code,
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1311,7 +1227,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": '460011234567890', "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1390,7 +1306,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '460011234567890',
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": timestamp}
                 allure.attach("params value", str(json))
@@ -1448,11 +1364,13 @@ class TestLogin(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-103-018")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}), (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}), (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 400, "code": 0, "msg": ""}), ('a', {"status": 400, "code": 0, "msg": ""}),
+                              (1.5, {"status": 200, "code": 1, "msg": ""}), ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}), ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1a', {"status": 400, "code": 0, "msg": ""}), ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}), (' ', {"status": 400, "code": 0, "msg": ""}),
@@ -1482,7 +1400,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": '123456789',
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": '460011234567890', "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": timestamp}
                 allure.attach("params value", str(json))
@@ -1528,7 +1446,8 @@ class TestLogin(object):
                 select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                if result['code'] != 1:
+                    assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1557,7 +1476,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_version": "0.1", "device_token": "123456789",
+                json = {"client_version": "0.1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1619,7 +1538,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "device_token": "123456789",
+                json = {"client_type": 1, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1741,7 +1660,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "0.1", "device_token": "123456789",
+                json = {"client_type": 1, "client_version": "0.1", "device_token": "12345678901"*4,
                         "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1772,8 +1691,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 101000
-                assert 'imei' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -1802,7 +1721,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "sms_code": "123456",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1863,7 +1782,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001",
                         "code_token": code_token, "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1924,7 +1843,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -1985,7 +1904,7 @@ class TestLogin(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222001", "sms_code": "123456",
                         "code_token": code_token}
                 allure.attach("params value", str(json))
@@ -2029,5 +1948,5 @@ class TestLogin(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Login.py'])
-    pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103026_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Login.py'])
+    # pytest.main(['-s', 'test_APP_Login.py::TestLogin::test_103022_no_imei'])

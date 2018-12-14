@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-登录-微信授权")
 class TestWXLogin(object):
 
@@ -57,7 +58,7 @@ class TestWXLogin(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222401", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -100,7 +101,7 @@ class TestWXLogin(object):
     #     self.logger.info(".... Start test_104001_WXlogin_correct ....")
     #     try:
     #         with allure.step("teststep1: get parameters."):
-    #             json = {"client_type": 1, "client_version": "v1", "device_token": "460011234567890",
+    #             json = {"client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
     #                     "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe", "timestamp": get_timestamp()}
     #             allure.attach("params value", str(json))
     #             self.logger.info("params: {0}".format(json))
@@ -139,7 +140,7 @@ class TestWXLogin(object):
     @allure.testcase("FT-HTJK-104-003")
     @pytest.mark.parametrize("client_type, result",
                              [(-1, {"status": 200, "msg": "client_type值非法", "code": 101000}),
-                              (15, {"status": 200, "msg": "client_type值非法", "code": 101000}),
+                              (15, {"status": 200, "msg": "获取授权失败", "code": 201103}),
                               (-2147483649, {"status": 400, "msg": "", "code": 0}),
                               (2147483648, {"status": 400, "msg": "", "code": 0}),
                               (1.0, {"status": 400, "msg": "", "code": 0}),
@@ -163,7 +164,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104003_clienttype_wrong ({}) ....".format(client_type))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": client_type, "client_version": "v1", "device_token": "460011234567890",
+                json = {"client_type": client_type, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -204,7 +205,7 @@ class TestWXLogin(object):
     @allure.story("错误client_version值")
     @allure.testcase("FT-HTJK-104-005")
     @pytest.mark.parametrize("client_version, result",
-                             [('1' * 1001, {"msg": "", "code": 101000}),
+                             [('1' * 1001, {"msg": "获取授权失败", "code": 201103}),
                               (' ', {"msg": "client_version不能为空", "code": 101000}),
                               ('', {"msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)", "client_version(空格)", "client_version(空)"])
@@ -216,7 +217,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104005_clientversion_wrong ({}) ....".format(client_version))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": client_version, "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": client_version, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -258,7 +259,7 @@ class TestWXLogin(object):
     @allure.testcase("FT-HTJK-104-007")
     @pytest.mark.parametrize("device_token, result",
                              [('1' * 256, {"code": 101000, "msg": "device_token值非法"}),
-                              (' ', {"code": 101000, "msg": "不能为空"}), ('', {"code": 101000, "msg": "不能为空"})],
+                              (' ', {"code": 101000, "msg": "必须大于或等于44个字符"}), ('', {"code": 101000, "msg": "必须大于或等于44个字符"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_104007_devicetoken_wrong(self, device_token, result):
         """ Test wrong device_token values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-104-007).
@@ -325,7 +326,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104009_imei_wrong ({}) ....".format(imei))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": imei, "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -382,7 +383,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104010_code_wrong ({}) ....".format(code))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": code,
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -423,13 +424,13 @@ class TestWXLogin(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-104-012")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
-                              (-1, {"status": 200, "code": 0, "msg": ""}),
+                             [(1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (9223372036854775807, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
@@ -452,7 +453,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104012_timestamp_wrong ({}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_type": 1, "client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": timestamp}
                 allure.attach("params value", str(json))
@@ -497,7 +498,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104013_no_clienttype ....")
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_version": 'v1', "device_token": "460011234567890",
+                json = {"client_version": 'v1', "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -542,7 +543,7 @@ class TestWXLogin(object):
         self.logger.info(".... Start test_104014_no_client_version ....")
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"client_type": 1, "device_token": "460011234567890",
+                json = {"client_type": 1, "device_token": "12345678901"*4,
                         "imei": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
@@ -611,8 +612,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 101000
-                    assert '不能为空' in rsp_content["message"]
+                    assert rsp_content["code"] == 201103
+                    assert '获取授权失败' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -633,7 +634,7 @@ class TestWXLogin(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": "v1",
-                        "device_token": "460011234567890", "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
+                        "device_token": "12345678901"*4, "code": "071mBhQ108XUcE1jblN105mSP10mBhe",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
@@ -678,7 +679,7 @@ class TestWXLogin(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": "v1",
-                        "device_token": "460011234567890", "imei": "460011234567890",
+                        "device_token": "12345678901"*4, "imei": "460011234567890",
                         "timestamp": get_timestamp()}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
@@ -723,7 +724,7 @@ class TestWXLogin(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"client_type": 1, "client_version": "v1",
-                        "device_token": "460011234567890", "imei": "460011234567890",
+                        "device_token": "12345678901"*4, "imei": "460011234567890",
                         "code": '071mBhQ108XUcE1jblN105mSP10mBhe'}
                 allure.attach("params value", str(json))
                 self.logger.info("params: {0}".format(json))
@@ -762,4 +763,4 @@ class TestWXLogin(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_LoginWX.py'])
-    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104018_no_timestamp'])
+    pytest.main(['-s', 'test_APP_LoginWX.py::TestWXLogin::test_104015_no_device_token'])

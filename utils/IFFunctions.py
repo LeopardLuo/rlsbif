@@ -817,7 +817,7 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
 
 
 @allure.step("associates-InfoList")
-def get_identity_other_list(httpclient, member_id, page_index, page_size, timestamp=None, orderby=None, relationships=None, logger=None):
+def get_identity_other_list(httpclient, member_id, page_index, page_size, timestamp=None, orderby=None, relationships=0, logger=None):
     """ Get related peoples of user list.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
@@ -863,7 +863,7 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
 
 
 @allure.step("associates-Identify")
-def identity_other(httpclient, member_id, features_name, other_photo, my_photo, timestamp=None, logger=None):
+def identity_other(httpclient, member_id, features_name, other_photo, my_photo, timestamp=None, logger=None, feature_sex=1):
     """ Identify the related peoples of user.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
@@ -879,7 +879,7 @@ def identity_other(httpclient, member_id, features_name, other_photo, my_photo, 
     uri = ConfigParse().getItem("uri", "IdentityOther")
     if not timestamp:
         timestamp = get_timestamp()
-    params = {"member_id": member_id, "features_name": features_name, "timestamp": timestamp}
+    params = {"member_id": member_id, "features_name": features_name, "feature_sex": feature_sex, "timestamp": timestamp}
     files = {"other_photo": open(get_image_path(other_photo), 'rb'),
              "my_photo": open(get_image_path(my_photo), 'rb')}
     allure.attach("request params", str(params))
@@ -2129,7 +2129,7 @@ def h5_home_index(httpclient, member_id, token, logger=None):
 
 
 @allure.step("H5-Get-ShoppingApplyResult")
-def h5_shopping_apply_result(httpclient, providerId, productId, skuId, features_id, start_date, end_date, logger=None):
+def h5_shopping_apply_result(httpclient, providerId, productId, skuId, features_id, start_date, end_date, logger=None, remark=None):
     """ Business system get user info from server.
     :param httpclient: http request client.
     :param providerId: interface defined parameter providerId long type.
@@ -2145,7 +2145,7 @@ def h5_shopping_apply_result(httpclient, providerId, productId, skuId, features_
     logger and logger.info("---- start h5_shopping_apply_result ----")
     uri = ConfigParse().getItem("uri", "H5ShoppingApplyResult")
     data = {"providerId": providerId, "productId": productId, "skuId": skuId,
-                  "features_id": features_id, "start_date": start_date, "end_date": end_date}
+                  "features_id": features_id, "start_date": start_date, "end_date": end_date, "remark":remark}
     allure.attach("request params", str(data))
     logger and logger.info("ApplyResult dict: {}".format(data))
     rsp = httpclient.get(uri=uri, params=data)
@@ -2343,3 +2343,42 @@ def h5_shopping_become_visitor_result(httpclient, providerId, productId, skuId, 
         return True
     else:
         return False
+
+
+@allure.step("H5-Products-MyMember")
+def h5_mymember(httpclient, skuId, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param skuId: interface defined parameter skuId long type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_mymember ----")
+    uri = ConfigParse().getItem("uri", "H5mymember")
+    data = {"skuId": skuId}
+    allure.attach("request params", str(data))
+    logger and logger.info("request dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_mymember ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_mymember ----")
+    logger and logger.info("")
+    if int(rsp_content['code']) == 1:
+        return rsp_content['data']
+    else:
+        return {}

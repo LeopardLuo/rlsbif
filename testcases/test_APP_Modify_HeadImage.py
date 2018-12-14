@@ -12,6 +12,7 @@ from utils.MysqlClient import MysqlClient
 from utils.IFFunctions import *
 
 
+@pytest.mark.APP
 @allure.feature("APP-修改头像")
 class TestModifyHeadImage(object):
 
@@ -58,7 +59,7 @@ class TestModifyHeadImage(object):
                 cls.logger.info("delete result: {0}".format(delete_result))
 
             with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
                         "imei": "460011234567890", "phone": "13511222131", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
@@ -215,7 +216,7 @@ class TestModifyHeadImage(object):
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}),
                               ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": ""}),
+                              (0, {"status": 200, "code": 201203, "msg": "保存头像失败[拉取用户信息失败]"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -446,10 +447,10 @@ class TestModifyHeadImage(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-109-007")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -639,7 +640,7 @@ class TestModifyHeadImage(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
+                assert rsp.status_code == 500
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp.text))
@@ -691,8 +692,8 @@ class TestModifyHeadImage(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'timestamp不能为空' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '修改头像成功' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 self.httpclient.update_header({"authorization": self.token})
