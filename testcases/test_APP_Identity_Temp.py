@@ -1071,6 +1071,91 @@ class TestIdentityTemp(object):
             self.logger.info(".... End test_125016_no_timestamp ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("feature_sex值")
+    @allure.testcase("FT-HTJK-125-017")
+    @pytest.mark.parametrize("feature_sex, result",
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (2, {"status": 200, "code": 1, "msg": ""}),
+                              ('1', {"status": 200, "code": 1, "msg": ""}),
+                              ('1' * 50, {"status": 400, "code": 1, "msg": ""}),
+                              ('a', {"status": 400, "code": 1, "msg": ""}),
+                              ('中', {"status": 400, "code": 1, "msg": ""}),
+                              ('(*.)', {"status": 400, "code": 1, "msg": ""}),
+                              ('1a*中', {"status": 400, "code": 1, "msg": ""}),
+                              (1.123, {"status": 400, "code": 1, "msg": ""}),
+                              (' ', {"status": 400, "code": 1, "msg": ""}),
+                              ('', {"status": 400, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
+                              (3, {"status": 200, "code": 1, "msg": ""}),
+                              (4, {"status": 200, "code": 1, "msg": ""})],
+                             ids=["feature_sex(1)", "feature_sex(2)", "feature_sex(最小长度值)", "feature_sex(最大长度值)",
+                                  "feature_sex(字母)", "feature_sex(中文)", "feature_sex(特殊字符)",
+                                  "feature_sex(数字字母中文特殊字符)", "feature_sex(小数)", "feature_sex(空格)",
+                                  "feature_sex(空)", "feature_sex(0)", "feature_sex(3)", "feature_sex(4)"])
+    def test_125017_identity_temp_feature_sex_correct(self, feature_sex, result):
+        """ Test identity temp by correct feature_sex(FT-HTJK-125-017)."""
+        self.logger.info(".... Start test_125017_identity_temp_feature_sex_correct ({}) ....".format(feature_sex))
+        try:
+            with allure.step("teststep1: identity user."):
+                with allure.step("teststep: user feature."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                     get_timestamp(), self.logger)
+                    allure.attach("upload user feature result", "{0}".format(identity_result))
+                    self.logger.info("upload user feature result: {0}".format(identity_result))
+
+                with allure.step("teststep: identity user."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                    get_timestamp(), self.logger)
+                    allure.attach("identity owner result", "{0}".format(identity_result))
+                    self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "feature_name": 'kuli', "feature_sex": feature_sex, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"temp_photo": open(get_image_path('relate_face.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep3: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert not rsp_content['message']
+                    assert rsp_content['result']['feature_id']
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_125017_identity_temp_feature_sex_correct ({}) ....".format(feature_sex))
+            self.logger.info("")
+
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Identity_Temp.py::TestIdentityTemp::test_125016_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Identity_Temp.py::TestIdentityTemp::test_125017_identity_temp_feature_sex_correct'])

@@ -90,18 +90,18 @@ class TestCetServiceOrderList(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 cls.logger.info("identity owner result: {0}".format(identity_result))
 
-            with allure.step("teststep: identity relative."):
-                headers = {"authorization": cls.token}
-                cls.httpclient.update_header(headers)
-                identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg', get_timestamp(), cls.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                cls.logger.info("identity relative result: {0}".format(identity_result1))
-                identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), cls.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result2))
-                cls.logger.info("identity relative result: {0}".format(identity_result2))
+            # with allure.step("teststep: identity relative."):
+            #     headers = {"authorization": cls.token}
+            #     cls.httpclient.update_header(headers)
+            #     identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
+            #                                       'face2.jpg', get_timestamp(), cls.logger)
+            #     allure.attach("identity relative result", "{0}".format(identity_result1))
+            #     cls.logger.info("identity relative result: {0}".format(identity_result1))
+            #     identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
+            #                                       'face2.jpg',
+            #                                       get_timestamp(), cls.logger)
+            #     allure.attach("identity relative result", "{0}".format(identity_result2))
+            #     cls.logger.info("identity relative result: {0}".format(identity_result2))
 
             with allure.step("teststep: get provider id"):
                 provider_name = cls.config.getItem('h5', 'name')
@@ -148,12 +148,12 @@ class TestCetServiceOrderList(object):
                 cls.logger.info("query result: {0}".format(select_result))
                 cls.owner_feautreid = select_result[0][0]
 
-            with allure.step("teststep: get features id by user info."):
-                user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
-                allure.attach("features data list", "{0}".format(user_info))
-                cls.logger.info("features data list: {0}".format(user_info))
-                cls.features_id1 = user_info[0]['features_id']
-                cls.features_id2 = user_info[1]['features_id']
+            # with allure.step("teststep: get features id by user info."):
+            #     user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
+            #     allure.attach("features data list", "{0}".format(user_info))
+            #     cls.logger.info("features data list: {0}".format(user_info))
+            #     cls.features_id1 = user_info[0]['features_id']
+            #     cls.features_id2 = user_info[1]['features_id']
 
             with allure.step("teststep: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -175,8 +175,10 @@ class TestCetServiceOrderList(object):
                     allure.attach("apply result", str(r_applyresult1))
                     cls.logger.info("apply result: " + str(r_applyresult1))
                 with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(cls.httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
-                                                           [cls.features_id1], cls.logger)
+                    begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
+                    end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
+                    r_applyresult1 = h5_shopping_add_visitor_result(cls.httpclient1, cls.provider_id, cls.spu_id, cls.sku_id,
+                                                           "kuli1", begin_time_a, end_time_a, "relate_face.jpg", cls.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     cls.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1

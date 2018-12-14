@@ -5016,4 +5016,4 @@ class TestShoppingApplyResult(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py::TestShoppingApplyResult::test_apply_result_skuid_wrong'])
+    pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py::TestShoppingApplyResult::test_apply_result_user_with_whitelist'])

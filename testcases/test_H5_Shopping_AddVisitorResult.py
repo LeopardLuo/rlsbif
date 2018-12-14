@@ -104,7 +104,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, "本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -164,7 +164,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, ""))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -344,7 +344,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger,"本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -404,7 +404,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, ""))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -545,7 +545,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, "本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 

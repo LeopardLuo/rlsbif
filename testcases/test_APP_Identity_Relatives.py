@@ -153,21 +153,20 @@ class TestIdentityRelatives(object):
                     self.logger.info("identity owner result: {0}".format(identity_result))
 
             with allure.step("teststep2: get parameters."):
-                params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
+                params = {"member_id": self.member_id, "features_name": 'kuli', "feature_sex": 1, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
                          "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
+                self.logger.info("request file: {}".format(str(files)))
 
             with allure.step("teststep3: requests http post."):
                 self.httpclient.update_header(headers)
                 rsp = self.httpclient.post(self.URI, data=params, files=files)
                 allure.attach("request.headers", str(rsp.request.headers))
-                allure.attach("request.body", str(rsp.request.body))
                 allure.attach("request.url", str(rsp.request.url))
                 self.logger.info("request.headers: {}".format(rsp.request.headers))
-                self.logger.info("request.body: {}".format(rsp.request.body))
                 self.logger.info("request.url: {}".format(rsp.request.url))
 
             with allure.step("teststep4: assert the response code"):
@@ -722,7 +721,7 @@ class TestIdentityRelatives(object):
                               ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201307, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201307, "msg": "照片不合格"}),
-                              ("face1.PNG", {"code": 201307, "msg": "照片不合格"}), ],
+                              ("face1.PNG", {"code": 201307, "msg": "验证不通过"}), ],
                              ids=["my_photo(gif)", "my_photo(xlsx)", "my_photo(txt)",
                                   "my_photo(mp4)", "my_photo(other)"])
     def test_117010_my_photo_type_wrong(self, my_photo, result):
@@ -799,7 +798,7 @@ class TestIdentityRelatives(object):
             with allure.step("teststep2: get parameters."):
                 params = {"member_id": self.member_id, "features_name": 'kuli', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
-                files = {"other_photo": open(get_image_path('relate_com.jpg'), 'rb'),
+                files = {"other_photo": open(get_image_path('two.jpeg'), 'rb'),
                          "my_photo": open(get_image_path('face2.jpg'), 'rb')}
                 allure.attach("params value", "{0}, {1}".format(params, headers))
                 self.logger.info("data: {0}, headers: {1}".format(params, headers))
@@ -822,8 +821,8 @@ class TestIdentityRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201412
-                assert '照片不合格' in rsp_content['message']
+                assert rsp_content["code"] == 1
+                assert '添加成员成功' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -875,7 +874,7 @@ class TestIdentityRelatives(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201307
-                assert '照片不合格' in rsp_content['message']
+                assert '验证不通过' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -927,7 +926,7 @@ class TestIdentityRelatives(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201307
-                assert '照片不合格' in rsp_content['message']
+                assert '验证不通过' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1373,7 +1372,85 @@ class TestIdentityRelatives(object):
             self.logger.info(".... End test_117021_no_timestamp ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("正确feature_sex值")
+    @allure.testcase("FT-HTJK-117-022")
+    @pytest.mark.parametrize("feature_sex, result",
+                             [(1, {"status": 200, "code": 1, "msg": "添加成员成功"}), (2, {"status": 200, "code": 1, "msg": "添加成员成功"}),
+                              ('1', {"status": 200, "code": 1, "msg": "添加成员成功"}), ('1' * 50, {"status": 400, "code": 1, "msg": "添加成员成功"}),
+                              ('a', {"status": 400, "code": 1, "msg": "添加成员成功"}), ('中', {"status": 400, "code": 1, "msg": "添加成员成功"}),
+                              ('(*.)', {"status": 400, "code": 1, "msg": "添加成员成功"}), ('1a*中', {"status": 400, "code": 1, "msg": "添加成员成功"}),
+                              (1.123, {"status": 400, "code": 1, "msg": "添加成员成功"}), (' ', {"status": 400, "code": 1, "msg": "添加成员成功"}),
+                              ('', {"status": 400, "code": 1, "msg": "添加成员成功"}), (0, {"status": 200, "code": 1, "msg": "添加成员成功"}),
+                              (3, {"status": 200, "code": 1, "msg": "添加成员成功"}),(4, {"status": 200, "code": 1, "msg": "添加成员成功"})],
+                             ids=["feature_sex(1)", "feature_sex(2)", "feature_sex(最小长度值)", "feature_sex(最大长度值)",
+                                  "feature_sex(字母)",  "feature_sex(中文)", "feature_sex(特殊字符)",
+                                  "feature_sex(数字字母中文特殊字符)", "feature_sex(小数)", "feature_sex(空格)",
+                                  "feature_sex(空)", "feature_sex(0)", "feature_sex(3)", "feature_sex(4)"])
+    def test_117022_identity_relatives_feature_sex_correct(self, feature_sex, result):
+        """ Test identity relatives by correct feature_sex(FT-HTJK-117-022)."""
+        self.logger.info(".... Start test_117022_identity_relatives_feature_sex_correct ({}) ....".format(feature_sex))
+        try:
+            with allure.step("teststep1: identity user."):
+                with allure.step("teststep: user feature."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                     get_timestamp(), self.logger)
+                    allure.attach("upload user feature result", "{0}".format(identity_result))
+                    self.logger.info("upload user feature result: {0}".format(identity_result))
+
+                with allure.step("teststep: identity user."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                    get_timestamp(), self.logger)
+                    allure.attach("identity owner result", "{0}".format(identity_result))
+                    self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "features_name": 'kuli', "feature_sex": feature_sex, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+                self.logger.info("request file: {}".format(str(files)))
+
+            with allure.step("teststep3: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+                    assert not rsp_content['result']
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_117022_identity_relatives_feature_sex_correct ({}) ....".format(feature_sex))
+            self.logger.info("")
+
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
-    # pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117021_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117022_identity_relatives_feature_sex_correct'])
