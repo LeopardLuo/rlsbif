@@ -14,6 +14,7 @@ from utils.IFFunctions import *
 
 
 @pytest.mark.APP
+@pytest.skip
 @allure.feature("APP-获取版本信息")
 class TestCheckVersion(object):
 

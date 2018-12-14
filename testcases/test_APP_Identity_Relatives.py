@@ -1452,5 +1452,5 @@ class TestIdentityRelatives(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
-    pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117022_identity_relatives_feature_sex_correct'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
+    # pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117022_identity_relatives_feature_sex_correct'])
