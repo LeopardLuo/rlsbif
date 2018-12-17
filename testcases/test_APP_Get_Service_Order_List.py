@@ -90,18 +90,18 @@ class TestCetServiceOrderList(object):
                 allure.attach("identity owner result", "{0}".format(identity_result))
                 cls.logger.info("identity owner result: {0}".format(identity_result))
 
-            # with allure.step("teststep: identity relative."):
-            #     headers = {"authorization": cls.token}
-            #     cls.httpclient.update_header(headers)
-            #     identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
-            #                                       'face2.jpg', get_timestamp(), cls.logger)
-            #     allure.attach("identity relative result", "{0}".format(identity_result1))
-            #     cls.logger.info("identity relative result: {0}".format(identity_result1))
-            #     identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
-            #                                       'face2.jpg',
-            #                                       get_timestamp(), cls.logger)
-            #     allure.attach("identity relative result", "{0}".format(identity_result2))
-            #     cls.logger.info("identity relative result: {0}".format(identity_result2))
+            with allure.step("teststep: identity relative."):
+                headers = {"authorization": cls.token}
+                cls.httpclient.update_header(headers)
+                identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg', get_timestamp(), cls.logger)
+                allure.attach("identity relative result", "{0}".format(identity_result1))
+                cls.logger.info("identity relative result: {0}".format(identity_result1))
+                identity_result2 = identity_other(cls.httpclient, cls.member_id, 'mm1', 'mm1.jpg',
+                                                  'face2.jpg',
+                                                  get_timestamp(), cls.logger)
+                allure.attach("identity relative result", "{0}".format(identity_result2))
+                cls.logger.info("identity relative result: {0}".format(identity_result2))
 
             with allure.step("teststep: get provider id"):
                 provider_name = cls.config.getItem('h5', 'name')
@@ -135,7 +135,11 @@ class TestCetServiceOrderList(object):
                 select_result = cls.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 cls.logger.info("query result: {0}".format(select_result))
-                cls.sku_id = select_result[0][0]
+                sku_name = cls.config.getItem('sku', 'single_time_or_count')
+                cls.sku_id = 0
+                for item in select_result:
+                    if item[2] == sku_name:
+                        cls.sku_id = item[0]
 
             with allure.step("teststep: get owner feature"):
                 table = 'mem_features'
@@ -148,12 +152,12 @@ class TestCetServiceOrderList(object):
                 cls.logger.info("query result: {0}".format(select_result))
                 cls.owner_feautreid = select_result[0][0]
 
-            # with allure.step("teststep: get features id by user info."):
-            #     user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
-            #     allure.attach("features data list", "{0}".format(user_info))
-            #     cls.logger.info("features data list: {0}".format(user_info))
-            #     cls.features_id1 = user_info[0]['features_id']
-            #     cls.features_id2 = user_info[1]['features_id']
+            with allure.step("teststep: get features id by user info."):
+                user_info = get_identity_other_list(cls.httpclient, cls.member_id, 0, 10, get_timestamp(), logger=cls.logger)
+                allure.attach("features data list", "{0}".format(user_info))
+                cls.logger.info("features data list: {0}".format(user_info))
+                cls.features_id1 = user_info[0]['features_id']
+                cls.features_id2 = user_info[1]['features_id']
 
             with allure.step("teststep: create service orders"):
                 with allure.step("初始化HTTP客户端。"):
@@ -380,10 +384,10 @@ class TestCetServiceOrderList(object):
     @allure.testcase("FT-HTJK-119-004")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 1001, {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (1, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "授权非法"}),
-                              (-1, {"status": 200, "code": 0, "msg": "授权非法"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (1, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (9223372036854775807, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (-1, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (1.5, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
@@ -499,7 +503,7 @@ class TestCetServiceOrderList(object):
     @allure.story("错误page_index值")
     @allure.testcase("FT-HTJK-119-006")
     @pytest.mark.parametrize("page_index, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "page_index值非法"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": "page_index值非法"}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -616,8 +620,8 @@ class TestCetServiceOrderList(object):
     @allure.story("错误page_size值")
     @allure.testcase("FT-HTJK-119-008")
     @pytest.mark.parametrize("page_size, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "page_size值非法"}),
-                              (0, {"status": 200, "code": 0, "msg": "not valid"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -739,9 +743,9 @@ class TestCetServiceOrderList(object):
     @allure.story("错误state值")
     @allure.testcase("FT-HTJK-119-010")
     @pytest.mark.parametrize("state, result",
-                             [(-1, {"status": 200, "code": 0, "msg": "state值非法"}),
-                              (0, {"status": 200, "code": 0, "msg": "state值非法"}),
-                              (4, {"status": 200, "code": 0, "msg": "state值非法"}),
+                             [(-1, {"status": 200, "code": 101000, "msg": "state值非法"}),
+                              (0, {"status": 200, "code": 101000, "msg": "state值非法"}),
+                              (4, {"status": 200, "code": 101000, "msg": "state值非法"}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -859,6 +863,7 @@ class TestCetServiceOrderList(object):
     @allure.severity("critical")
     @allure.story("错误orderby值")
     @allure.testcase("FT-HTJK-119-012")
+    @pytest.mark.skip
     @pytest.mark.parametrize("orderby, result",
                              [(0, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
                               (1, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
@@ -971,6 +976,7 @@ class TestCetServiceOrderList(object):
     @allure.severity("critical")
     @allure.story("错误search值")
     @allure.testcase("FT-HTJK-119-014")
+    @pytest.mark.skip
     @pytest.mark.parametrize("search, result",
                              [(1.5, {"status": 200, "code": 0, "msg": ""}),
                               ('1*'*100, {"status": 200, "code": 0, "msg": ""})],
@@ -1023,8 +1029,8 @@ class TestCetServiceOrderList(object):
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-119-015")
     @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 1000, {"code": 1, "msg": ""}),
-                              (get_timestamp() + 1000, {"code": 1, "msg": ""})],
+                             [(get_timestamp() - 300, {"code": 1, "msg": ""}),
+                              (get_timestamp() + 300, {"code": 1, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_119015_timestamp_correct(self, timestamp, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-119-015).
@@ -1074,10 +1080,10 @@ class TestCetServiceOrderList(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-119-016")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 0, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -1210,7 +1216,7 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 201001
                 assert '授权非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1251,7 +1257,7 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 1
                 assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1292,7 +1298,7 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 1
                 assert '' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1333,7 +1339,7 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
+                assert rsp_content["code"] == 101000
                 assert 'state值非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1455,8 +1461,8 @@ class TestCetServiceOrderList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 0
-                assert '' in rsp_content['message']
+                assert rsp_content["code"] == 101000
+                assert 'timestamp不能为空' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1468,5 +1474,5 @@ class TestCetServiceOrderList(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Get_Service_Order_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119001_get_0index_of_2page'])
+    pytest.main(['-s', 'test_APP_Get_Service_Order_List.py'])
+    # pytest.main(['-s', 'test_APP_Get_Service_Order_List.py::TestCetServiceOrderList::test_119006_page_index_wrong'])

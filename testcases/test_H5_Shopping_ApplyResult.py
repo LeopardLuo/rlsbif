@@ -81,10 +81,10 @@ class TestShoppingApplyResult(object):
 
     @allure.severity("critical")
     @allure.story("在白名单下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_with_whitelist(self):
+    @allure.testcase("FT-HTJK-202-001")
+    def test_202001_apply_result_user_with_whitelist(self):
         """ Test apply result for user with whitelist. """
-        self.logger.info(".... Start test_apply_result_user_with_whitelist ....")
+        self.logger.info(".... Start test_202001_apply_result_user_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -195,10 +195,10 @@ class TestShoppingApplyResult(object):
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
-                    begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
+                    begin_time_a = str(datetime.datetime.now()).split()[0]
                     end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                        [owner_feautreid], datetime.datetime.now() + timedelta(days=1), datetime.datetime.now() + timedelta(days=2), self.logger)
+                        [owner_feautreid], begin_time_a, end_time_a, self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
@@ -295,15 +295,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_with_whitelist ....")
+            self.logger.info(".... End test_202001_apply_result_user_with_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("不在白名单下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_without_whitelist(self):
+    @allure.testcase("FT-HTJK-202-002")
+    def test_202002_apply_result_user_without_whitelist(self):
         """ Test apply result for user without whitelist. """
-        self.logger.info(".... Start test_apply_result_user_without_whitelist ....")
+        self.logger.info(".... Start test_202002_apply_result_user_without_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -500,15 +500,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_without_whitelist ....")
+            self.logger.info(".... End test_202002_apply_result_user_without_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("在白名单下成员服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_other_with_whitelist(self):
+    @allure.testcase("FT-HTJK-202-003")
+    def test_202003_apply_result_other_with_whitelist(self):
         """ Test apply result for other with whitelist. """
-        self.logger.info(".... Start test_apply_result_other_with_whitelist ....")
+        self.logger.info(".... Start test_202003_apply_result_other_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -628,7 +628,7 @@ class TestShoppingApplyResult(object):
                 self.logger.info("service order list: {0}".format(r_order))
                 other_order = None
                 for order in r_order:
-                    if order['features_name'] == '':
+                    if order['features_name'] == 'kuli1':
                         other_order = order
                 assert other_order
                 self.logger.info("other order : {0}".format(other_order))
@@ -659,16 +659,26 @@ class TestShoppingApplyResult(object):
                 end_time2 = str(select_result[0][16].strftime("%Y-%m-%d"))
                 self.logger.info("begin_time: {0}".format(begin_time2))
                 self.logger.info("end_time: {0}".format(end_time2))
+                bus_order_id = select_result[0][0]
+                self.logger.info("bus_order_id: {0}".format(bus_order_id))
                 assert select_result[0][4] == service_order_id
                 assert select_result[0][5] == '13511229000'
-                assert select_result[0][6] == features_id1
-                assert select_result[0][7] == 'kuli1'
-                assert select_result[0][9] == 1
-                assert select_result[0][12] == 1
                 assert begin_time2 == begin_time
                 assert end_time2 == end_time
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep13: get bus_order_features info"):
+                table = 'bus_order_features'
+                condition = ("bus_orderid", bus_order_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert select_result[0][2] == features_id1
+                assert select_result[0][3] == 'kuli1'
+
+            with allure.step("teststep14: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -714,15 +724,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_other_with_whitelist ....")
+            self.logger.info(".... End test_202003_apply_result_other_with_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("不在白名单下成员服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_other_without_whitelist(self):
+    @allure.testcase("FT-HTJK-202-004")
+    def test_202004_apply_result_other_without_whitelist(self):
         """ Test apply result for other without whitelist. """
-        self.logger.info(".... Start test_apply_result_other_with_whitelist ....")
+        self.logger.info(".... Start test_202004_apply_result_other_without_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -859,16 +869,26 @@ class TestShoppingApplyResult(object):
                 end_time2 = str(select_result[0][16].strftime("%Y-%m-%d"))
                 self.logger.info("begin_time: {0}".format(begin_time2))
                 self.logger.info("end_time: {0}".format(end_time2))
-                assert not select_result[0][4]
+                bus_order_id = select_result[0][0]
+                self.logger.info("bus_order_id: {0}".format(bus_order_id))
+                assert select_result[0][4] == 0
                 assert select_result[0][5] == '13511229100'
-                assert select_result[0][6] == features_id1
-                assert select_result[0][7] == 'kuli1'
-                assert select_result[0][9] == 1
-                assert select_result[0][12] == 0
                 assert begin_time2 == begin_time_a
                 assert end_time2 == end_time_a
 
-            with allure.step("teststep13: user logout."):
+            with allure.step("teststep13: get bus_order_features info"):
+                table = 'bus_order_features'
+                condition = ("bus_orderid", bus_order_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert select_result[0][2] == features_id1
+                assert select_result[0][3] == 'kuli1'
+
+            with allure.step("teststep14: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 self.httpclient.update_header({"authorization": None})
                 allure.attach("logout result", str(logout_result))
@@ -914,15 +934,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_other_with_whitelist ....")
+            self.logger.info(".... End test_202004_apply_result_other_without_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用时间或次数单品下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_time_or_count(self):
+    @allure.testcase("FT-HTJK-202-005")
+    def test_202005_apply_result_user_time_or_count(self):
         """ Test apply result for user with time or count sku. """
-        self.logger.info(".... Start test_apply_result_user_time_or_count ....")
+        self.logger.info(".... Start test_202005_apply_result_user_time_or_count ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1139,15 +1159,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_time_or_count ....")
+            self.logger.info(".... End test_202005_apply_result_user_time_or_count ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用时间单品下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_time(self):
+    @allure.testcase("FT-HTJK-202-006")
+    def test_202006_apply_result_user_time(self):
         """ Test apply result for user with time sku. """
-        self.logger.info(".... Start test_apply_result_user_time ....")
+        self.logger.info(".... Start test_202006_apply_result_user_time ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1364,15 +1384,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_time ....")
+            self.logger.info(".... End test_202006_apply_result_user_time ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用次数单品下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_count(self):
+    @allure.testcase("FT-HTJK-202-007")
+    def test_202007_apply_result_user_count(self):
         """ Test apply result for user with count sku. """
-        self.logger.info(".... Start test_apply_result_user_count ....")
+        self.logger.info(".... Start test_202007_apply_result_user_count ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1589,15 +1609,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_count ....")
+            self.logger.info(".... End test_202007_apply_result_user_count ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用无限单品下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_forever(self):
+    @allure.testcase("FT-HTJK-202-008")
+    def test_202008_apply_result_user_forever(self):
         """ Test apply result for user with forever sku. """
-        self.logger.info(".... Start test_apply_result_user_forever ....")
+        self.logger.info(".... Start test_202008_apply_result_user_forever ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1814,15 +1834,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_forever ....")
+            self.logger.info(".... End test_202008_apply_result_user_forever ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("在白名单同时给本人和成员下服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_and_others_with_whitelist(self):
+    @allure.testcase("FT-HTJK-202-009")
+    def test_202009_apply_result_user_and_others_with_whitelist(self):
         """ Test apply result for user and others with whitelist. """
-        self.logger.info(".... Start test_apply_result_user_and_others_with_whitelist ....")
+        self.logger.info(".... Start test_202009_apply_result_user_and_others_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1933,10 +1953,10 @@ class TestShoppingApplyResult(object):
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
-                    begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
-                    end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
+                    begin_time_a = "2010-02-04"
+                    end_time_a = "2038-02-11"
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
-                                                              [owner_feautreid, features_id1, features_id2], "2010-02-04", "2038-02-11", self.logger)
+                                                              [owner_feautreid, features_id1, features_id2], begin_time_a, end_time_a, self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
@@ -2027,15 +2047,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_and_others_with_whitelist ....")
+            self.logger.info(".... End test_202009_apply_result_user_and_others_with_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("不在白名单同时给本人和成员下服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_and_others_without_whitelist(self):
+    @allure.testcase("FT-HTJK-202-010")
+    def test_202010_apply_result_user_and_others_without_whitelist(self):
         """ Test apply result for user and others without whitelist. """
-        self.logger.info(".... Start test_apply_result_user_and_others_without_whitelist ....")
+        self.logger.info(".... Start test_202010_apply_result_user_and_others_without_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2145,7 +2165,7 @@ class TestShoppingApplyResult(object):
                     allure.attach("homeindex", str(r_homeindex))
                     self.logger.info("homeindex: " + str(r_homeindex))
                     assert not r_homeindex
-                with allure.step("本人申请下单"):
+                with allure.step("申请本人成员下单"):
                     begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
                     end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
                     r_applyresult1 = h5_shopping_apply_result(httpclient1, provider_id, spu_id, sku_id,
@@ -2178,6 +2198,8 @@ class TestShoppingApplyResult(object):
                 end_time2 = str(select_result[0][16].strftime("%Y-%m-%d"))
                 self.logger.info("begin_time: {0}".format(begin_time2))
                 self.logger.info("end_time: {0}".format(end_time2))
+                bus_order_id = select_result[0][0]
+                self.logger.info("bus_order_id: {0}".format(bus_order_id))
                 assert not select_result[0][4]
                 assert select_result[0][5] == '13511229100'
                 assert select_result[0][6] == owner_feautreid
@@ -2186,6 +2208,17 @@ class TestShoppingApplyResult(object):
                 assert begin_time2 == begin_time_a
                 assert end_time2 == end_time_a
                 assert len(select_result) == 1
+
+            with allure.step("teststep13: get bus_order_features info"):
+                table = 'bus_order_features'
+                condition = ("bus_orderid", bus_order_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 3
 
             with allure.step("teststep13: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -2233,15 +2266,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_and_others_without_whitelist ....")
+            self.logger.info(".... End test_202010_apply_result_user_and_others_without_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("没有登录下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_without_login(self):
+    @allure.testcase("FT-HTJK-202-011")
+    def test_202011_apply_result_user_without_login(self):
         """ Test apply result for user without login. """
-        self.logger.info(".... Start test_apply_result_user_without_login ....")
+        self.logger.info(".... Start test_202011_apply_result_user_without_login ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2423,15 +2456,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_without_login ....")
+            self.logger.info(".... End test_202011_apply_result_user_without_login ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("没有登录下成员服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_other_without_login(self):
+    @allure.testcase("FT-HTJK-202-012")
+    def test_202012_apply_result_other_without_login(self):
         """ Test apply result for other without login. """
-        self.logger.info(".... Start test_apply_result_other_without_login ....")
+        self.logger.info(".... Start test_202012_apply_result_other_without_login ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2613,15 +2646,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_other_without_login ....")
+            self.logger.info(".... End test_202012_apply_result_other_without_login ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("没有认证下本人服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_user_without_identity(self):
+    @allure.testcase("FT-HTJK-202-013")
+    def test_202013_apply_result_user_without_identity(self):
         """ Test apply result for user without identity. """
-        self.logger.info(".... Start test_apply_result_user_without_identity ....")
+        self.logger.info(".... Start test_202013_apply_result_user_without_identity ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2783,39 +2816,39 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_user_without_identity ....")
+            self.logger.info(".... End test_202013_apply_result_user_without_identity ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误providerId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-202-014")
     @pytest.mark.parametrize("providerId, result",
-                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '300', "msg": "信息不符"}),
-                              (0, {"status": 200, "code": '300', "msg": "信息不符"}),
-                              (-1, {"status": 200, "code": '300', "msg": "信息不符"}),
-                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             [('1' * 256, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (1.5, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('a', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('中', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('*', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('1a', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('1中', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('%1%', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (' ', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (11111, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (0, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (-1, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (9223372036854775808, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (-9223372036854775809, {"status": 200, "code": '1', "msg": "提交申请成功"})],
                              ids=["providerId(超长值)", "providerId(小数)", "providerId(英文)", "providerId(中文)",
                                   "providerId(特殊字符)", "providerId(数字英文)", "providerId(数字中文)",
                                   "providerId(数字特殊字符)", "providerId(空格)", "providerId(空)",
                                   "providerId(1)", "providerId(0)", "providerId(-1)", "providerId(超大)",
                                   "providerId(超小)"])
-    def test_apply_result_providerid_wrong(self, providerId, result):
-        """ Test wrong providerId values (FT-HTJK-xxx-xxx).
+    def test_202014_apply_result_providerid_wrong(self, providerId, result):
+        """ Test wrong providerId values (FT-HTJK-202-014).
         :param providerId: providerId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_apply_result_providerid_wrong ({}) ....".format(providerId))
+        self.logger.info(".... Start test_202014_apply_result_providerid_wrong ({}) ....".format(providerId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2985,39 +3018,39 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_providerid_wrong ({}) ....".format(providerId))
+            self.logger.info(".... End test_202014_apply_result_providerid_wrong ({}) ....".format(providerId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误productId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-202-015")
     @pytest.mark.parametrize("productId, result",
-                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该产品未上架"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             [('1' * 256, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (1.5, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('a', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('中', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('*', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('1a', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('1中', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('%1%', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (' ', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (11111, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (0, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (-1, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (9223372036854775808, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (-9223372036854775809, {"status": 200, "code": '1', "msg": "提交申请成功"})],
                              ids=["productId(超长值)", "productId(小数)", "productId(英文)", "productId(中文)",
                                   "productId(特殊字符)", "productId(数字英文)", "productId(数字中文)",
                                   "productId(数字特殊字符)", "productId(空格)", "productId(空)",
                                   "productId(1)", "productId(0)", "productId(-1)", "productId(超大)",
                                   "productId(超小)"])
-    def test_apply_result_productid_wrong(self, productId, result):
-        """ Test wrong productId values (FT-HTJK-xxx-xxx).
+    def test_202015_apply_result_productid_wrong(self, productId, result):
+        """ Test wrong productId values (FT-HTJK-202-015).
         :param productId: productId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_apply_result_productid_wrong ({}) ....".format(productId))
+        self.logger.info(".... Start test_202015_apply_result_productid_wrong ({}) ....".format(productId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3187,12 +3220,12 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_productid_wrong ({}) ....".format(productId))
+            self.logger.info(".... End test_202015_apply_result_productid_wrong ({}) ....".format(productId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误skuId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-202-016")
     @pytest.mark.parametrize("skuId, result",
                              [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
@@ -3204,21 +3237,21 @@ class TestShoppingApplyResult(object):
                               ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该服务未上架"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (11111, {"status": 200, "code": '301', "msg": "该服务不存在或未上架"}),
+                              (0, {"status": 200, "code": '300', "msg": "信息不符，请重新选择"}),
+                              (-1, {"status": 200, "code": '300', "msg": "信息不符，请重新选择"}),
                               (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
                              ids=["skuId(超长值)", "skuId(小数)", "skuId(英文)", "skuId(中文)",
                                   "skuId(特殊字符)", "skuId(数字英文)", "skuId(数字中文)",
                                   "skuId(数字特殊字符)", "skuId(空格)", "skuId(空)",
                                   "skuId(1)", "skuId(0)", "skuId(-1)", "skuId(超大)", "skuId(超小)"])
-    def test_apply_result_skuid_wrong(self, skuId, result):
-        """ Test wrong skuId values (FT-HTJK-xxx-xxx).
+    def test_202016_apply_result_skuid_wrong(self, skuId, result):
+        """ Test wrong skuId values (FT-HTJK-202-016).
         :param skuId: skuId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_apply_result_skuid_wrong ({}) ....".format(skuId))
+        self.logger.info(".... Start test_202016_apply_result_skuid_wrong ({}) ....".format(skuId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3388,12 +3421,12 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_skuid_wrong ({}) ....".format(skuId))
+            self.logger.info(".... End test_202016_apply_result_skuid_wrong ({}) ....".format(skuId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误featuresId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-202-017")
     @pytest.mark.parametrize("featuresId, result",
                              [(['1' * 256], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
@@ -3404,10 +3437,10 @@ class TestShoppingApplyResult(object):
                               ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               ([' '], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ([], {"status": 200, "code": '300', "msg": "信息不符，请重新输入"}),
-                              ([11111], {"status": 200, "code": '300', "msg": "添加失败"}),
-                              ([0], {"status": 200, "code": '300', "msg": "添加失败"}),
-                              ([-1], {"status": 200, "code": '300', "msg": "添加失败"}),
+                              ([], {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ([11111], {"status": 200, "code": '300', "msg": "选择成员非法"}),
+                              ([0], {"status": 200, "code": '300', "msg": "选择成员非法"}),
+                              ([-1], {"status": 200, "code": '300', "msg": "选择成员非法"}),
                               ([9223372036854775808], {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               ([-9223372036854775809], {"status": 200, "code": 97, "msg": "参数格式不正确"})],
                              ids=["featuresId(超长值)", "featuresId(小数)", "featuresId(英文)", "featuresId(中文)",
@@ -3415,12 +3448,12 @@ class TestShoppingApplyResult(object):
                                   "featuresId(数字特殊字符)", "featuresId(空格)", "featuresId(空)",
                                   "featuresId(1)", "featuresId(0)", "featuresId(-1)", "featuresId(超大)",
                                   "featuresId(超小)"])
-    def test_apply_result_featuresid_wrong(self, featuresId, result):
-        """ Test wrong featuresId values (FT-HTJK-xxx-xxx).
+    def test_202017_apply_result_featuresid_wrong(self, featuresId, result):
+        """ Test wrong featuresId values (FT-HTJK-202-017).
         :param featuresId: featuresId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_apply_result_featuresid_wrong ({}) ....".format(featuresId))
+        self.logger.info(".... Start test_202017_apply_result_featuresid_wrong ({}) ....".format(featuresId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3590,41 +3623,41 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_featuresid_wrong ({}) ....".format(featuresId))
+            self.logger.info(".... End test_202017_apply_result_featuresid_wrong ({}) ....".format(featuresId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误startDate值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-202-018")
     @pytest.mark.parametrize("startDate, result",
-                             [(1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
-                              (1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (2000000000, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "提交邀请失败"}),
-                              ('a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('*', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('1a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('1中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (' ', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
-                              ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
-                              (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (-9223372036854775809, {"status": 200, "code": '300', "msg": "输入时间格式有误"})],
+                             [(1.5, {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (1, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (2000000000, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ("0001-01-01 01:01:01", {"status": 200, "code": '101004', "msg": "begin_time值非法"}),
+                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (' ', {"status": 200, "code": '300', "msg": "请选择正确的开始时间"}),
+                              ('', {"status": 200, "code": '300', "msg": "请选择正确的开始时间"}),
+                              ('2030-01-01', {"status": 200, "code": '300', "msg": "开始时间不能大于结束时间"}),
+                              ('2025-01-01T00:01:00', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              (-1, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
                              ids=["startDate(1.5)", "startDate(1)", "startDate(20000000000)", "startDate(格式化)",
                                   "startDate(英文)", "startDate(中文)",
                                   "startDate(特殊字符)", "startDate(数字英文)", "startDate(数字中文)",
                                   "startDate(数字特殊字符)", "startDate(空格)", "startDate(空)",
                                   "startDate(1)", "startDate(0)", "startDate(-1)", "startDate(超大)", "startDate(超小)"])
-    def test_apply_result_startdate_wrong(self, startDate, result):
-        """ Test wrong startDate values (FT-HTJK-xxx-xxx).
+    def test_202018_apply_result_startdate_wrong(self, startDate, result):
+        """ Test wrong startDate values (FT-HTJK-202-018).
         :param startDate: startDate parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_apply_result_startdate_wrong ({}) ....".format(startDate))
+        self.logger.info(".... Start test_202018_apply_result_startdate_wrong ({}) ....".format(startDate))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3686,7 +3719,7 @@ class TestShoppingApplyResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -3718,7 +3751,7 @@ class TestShoppingApplyResult(object):
                 with allure.step("本人申请下单"):
                     with allure.step("teststep: get parameters."):
                         data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id, "features_id": [owner_featureid],
-                                "start_date": startDate, "end_date": "2030-01-01"}
+                                "start_date": startDate, "end_date": "2025-01-01T01:00:00"}
                         allure.attach("params value", "{0}".format(data))
                         self.logger.info("data: {0}".format(data))
                     with allure.step("teststep: requests http get."):
@@ -3792,41 +3825,41 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_startdate_wrong ({}) ....".format(startDate))
+            self.logger.info(".... End test_202018_apply_result_startdate_wrong ({}) ....".format(startDate))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误endDate值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-202-019")
     @pytest.mark.parametrize("endDate, result",
-                             [(1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
-                              (1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (2000000000, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "提交邀请失败"}),
-                              ('a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('*', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('1a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('1中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (' ', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
-                              ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
-                              (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (-9223372036854775809, {"status": 200, "code": '300', "msg": "输入时间格式有误"})],
+                             [(1.5, {"status": 200, "code": '300', "msg": "请选择正确的结束时间"}),
+                              (1, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (2000000000, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "请选择正确的结束时间"}),
+                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (' ', {"status": 200, "code": '300', "msg": "请选择正确的结束时间"}),
+                              ('', {"status": 200, "code": '300', "msg": "请选择正确的结束时间"}),
+                              ('2030-01-01T00:02:00', {"status": 200, "code": '1', "msg": "提交申请成功"}),
+                              ('2025-01-01', {"status": 200, "code": '300', "msg": "开始时间不能大于结束时间"}),
+                              (-1, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
                              ids=["endDate(1.5)", "endDate(1)", "endDate(20000000000)", "endDate(格式化)",
                                   "endDate(英文)", "endDate(中文)",
                                   "endDate(特殊字符)", "endDate(数字英文)", "endDate(数字中文)",
                                   "endDate(数字特殊字符)", "endDate(空格)", "endDate(空)",
                                   "endDate(1)", "endDate(0)", "endDate(-1)", "endDate(超大)", "endDate(超小)"])
-    def test_apply_result_enddate_wrong(self, endDate, result):
-        """ Test wrong endDate values (FT-HTJK-xxx-xxx).
+    def test_202019_apply_result_enddate_wrong(self, endDate, result):
+        """ Test wrong endDate values (FT-HTJK-202-019).
         :param endDate: endDate parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_apply_result_enddate_wrong ({}) ....".format(endDate))
+        self.logger.info(".... Start test_202019_apply_result_enddate_wrong ({}) ....".format(endDate))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3888,7 +3921,7 @@ class TestShoppingApplyResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -3919,10 +3952,8 @@ class TestShoppingApplyResult(object):
                     assert not r_homeindex
                 with allure.step("本人申请下单"):
                     with allure.step("teststep: get parameters."):
-                        begin_time_a = str(datetime.datetime.now() + timedelta(days=1)).split()[0]
-                        end_time_a = str(datetime.datetime.now() + timedelta(days=2)).split()[0]
                         data = {"providerId": provider_id, "productId": spu_id, "skuId": sku_id, "features_id": [owner_featureid],
-                                "start_date": "2025-01-01", "end_date": endDate}
+                                "start_date": "2030-01-01T00:01:00", "end_date": endDate}
                         allure.attach("params value", "{0}".format(data))
                         self.logger.info("data: {0}".format(data))
                     with allure.step("teststep: requests http get."):
@@ -3996,15 +4027,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_enddate_wrong ({}) ....".format(endDate))
+            self.logger.info(".... End test_202019_apply_result_enddate_wrong ({}) ....".format(endDate))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少providerId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_without_providerid(self):
-        """ Test apply result without providerid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_apply_result_without_providerid ....")
+    @allure.testcase("FT-HTJK-202-020")
+    def test_202020_apply_result_without_providerid(self):
+        """ Test apply result without providerid (FT-HTJK-202-020)."""
+        self.logger.info(".... Start test_202020_apply_result_without_providerid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4116,8 +4147,8 @@ class TestShoppingApplyResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert '' in rsp_content["message"]
+                        assert rsp_content["status"] == '1'
+                        assert '提交申请成功' in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4165,15 +4196,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_without_providerid ....")
+            self.logger.info(".... End test_202020_apply_result_without_providerid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少productId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_without_productid(self):
-        """ Test apply result without productid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_apply_result_without_productid ....")
+    @allure.testcase("FT-HTJK-202-021")
+    def test_202021_apply_result_without_productid(self):
+        """ Test apply result without productid (FT-HTJK-202-021)."""
+        self.logger.info(".... Start test_202021_apply_result_without_productid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4285,8 +4316,8 @@ class TestShoppingApplyResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert '' in rsp_content["message"]
+                        assert rsp_content["status"] == '1'
+                        assert '提交申请成功' in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4334,15 +4365,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_without_productid ....")
+            self.logger.info(".... End test_202021_apply_result_without_productid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少skuId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_without_skuid(self):
+    @allure.testcase("FT-HTJK-202-022")
+    def test_202022_apply_result_without_skuid(self):
         """ Test apply result without skuid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_apply_result_without_skuid ....")
+        self.logger.info(".... Start test_202022_apply_result_without_skuid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4454,8 +4485,8 @@ class TestShoppingApplyResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert '' in rsp_content["message"]
+                        assert rsp_content["status"] == '300'
+                        assert '信息不符，请重新选择' in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4503,15 +4534,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_without_skuid ....")
+            self.logger.info(".... End test_202022_apply_result_without_skuid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少featuresid参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_without_featuresid(self):
-        """ Test apply result without featuresid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_apply_result_without_featuresid ....")
+    @allure.testcase("FT-HTJK-202-023")
+    def test_202023_apply_result_without_featuresid(self):
+        """ Test apply result without featuresid (FT-HTJK-202-023)."""
+        self.logger.info(".... Start test_202023_apply_result_without_featuresid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4573,7 +4604,7 @@ class TestShoppingApplyResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -4623,8 +4654,32 @@ class TestShoppingApplyResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert '' in rsp_content["message"]
+                        assert rsp_content["status"] == '1'
+                        assert '提交申请成功' in rsp_content["message"]
+
+            with allure.step("teststep11: get bus_service_order info"):
+                r_order = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
+                                                   logger=self.logger)
+                allure.attach("service order list", str(r_order))
+                self.logger.info("service order list: {0}".format(r_order))
+                other_order = None
+                for order in r_order:
+                    if order['features_name'] == '':
+                        other_order = order
+                assert other_order
+                self.logger.info("other order : {0}".format(other_order))
+                service_order_id = other_order['service_order_id']
+                begin_time = str(datetime.datetime.fromtimestamp(other_order['begin_time'])).split(" ")[0]
+                end_time = str(datetime.datetime.fromtimestamp(other_order['end_time'])).split(" ")[0]
+                self.logger.info("service_order_id: {0}".format(service_order_id))
+                self.logger.info("begin_time: {0}".format(begin_time))
+                self.logger.info("end_time: {0}".format(end_time))
+                assert other_order['service_unit'] == provider_name
+                assert other_order['features_id'] == owner_featureid
+                assert other_order['relationships'] == 0
+                assert other_order['features_type'] == 0
+                assert begin_time == begin_time_a
+                assert end_time == end_time_a
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4672,15 +4727,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_without_featuresid ....")
+            self.logger.info(".... End test_202023_apply_result_without_featuresid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少startdate参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_without_startdate(self):
-        """ Test apply result without startdate (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_apply_result_without_startdate ....")
+    @allure.testcase("FT-HTJK-202-024")
+    def test_202024_apply_result_without_startdate(self):
+        """ Test apply result without startdate (FT-HTJK-202-024)."""
+        self.logger.info(".... Start test_202024_apply_result_without_startdate ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4742,7 +4797,7 @@ class TestShoppingApplyResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -4792,8 +4847,8 @@ class TestShoppingApplyResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert '' in rsp_content["message"]
+                        assert rsp_content["status"] == '300'
+                        assert '请选择正确的开始时间' in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4841,15 +4896,15 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_without_startdate ....")
+            self.logger.info(".... End test_202024_apply_result_without_startdate ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少enddate参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_apply_result_without_enddate(self):
-        """ Test apply result without enddate (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_apply_result_without_enddate ....")
+    @allure.testcase("FT-HTJK-202-025")
+    def test_202025_apply_result_without_enddate(self):
+        """ Test apply result without enddate (FT-HTJK-202-025)."""
+        self.logger.info(".... Start test_202025_apply_result_without_enddate ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4911,7 +4966,7 @@ class TestShoppingApplyResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -4961,8 +5016,8 @@ class TestShoppingApplyResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert '' in rsp_content["message"]
+                        assert rsp_content["status"] == '300'
+                        assert '请选择正确的结束时间' in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -5010,10 +5065,10 @@ class TestShoppingApplyResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_apply_result_without_enddate ....")
+            self.logger.info(".... End test_202025_apply_result_without_enddate ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py::TestShoppingApplyResult::test_apply_result_user_with_whitelist'])
+    pytest.main(['-s', 'test_H5_Shopping_ApplyResult.py::TestShoppingApplyResult::test_202001_apply_result_user_with_whitelist'])
