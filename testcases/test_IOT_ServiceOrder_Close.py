@@ -171,7 +171,8 @@ class TestServiceOrderClose(object):
             start_time = (now + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             end_time = (now + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
             r_applyresult1 = h5_shopping_apply_result(self.httpclient2, self.provider_id, self.spu_id, self.sku_id,
-                                                      [self.features_id], start_time, end_time, self.logger)
+                                                      [self.features_id], start_time, end_time,
+                                                      logger=self.logger, remark="test1")
             allure.attach("apply result", str(r_applyresult1))
             self.logger.info("apply result: " + str(r_applyresult1))
             assert r_applyresult1
