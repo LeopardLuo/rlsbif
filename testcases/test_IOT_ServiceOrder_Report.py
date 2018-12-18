@@ -585,8 +585,24 @@ class TestServiceOrderReport(object):
                 allure.attach("Expect service order status report:", str(result))
                 allure.attach("Actual service order status report:", str(record_list))
                 self.logger.info("Actual service order status report:{0}".format(record_list))
-                assert record_list == result
-                assert already_count == 0
+                if (in_out == '200')or (in_out == '-200'):
+                    if record_list:
+                        record = record_list[0]
+                        in_out_in_record = record["in_out"]
+                        allure.attach("Expect in_out in record:", str(in_out))
+                        allure.attach("Actual in_out in record:", str(in_out_in_record))
+                        self.logger.info("Actual in_out in record:{0}".format(in_out_in_record))
+                        allure.attach("Expect already_count in record:", str(1))
+                        allure.attach("Actual already_count in record:", str(already_count))
+                        self.logger.info("Actual already_count in record:{0}".format(already_count))
+                        assert in_out == str(in_out_in_record)
+                        assert already_count == 1
+                    else:
+                        self.logger.error("It has not received record!")
+                        assert False
+                else:
+                    assert record_list == result
+                    assert already_count == 0
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -697,6 +713,8 @@ class TestServiceOrderReport(object):
             self.logger.info("....End test_003059_report_service_order_status_correct_extra ....")
             self.logger.info("")
 
+
+    @pytest.mark.skip(reason="目前extra允许上传任何值")
     @allure.severity("critical")
     @allure.story("设置错误extra,设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-60")
@@ -845,11 +863,11 @@ class TestServiceOrderReport(object):
     @allure.story("设置错误timestamp,设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-062")
     @pytest.mark.parametrize("timestamp, result",
-                             [(9223372036854775807, []), (0, []), (-1, []), (-9223372036854775809, []),
-                              (9223372036854775808, []), (1.5, []), ('a', []), ('中', []), ('*', []), ('1a', []),
+                             [(9223372036854775807, []), (-9223372036854775809, []),
+                              (9223372036854775808, []), ('a', []), ('中', []), ('*', []), ('1a', []),
                               ('1中', []), ('1*', []), (' ', []), ('', [])],
-                             ids=["timestamp(最大值)", "timestamp(0)", "timestamp(-1)",
-                                  "timestamp(超小值)", "timestamp(超大值)", "timestamp(小数)",
+                             ids=["timestamp(最大值)",
+                                  "timestamp(超小值)", "timestamp(超大值)",
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
                                   "timestamp(数字中文)",
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
@@ -1049,6 +1067,7 @@ class TestServiceOrderReport(object):
             self.logger.info("....End test_003065_report_service_order_status_no_device_id ....")
             self.logger.info("")
 
+    @pytest.mark.skip(reason="目前允许不上传extra")
     @allure.severity("critical")
     @allure.story("缺少extra,设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-066")
@@ -1101,6 +1120,7 @@ class TestServiceOrderReport(object):
             self.logger.info("....End test_003066_report_service_order_status_no_extra ....")
             self.logger.info("")
 
+    @pytest.mark.skip(reason="缺少timestamp时，目前默认补充timestamp为0")
     @allure.severity("critical")
     @allure.story("缺少timestamp,设备上报服务单状态")
     @allure.testcase("FT-HTJK-003-067")
@@ -1157,4 +1177,4 @@ class TestServiceOrderReport(object):
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
     # pytest.main(['-s',
-    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003066_report_service_order_status_no_extra'])
+    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003067_report_service_order_status_no_timestamp'])
