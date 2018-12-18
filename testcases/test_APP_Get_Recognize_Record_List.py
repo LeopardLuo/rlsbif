@@ -89,7 +89,7 @@ class TestGetRecognizeRecordList(object):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
                 identity_result = user_myfeature(cls.httpclient, cls.member_id, 'face2.jpg',
-                                                get_timestamp(), cls.logger)
+                                                get_timestamp(), cls.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 cls.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1362,4 +1362,4 @@ class TestGetRecognizeRecordList(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122002_get_recognize_record_correct'])
+    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])

@@ -2373,13 +2373,13 @@ def h5_mymember(httpclient, skuId, logger=None):
         logger and logger.info("response content: {}".format(rsp.text))
         logger and logger.info("---- end h5_mymember ----")
         logger and logger.info("")
-        return {}
+        return []
     rsp_content = rsp.json()
     allure.attach("response content", str(rsp_content))
     logger and logger.info("response content: {}".format(rsp_content))
     logger and logger.info("---- end h5_mymember ----")
     logger and logger.info("")
     if int(rsp_content['code']) == 1:
-        return rsp_content['data']
+        return rsp_content['result']['FeatureList']
     else:
-        return {}
+        return []

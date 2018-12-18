@@ -1473,7 +1473,7 @@ class TestOrderDelete(object):
 
     @allure.severity("critical")
     @allure.story("错误skuId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-204-007")
     @pytest.mark.parametrize("skuId, result",
                              [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
@@ -1492,12 +1492,12 @@ class TestOrderDelete(object):
                                   "skuId(特殊字符)", "skuId(数字英文)", "skuId(数字中文)",
                                   "skuId(数字特殊字符)", "skuId(空格)", "skuId(空)",
                                   "skuId(0)", "skuId(超大)", "skuId(超小)"])
-    def test_order_delete_skuId_wrong(self, skuId, result):
-        """ Test wrong skuId values (FT-HTJK-xxx-xxx).
+    def test_204007_order_delete_skuId_wrong(self, skuId, result):
+        """ Test wrong skuId values (FT-HTJK-204-007).
         :param skuId: skuId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_order_delete_skuId_wrong ({}) ....".format(skuId))
+        self.logger.info(".... Start test_204007_order_delete_skuId_wrong ({}) ....".format(skuId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1517,7 +1517,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1728,12 +1728,12 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_skuId_wrong ({}) ....".format(skuId))
+            self.logger.info(".... End test_204007_order_delete_skuId_wrong ({}) ....".format(skuId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("正确orderId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-204-008")
     @pytest.mark.parametrize("orderId, result",
                              [(0, {"status": 200, "code": '1', "msg": "删除成功"}),
                               (-1, {"status": 200, "code": '1', "msg": "删除成功"}),
@@ -1742,12 +1742,12 @@ class TestOrderDelete(object):
                               (-9223372036854775807, {"status": 200, "code": '1', "msg": "删除成功"})],
                              ids=["orderId(0)", "orderId(-1)", "orderId(-2)", "orderId(-10000)",
                                   "orderId(最小值)"])
-    def test_order_delete_orderId_correct(self, orderId, result):
-        """ Test correct orderId values (FT-HTJK-xxx-xxx).
+    def test_204008_order_delete_orderId_correct(self, orderId, result):
+        """ Test correct orderId values (FT-HTJK-204-008).
         :param orderId: orderId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_order_delete_orderId_correct ({}) ....".format(orderId))
+        self.logger.info(".... Start test_204008_order_delete_orderId_correct ({}) ....".format(orderId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1767,7 +1767,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1859,9 +1859,9 @@ class TestOrderDelete(object):
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
-                with allure.step("本人申请成员下单"):
-                    r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id, sku_id,
-                                                                   [features_id1, features_id2], self.logger)
+                with allure.step("邀请访客下单"):
+                    r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                           "kuli1", time.strftime("%Y-%m-%d"), "2021-02-10", "relate_face.jpg", self.logger)
                     allure.attach("apply result", str(r_applyresult1))
                     self.logger.info("apply result: " + str(r_applyresult1))
                     assert r_applyresult1
@@ -1871,7 +1871,7 @@ class TestOrderDelete(object):
                                                    logger=self.logger)
                 allure.attach("service order list", str(r_order))
                 self.logger.info("service order list: {0}".format(r_order))
-                assert len(r_order) == 3
+                assert len(r_order) == 2
                 for data in r_order:
                     assert data['state'] == 1
 
@@ -1985,12 +1985,12 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_orderId_correct ({}) ....".format(orderId))
+            self.logger.info(".... End test_204008_order_delete_orderId_correct ({}) ....".format(orderId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误orderId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-204-009")
     @pytest.mark.parametrize("orderId, result",
                              [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
@@ -2009,12 +2009,12 @@ class TestOrderDelete(object):
                                   "orderId(特殊字符)", "orderId(数字英文)", "orderId(数字中文)",
                                   "orderId(数字特殊字符)", "orderId(空格)", "orderId(空)",
                                   "orderId(1)", "orderId(超大)", "orderId(超小)"])
-    def test_order_delete_orderId_wrong(self, orderId, result):
-        """ Test wrong orderId values (FT-HTJK-xxx-xxx).
+    def test_204009_order_delete_orderId_wrong(self, orderId, result):
+        """ Test wrong orderId values (FT-HTJK-204-009).
         :param orderId: orderId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_order_delete_orderId_wrong ({}) ....".format(orderId))
+        self.logger.info(".... Start test_204009_order_delete_orderId_wrong ({}) ....".format(orderId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2034,7 +2034,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2245,15 +2245,15 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_orderId_wrong ({}) ....".format(orderId))
+            self.logger.info(".... End test_204009_order_delete_orderId_wrong ({}) ....".format(orderId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少providerId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_order_delete_without_providerid(self):
+    @allure.testcase("FT-HTJK-204-010")
+    def test_204010_order_delete_without_providerid(self):
         """ test order delete without providerid parameter."""
-        self.logger.info(".... Start test_order_delete_without_providerid ....")
+        self.logger.info(".... Start test_204010_order_delete_without_providerid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2273,7 +2273,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2475,15 +2475,15 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_without_providerid ....")
+            self.logger.info(".... End test_204010_order_delete_without_providerid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少productId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_order_delete_without_productid(self):
+    @allure.testcase("FT-HTJK-204-011")
+    def test_204011_order_delete_without_productid(self):
         """ test order delete without productId parameter."""
-        self.logger.info(".... Start test_order_delete_without_productid ....")
+        self.logger.info(".... Start test_204011_order_delete_without_productid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2503,7 +2503,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2705,15 +2705,15 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_without_productid ....")
+            self.logger.info(".... End test_204011_order_delete_without_productid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少skuId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_order_delete_without_skuid(self):
+    @allure.testcase("FT-HTJK-204-012")
+    def test_204012_order_delete_without_skuid(self):
         """ test order delete without skuId parameter."""
-        self.logger.info(".... Start test_order_delete_without_skuid ....")
+        self.logger.info(".... Start test_204012_order_delete_without_skuid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2733,7 +2733,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2935,15 +2935,15 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_without_skuid ....")
+            self.logger.info(".... End test_204012_order_delete_without_skuid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少orderId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_order_delete_without_orderid(self):
+    @allure.testcase("FT-HTJK-204-013")
+    def test_204013_order_delete_without_orderid(self):
         """ test order delete without orderid parameter."""
-        self.logger.info(".... Start test_order_delete_without_orderid ....")
+        self.logger.info(".... Start test_204013_order_delete_without_orderid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2963,7 +2963,7 @@ class TestOrderDelete(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -3165,10 +3165,10 @@ class TestOrderDelete(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_order_delete_without_orderid ....")
+            self.logger.info(".... End test_204013_order_delete_without_orderid ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_H5_Order_Delete.py'])
-    pytest.main(['-s', 'test_H5_Order_Delete.py::TestOrderDelete::test_204002_delete_add_visitor_result_all_order'])
+    pytest.main(['-s', 'test_H5_Order_Delete.py'])
+    # pytest.main(['-s', 'test_H5_Order_Delete.py::TestOrderDelete::test_204013_order_delete_without_orderid'])
