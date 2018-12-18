@@ -523,6 +523,7 @@ class TestIdentityUser(object):
     @allure.severity("critical")
     @allure.story("identity_card_emblem不支持的文件类型")
     @allure.testcase("FT-HTJK-115-007")
+    @pytest.mark.skip
     @pytest.mark.parametrize("identity_card_emblem, result",
                              [("back2.gif", {"code": 201307, "msg": "照片不合格"}),
                               ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),

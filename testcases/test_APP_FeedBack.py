@@ -733,8 +733,7 @@ class TestFeedBack(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content["message"]
+                assert rsp_content['code'] == 201100
 
             with allure.step("teststep5: query database records"):
                 table = 'sys_feedback'
@@ -812,4 +811,4 @@ class TestFeedBack(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_FeedBack.py'])
-    pytest.main(['-s', 'test_APP_FeedBack.py::TestFeedBack::test_120011_no_timestamp'])
+    pytest.main(['-s', 'test_APP_FeedBack.py::TestFeedBack::test_120010_no_comment'])

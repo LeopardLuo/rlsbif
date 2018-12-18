@@ -337,10 +337,10 @@ class TestModifyHeadImage(object):
     @allure.story("不支持的图片类型")
     @allure.testcase("FT-HTJK-109-005")
     @pytest.mark.parametrize("filename, result",
-                             [("case.xlsx", {"code": 101000, "msg": ""}),
-                              ("temp.txt", {"code": 101000, "msg": ""}),
-                              ("hb.mp4", {"code": 101000, "msg": ""}),
-                              ("max.jpg", {"code": 101000, "msg": ""}), ],
+                             [("case.xlsx", {"code": 1, "msg": ""}),
+                              ("temp.txt", {"code": 1, "msg": ""}),
+                              ("hb.mp4", {"code": 1, "msg": ""}),
+                              ("max.jpg", {"code": 1, "msg": ""}), ],
                              ids=["image(xlsx)", "image(txt)", "image(mp4)", "image(max)"])
     def test_109005_image_type_wrong(self, filename, result):
         """ Test wrong image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-109-005).
@@ -713,4 +713,4 @@ class TestModifyHeadImage(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_HeadImage.py'])
-    pytest.main(['-s', 'test_APP_Modify_HeadImage.py::TestModifyHeadImage::test_109011_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Modify_HeadImage.py::TestModifyHeadImage::test_109005_image_type_wrong'])

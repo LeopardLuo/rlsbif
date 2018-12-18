@@ -627,14 +627,13 @@ class TestModifyNickName(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
+                assert rsp_content["code"] == 1
                 assert rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
                 allure.attach("user info：", str(info))
                 self.logger.info("user info: {}".format(info))
-                assert info['nickname'] != ""
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -694,4 +693,4 @@ class TestModifyNickName(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_NickName.py'])
-    pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107011_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107010_no_nickname'])

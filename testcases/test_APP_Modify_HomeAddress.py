@@ -341,9 +341,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误province值")
     @allure.testcase("FT-HTJK-110-005")
     @pytest.mark.parametrize("province, result",
-                             [('1' * 100, {"code": 101000, "msg": "province值非法"}),
-                              (' ', {"code": 101000, "msg": "province值非法"}),
-                              ('', {"code": 101000, "msg": "province值非法"})],
+                             [('1' * 100, {"status": 500, "code": 101000, "msg": "province值非法"}),
+                              (' ', {"status": 200, "code": 101000, "msg": "province值非法"}),
+                              ('', {"status": 200, "code": 101000, "msg": "province值非法"})],
                              ids=["province(超长值)", "province(空格)", "province(空)"])
     def test_110005_province_wrong(self, province, result):
         """ Test wrong province values (超长值、空格、空）(FT-HTJK-110-005).
@@ -370,8 +370,11 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
@@ -465,9 +468,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误city值")
     @allure.testcase("FT-HTJK-110-007")
     @pytest.mark.parametrize("city, result",
-                             [('1' * 100, {"code": 101000, "msg": "city值非法"}),
-                              (' ', {"code": 101000, "msg": "city值非法"}),
-                              ('', {"code": 101000, "msg": "city值非法"})],
+                             [('1' * 100, {"status": 500, "code": 101000, "msg": "city值非法"}),
+                              (' ', {"status": 200, "code": 101000, "msg": "city值非法"}),
+                              ('', {"status": 200, "code": 101000, "msg": "city值非法"})],
                              ids=["city(超长值)", "city(空格)", "city(空)"])
     def test_110007_city_wrong(self, city, result):
         """ Test wrong city values (超长值、空格、空）(FT-HTJK-110-007).
@@ -494,8 +497,11 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
@@ -589,9 +595,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误district值")
     @allure.testcase("FT-HTJK-110-009")
     @pytest.mark.parametrize("district, result",
-                             [('1' * 100, {"code": 101000, "msg": "district值非法"}),
-                              (' ', {"code": 101000, "msg": "district值非法"}),
-                              ('', {"code": 101000, "msg": "district值非法"})],
+                             [('1' * 100, {"status": 500, "code": 101000, "msg": "district值非法"}),
+                              (' ', {"status": 200, "code": 101000, "msg": "district值非法"}),
+                              ('', {"status": 200, "code": 101000, "msg": "district值非法"})],
                              ids=["city(超长值)", "city(空格)", "city(空)"])
     def test_110009_district_wrong(self, district, result):
         """ Test wrong city values (超长值、空格、空）(FT-HTJK-110-009).
@@ -618,8 +624,11 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
@@ -713,9 +722,9 @@ class TestModifyHomeAddress(object):
     @allure.story("错误address值")
     @allure.testcase("FT-HTJK-110-011")
     @pytest.mark.parametrize("address, result",
-                             [('1' * 10001, {"code": 101000, "msg": "address值非法"}),
-                              (' ', {"code": 101000, "msg": "address值非法"}),
-                              ('', {"code": 101000, "msg": "address值非法"})],
+                             [('1' * 10001, {"status": 500, "code": 101000, "msg": "address值非法"}),
+                              (' ', {"status": 200, "code": 101000, "msg": "address值非法"}),
+                              ('', {"status": 200, "code": 101000, "msg": "address值非法"})],
                              ids=["address(超长值)", "address(空格)", "address(空)"])
     def test_110011_address_wrong(self, address, result):
         """ Test wrong address values (超长值、空格、空）(FT-HTJK-110-011).
@@ -742,8 +751,11 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep3: assert the response code"):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
 
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
@@ -1247,5 +1259,5 @@ class TestModifyHomeAddress(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
-    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110020_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
+    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110011_address_wrong'])

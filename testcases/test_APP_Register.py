@@ -230,19 +230,19 @@ class TestRegister(object):
     @allure.story("错误client_type值")
     @allure.testcase("FT-HTJK-102-003")
     @pytest.mark.parametrize("client_type, phone, result",
-                             [(-1, "13511221007", {"status": 200, "msg": "client_type值非法", "code": 101000}),
-                              (6, "13511221008", {"status": 200, "msg": "client_type值非法", "code": 101000}),
-                              (-2147483649, "13511221009", {"status": 400, "msg": "", "code": 0}),
-                              (2147483648, "13511221010", {"status": 400, "msg": "", "code": 0}),
-                              (1.0, "13511221011", {"status": 400, "msg": "", "code": 0}),
-                              ('a', "13511221012", {"status": 400, "msg": "", "code": 0}),
-                              ('中', "13511221013", {"status": 400, "msg": "", "code": 0}),
-                              ('*', "13511221014", {"status": 400, "msg": "", "code": 0}),
-                              ('1a', "13511221015", {"status": 400, "msg": "", "code": 0}),
-                              ('1中', "13511221016", {"status": 400, "msg": "", "code": 0}),
-                              ('1*', "13511221017", {"status": 400, "msg": "", "code": 0}),
-                              (' ', "13511221018", {"status": 400, "msg": "", "code": 0}),
-                              ('', "13511221019", {"status": 400, "msg": "", "code": 0})],
+                             [(-1, "13511221207", {"status": 200, "msg": "client_type值非法", "code": 101000}),
+                              (6, "13511221208", {"status": 200, "msg": "client_type值非法", "code": 101000}),
+                              (-2147483649, "13511221209", {"status": 400, "msg": "", "code": 0}),
+                              (2147483648, "13511221210", {"status": 400, "msg": "", "code": 0}),
+                              (1.0, "13511221211", {"status": 400, "msg": "", "code": 0}),
+                              ('a', "13511221212", {"status": 400, "msg": "", "code": 0}),
+                              ('中', "13511221213", {"status": 400, "msg": "", "code": 0}),
+                              ('*', "13511221214", {"status": 400, "msg": "", "code": 0}),
+                              ('1a', "13511221215", {"status": 400, "msg": "", "code": 0}),
+                              ('1中', "13511221216", {"status": 400, "msg": "", "code": 0}),
+                              ('1*', "13511221217", {"status": 400, "msg": "", "code": 0}),
+                              (' ', "13511221218", {"status": 400, "msg": "", "code": 0}),
+                              ('', "13511221219", {"status": 400, "msg": "", "code": 0})],
                              ids=["client_type(-1)", "client_type(4)", "client_type(超小值)", "client_type(超大值)", "client_type(小数)",
                                   "client_type(字母)", "client_type(中文)", "client_type(特殊字符)", "client_type(数字字母)",
                                   "client_type(数字中文)",
@@ -389,7 +389,7 @@ class TestRegister(object):
     @allure.story("错误client_version值")
     @allure.testcase("FT-HTJK-102-005")
     @pytest.mark.parametrize("client_version, phone, result",
-                             [('1'*1001, "13511221020", {"status": 200, "msg": "", "code": 101000}),
+                             [('1'*1001, "13511221020", {"status": 200, "msg": "登录成功", "code": 1}),
                               (' ', "13511221030", {"status": 200, "msg": "client_version不能为空", "code": 101000}),
                               ('', "13511221031", {"status": 200, "msg": "client_version不能为空", "code": 101000})],
                              ids=["client_version(超长值)", "client_version(空格)", "client_version(空)"])
@@ -459,17 +459,18 @@ class TestRegister(object):
     @allure.story("正确device_token值")
     @allure.testcase("FT-HTJK-102-006")
     @pytest.mark.parametrize("device_token, phone, result",
-                             [('1' * 50, "13511221034", {"msg": "登录成功", "code": 1}),
-                              ('1.0'*15, "13511221035", {"msg": "登录成功", "code": 1}),
+                             [('1' * 44, "13511221034", {"msg": "登录成功", "code": 1}),
                               ('a'*44, "13511221036", {"msg": "登录成功", "code": 1}),
                               ('中'*44, "13511221037", {"msg": "登录成功", "code": 1}),
                               ('*'*44, "13511221038", {"msg": "登录成功", "code": 1}),
                               ('1a'*22, "13511221039", {"msg": "登录成功", "code": 1}),
                               ('1中'*22, "13511221040", {"msg": "登录成功", "code": 1}),
+                              (' ' * 44, "13511221042", {"code": 1, "msg": "登录成功"}),
+                              ('', "13511221043", {"code": 1, "msg": "登录成功"}),
                               ('1*'*22, "13511221041", {"msg": "登录成功", "code": 1})],
-                             ids=["device_token(最大长度值)", "device_token(小数)", "device_token(字母)", "device_token(中文)",
+                             ids=["device_token(最大长度值)", "device_token(字母)", "device_token(中文)",
                                   "device_token(特殊字符)", "device_token(数字字母)", "device_token(数字中文)",
-                                  "device_token(数字特殊字符)"])
+                                  "device_token(空格)", "device_token(空)", "device_token(数字特殊字符)"])
     def test_102006_devicetoken_correct(self, device_token, phone, result):
         """ Test correct device_token values (最大长度值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符) (FT-HTJK-102-006).
         :param device_token: device_token parameter value.
@@ -535,10 +536,9 @@ class TestRegister(object):
     @allure.story("错误device_token值")
     @allure.testcase("FT-HTJK-102-007")
     @pytest.mark.parametrize("device_token, phone, result",
-                             [('a' * 101, "13511221033", {"code": 201110, "msg": "用户注册失败"}),
-                              (' '*44, "13511221042", {"code": 101000, "msg": "device_token不能为空"}),
-                              ('', "13511221043", {"code": 101000, "msg": "必须大于或等于44个字符"})],
-                             ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
+                             [('a' * 101, "13511221033", {"code": 101000, "msg": "设备Token取值错误"}),
+                              ('1.0' * 15, "13511221035", {"msg": "设备Token取值错误", "code": 101000})],
+                             ids=["device_token(超长值)", "device_token(小数)"])
     def test_102007_devicetoken_wrong(self, device_token, phone, result):
         """ Test wrong device_token values (超长值、空格、空）(FT-HTJK-102-007).
         :param device_token: device_token parameter value.
@@ -682,8 +682,8 @@ class TestRegister(object):
     @allure.testcase("FT-HTJK-102-009")
     @pytest.mark.parametrize("imei, phone, result",
                              [('1' * 16, "13511221045", {"code": 201110, "msg": "用户注册失败"}),
-                              (' ', "13511221054", {"code": 101000, "msg": "imei不能为空"}),
-                              ('', "13511221055", {"code": 101000, "msg": "imei不能为空"})],
+                              (' ', "13511221054", {"code": 1, "msg": "登录成功"}),
+                              ('', "13511221055", {"code": 1, "msg": "登录成功"})],
                              ids=["imei(超长值)", "imei(空格)", "imei(空)"])
     def test_102009_imei_wrong(self, imei, phone, result):
         """ Test wrong imei values (超长值、空格、空）(FT-HTJK-102-009).
@@ -877,7 +877,7 @@ class TestRegister(object):
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],self.logger)
                 allure.attach("getmsgcode result", str(code_token))
                 self.logger.info("getmsgcode result: {0}".format(code_token))
-                assert not code_token
+                assert code_token
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -890,25 +890,25 @@ class TestRegister(object):
     @allure.severity("critical")
     @allure.story("错误phone值")
     @allure.testcase("FT-HTJK-102-013")
-    @pytest.mark.parametrize("phone, result",
-                             [("1", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("135123456789", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("0", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("-1", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("135112210.0", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("1"*256, {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("a", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("中", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("*", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("1351122105a", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("1351122105中", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("1351122105*", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              (" ", {"code": 101000, "msg": "不能为空"}),
-                              ("", {"code": 101000, "msg": "不能为空"})],
+    @pytest.mark.parametrize("phone, phone2, result",
+                             [("1", "13511223510", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("135123456789", "13511223511", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("0", "13511223512", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("-1", "13511223513", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("135112210.0", "13511223514", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1"*256, "13511223515", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("a", "13511223516", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("中", "13511223517", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("*", "13511223518", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1351122105a", "13511223519", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1351122105中", "13511223520", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              ("1351122105*", "13511223521", {"code": 101000, "msg": "手机号码格式不正确"}),
+                              (" ", "13511223522", {"code": 101000, "msg": "不能为空"}),
+                              ("", "13511223523", {"code": 101000, "msg": "不能为空"})],
                              ids=["phone(1)", "phone(12位)", "phone(0)", "phone(-1)", "phone(小数)", "phone(超长值)",
                                   "phone(字母)", "phone(中文)", "phone(特殊字符)", "phone(数字字母)", "phone(数字中文)",
                                   "phone(数字特殊字符)", "phone(空格)", "phone(空)"])
-    def test_102013_phone_wrong(self, phone, result):
+    def test_102013_phone_wrong(self, phone, phone2, result):
         """ Test wrong phone values (1、12位、0、-1、小数、超长值、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-102-009).
         :param phone: phone parameter value.
         :param result: expect result.
@@ -916,7 +916,7 @@ class TestRegister(object):
         self.logger.info(".... Start test_102013_phone_wrong ({0}) ....".format(phone))
         try:
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 0, "phone": "13511221110", "timestamp": get_timestamp()}
+                params = {"code_type": 0, "phone": phone2, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -1391,8 +1391,8 @@ class TestRegister(object):
                 rsp_content = rsp.json()
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'device_token不能为空' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '登录成功' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1442,8 +1442,8 @@ class TestRegister(object):
                 rsp_content = rsp.json()
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'imei不能为空' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '登录成功' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1660,4 +1660,4 @@ class TestRegister(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_APP_Register.py'])
-    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102007_devicetoken_wrong'])
+    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102013_phone_wrong'])
