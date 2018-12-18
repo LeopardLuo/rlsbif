@@ -376,7 +376,7 @@ class TestGetIdentityList(object):
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}),
                               ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 201401, "msg": ""}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -429,7 +429,7 @@ class TestGetIdentityList(object):
     @allure.story("错误page_index值")
     @allure.testcase("FT-HTJK-116-006")
     @pytest.mark.parametrize("page_index, result",
-                             [(-1, {"status": 200, "code": 101000, "msg": ""}),
+                             [(-1, {"status": 500, "code": 0, "msg": ""}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -911,8 +911,8 @@ class TestGetIdentityList(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content['message']
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -951,8 +951,8 @@ class TestGetIdentityList(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content['message']
+                assert rsp_content["code"] == 1
+                assert rsp_content['result']['page']['page_index'] == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -992,7 +992,7 @@ class TestGetIdentityList(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 1
-                assert '' in rsp_content['message']
+                assert rsp_content['result']['page']['page_size'] == 20
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1301,5 +1301,5 @@ class TestGetIdentityList(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Identity_GetList.py'])
-    # pytest.main(['-s', 'test_APP_Identity_GetList.py::TestGetIdentityList::test_116021_without_relationships'])
+    # pytest.main(['-s', 'test_APP_Identity_GetList.py'])
+    pytest.main(['-s', 'test_APP_Identity_GetList.py::TestGetIdentityList::test_116005_member_id_wrong'])

@@ -4910,5 +4910,5 @@ class TestShoppingAddVisitorResult(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
-    # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_203024_add_visitor_result_without_picture'])
+    # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
+    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_203012_add_visitor_result_skuid_wrong'])
