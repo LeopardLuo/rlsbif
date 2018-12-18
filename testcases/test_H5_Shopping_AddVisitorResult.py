@@ -81,10 +81,10 @@ class TestShoppingAddVisitorResult(object):
 
     @allure.severity("critical")
     @allure.story("在白名单下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_with_whitelist(self):
+    @allure.testcase("FT-HTJK-203-001")
+    def test_203001_add_visitor_result_other_with_whitelist(self):
         """ Test add visitor result interface add other with whitelist"""
-        self.logger.info(".... Start test_add_visitor_result_other_with_whitelist ....")
+        self.logger.info(".... Start test_203001_add_visitor_result_other_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -104,7 +104,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, "本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -164,7 +164,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, ""))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -267,8 +267,8 @@ class TestShoppingAddVisitorResult(object):
                         assert item[6] == owner_feautreid
                         assert item[9] == 0
                         assert item[12] == 1
-                        assert begin_time2 == begin_time_a
-                        assert end_time2 == end_time_a
+                        assert begin_time2 == time.strftime("%Y-%m-%d")
+                        assert end_time2 == '9999-12-31'
 
             with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -316,15 +316,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_with_whitelist ....")
+            self.logger.info(".... End test_203001_add_visitor_result_other_with_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("不在白名单下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_without_whitelist(self):
+    @allure.testcase("FT-HTJK-203-002")
+    def test_203002_add_visitor_result_other_without_whitelist(self):
         """ Test add visitor result interface add other without whitelist"""
-        self.logger.info(".... Start test_add_visitor_result_other_without_whitelist ....")
+        self.logger.info(".... Start test_203002_add_visitor_result_other_without_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -344,7 +344,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger,"本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -404,7 +404,7 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep7: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, ""))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -517,15 +517,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_without_whitelist ....")
+            self.logger.info(".... End test_203002_add_visitor_result_other_without_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("给本人下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_user_with_whitelist(self):
+    @allure.testcase("FT-HTJK-203-003")
+    def test_203003_add_visitor_result_user_with_whitelist(self):
         """ Test add visitor result interface add user with whitelist"""
-        self.logger.info(".... Start test_add_visitor_result_user_with_whitelist ....")
+        self.logger.info(".... Start test_203003_add_visitor_result_user_with_whitelist ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -545,7 +545,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, "本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -641,25 +641,25 @@ class TestShoppingAddVisitorResult(object):
 
             with allure.step("teststep9: get visitor feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
+                condition = ("member_id = '{}'".format(self.member_id))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
                 select_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert not select_result
 
             with allure.step("teststep10: get bus_service_order info"):
-                table = 'bus_service_order'
-                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "kuli1"))
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_conditions(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert not select_result
+                r_order = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
+                                                   logger=self.logger)
+                allure.attach("service order list", str(r_order))
+                self.logger.info("service order list: {0}".format(r_order))
+                assert len(r_order) == 1
+                other_order = None
+                for order in r_order:
+                    if order['features_name'] == 'owner':
+                        other_order = order
+                assert not other_order
 
             with allure.step("teststep11: get bus_order info"):
                 table = 'bus_order'
@@ -671,6 +671,11 @@ class TestShoppingAddVisitorResult(object):
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
                 assert len(select_result) == 1
+                owner_order = None
+                for item in select_result:
+                    if item[7] == 'owner':
+                        owner_order = item
+                assert not owner_order
 
             with allure.step("teststep12: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -718,15 +723,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_user_with_whitelist ....")
+            self.logger.info(".... End test_203003_add_visitor_result_user_with_whitelist ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用时间或次数单品下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_with_time_or_count(self):
+    @allure.testcase("FT-HTJK-203-004")
+    def test_203004_add_visitor_result_other_with_time_or_count(self):
         """ Test add visitor result interface add other with time or count"""
-        self.logger.info(".... Start test_add_visitor_result_other_with_time_or_count ....")
+        self.logger.info(".... Start test_203004_add_visitor_result_other_with_time_or_count ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -746,7 +751,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -947,15 +952,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_with_time_or_count ....")
+            self.logger.info(".... End test_203004_add_visitor_result_other_with_time_or_count ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用时间单品下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_with_time(self):
+    @allure.testcase("FT-HTJK-203-005")
+    def test_203005_add_visitor_result_other_with_time(self):
         """ Test add visitor result interface add other with time"""
-        self.logger.info(".... Start test_add_visitor_result_other_with_time ....")
+        self.logger.info(".... Start test_203005_add_visitor_result_other_with_time ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -975,7 +980,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1176,15 +1181,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_with_time ....")
+            self.logger.info(".... End test_203005_add_visitor_result_other_with_time ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用次数单品下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_with_count(self):
+    @allure.testcase("FT-HTJK-203-006")
+    def test_203006_add_visitor_result_other_with_count(self):
         """ Test add visitor result interface add other with count"""
-        self.logger.info(".... Start test_add_visitor_result_other_with_count ....")
+        self.logger.info(".... Start test_203006_add_visitor_result_other_with_count ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1204,7 +1209,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1405,15 +1410,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_with_count ....")
+            self.logger.info(".... End test_203006_add_visitor_result_other_with_count ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("使用无限单品下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_with_forever(self):
+    @allure.testcase("FT-HTJK-203-007")
+    def test_203007_add_visitor_result_other_with_forever(self):
         """ Test add visitor result interface add other with forever"""
-        self.logger.info(".... Start test_add_visitor_result_other_with_forever ....")
+        self.logger.info(".... Start test_203007_add_visitor_result_other_with_forever ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1433,7 +1438,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1634,15 +1639,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_with_forever ....")
+            self.logger.info(".... End test_203007_add_visitor_result_other_with_forever ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("没有登录下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_without_login(self):
+    @allure.testcase("FT-HTJK-203-008")
+    def test_203008_add_visitor_result_other_without_login(self):
         """ Test add visitor result interface add other without login."""
-        self.logger.info(".... Start test_add_visitor_result_other_without_login ....")
+        self.logger.info(".... Start test_203008_add_visitor_result_other_without_login ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1662,7 +1667,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1836,15 +1841,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_without_login ....")
+            self.logger.info(".... End test_203008_add_visitor_result_other_without_login ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("本人没有下单下访客服务单")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_other_without_apply_user(self):
+    @allure.testcase("FT-HTJK-203-009")
+    def test_203009_add_visitor_result_other_without_apply_user(self):
         """ Test add visitor result interface add other without apply user."""
-        self.logger.info(".... Start test_add_visitor_result_other_without_apply_user ....")
+        self.logger.info(".... Start test_203009_add_visitor_result_other_without_apply_user ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -1864,7 +1869,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2031,39 +2036,39 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_other_without_apply_user ....")
+            self.logger.info(".... End test_203009_add_visitor_result_other_without_apply_user ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误providerId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-010")
     @pytest.mark.parametrize("providerId, result",
-                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该服务商已停止服务"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             [('1' * 256, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('a', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('中', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('*', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('1a', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('1中', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('%1%', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (' ', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (11111, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (0, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (-1, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (9223372036854775808, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (-9223372036854775809, {"status": 200, "code": '1', "msg": "提交邀请成功"})],
                              ids=["providerId(超长值)", "providerId(小数)", "providerId(英文)", "providerId(中文)",
                                   "providerId(特殊字符)", "providerId(数字英文)", "providerId(数字中文)",
                                   "providerId(数字特殊字符)", "providerId(空格)", "providerId(空)",
                                   "providerId(1)", "providerId(0)", "providerId(-1)", "providerId(超大)",
                                   "providerId(超小)"])
-    def test_add_visitor_result_providerid_wrong(self, providerId, result):
-        """ Test wrong providerId values (FT-HTJK-xxx-xxx).
+    def test_203010_add_visitor_result_providerid_wrong(self, providerId, result):
+        """ Test wrong providerId values (FT-HTJK-203-010).
         :param providerId: providerId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_providerid_wrong ({}) ....".format(providerId))
+        self.logger.info(".... Start test_203010_add_visitor_result_providerid_wrong ({}) ....".format(providerId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2083,7 +2088,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2173,7 +2178,6 @@ class TestShoppingAddVisitorResult(object):
                         allure.attach("request.body", str(rsp.request.body))
                         self.logger.info("request.url: {}".format(rsp.request.url))
                         self.logger.info("request.headers: {}".format(rsp.request.headers))
-                        self.logger.info("request.body: {}".format(rsp.request.body))
                     with allure.step("teststep: assert the response code"):
                         allure.attach("Expect response code：", '200')
                         allure.attach("Actual response code：", str(rsp.status_code))
@@ -2241,39 +2245,39 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_providerid_wrong ({}) ....".format(providerId))
+            self.logger.info(".... End test_203010_add_visitor_result_providerid_wrong ({}) ....".format(providerId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误productId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-011")
     @pytest.mark.parametrize("productId, result",
-                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该产品未上架"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             [('1' * 256, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('a', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('中', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('*', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('1a', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('1中', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('%1%', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (' ', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              ('', {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (11111, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (0, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (-1, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (9223372036854775808, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                              (-9223372036854775809, {"status": 200, "code": '1', "msg": "提交邀请成功"})],
                              ids=["productId(超长值)", "productId(小数)", "productId(英文)", "productId(中文)",
                                   "productId(特殊字符)", "productId(数字英文)", "productId(数字中文)",
                                   "productId(数字特殊字符)", "productId(空格)", "productId(空)",
                                   "productId(1)", "productId(0)", "productId(-1)", "productId(超大)",
                                   "productId(超小)"])
-    def test_add_visitor_result_productid_wrong(self, productId, result):
-        """ Test wrong productId values (FT-HTJK-xxx-xxx).
+    def test_203011_add_visitor_result_productid_wrong(self, productId, result):
+        """ Test wrong productId values (FT-HTJK-203-011).
         :param productId: productId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_productid_wrong ({}) ....".format(productId))
+        self.logger.info(".... Start test_203011_add_visitor_result_productid_wrong ({}) ....".format(productId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2293,7 +2297,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2451,12 +2455,12 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_productid_wrong ({}) ....".format(productId))
+            self.logger.info(".... End test_203011_add_visitor_result_productid_wrong ({}) ....".format(productId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误skuId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-012")
     @pytest.mark.parametrize("skuId, result",
                              [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
@@ -2468,21 +2472,21 @@ class TestShoppingAddVisitorResult(object):
                               ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该服务未上架"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
+                              (11111, {"status": 200, "code": '301', "msg": "该服务不存在或未上架"}),
+                              (0, {"status": 200, "code": '301', "msg": "该服务不存在或未上架"}),
+                              (-1, {"status": 200, "code": '301', "msg": "该服务不存在或未上架"}),
                               (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
                              ids=["skuId(超长值)", "skuId(小数)", "skuId(英文)", "skuId(中文)",
                                   "skuId(特殊字符)", "skuId(数字英文)", "skuId(数字中文)",
                                   "skuId(数字特殊字符)", "skuId(空格)", "skuId(空)",
                                   "skuId(1)", "skuId(0)", "skuId(-1)", "skuId(超大)", "skuId(超小)"])
-    def test_add_visitor_result_skuid_wrong(self, skuId, result):
-        """ Test wrong skuId values (FT-HTJK-xxx-xxx).
+    def test_203012_add_visitor_result_skuid_wrong(self, skuId, result):
+        """ Test wrong skuId values (FT-HTJK-203-012).
         :param skuId: skuId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_skuid_wrong ({}) ....".format(skuId))
+        self.logger.info(".... Start test_203012_add_visitor_result_skuid_wrong ({}) ....".format(skuId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2502,7 +2506,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2592,7 +2596,6 @@ class TestShoppingAddVisitorResult(object):
                         allure.attach("request.body", str(rsp.request.body))
                         self.logger.info("request.url: {}".format(rsp.request.url))
                         self.logger.info("request.headers: {}".format(rsp.request.headers))
-                        self.logger.info("request.body: {}".format(rsp.request.body))
                     with allure.step("teststep: assert the response code"):
                         allure.attach("Expect response code：", '200')
                         allure.attach("Actual response code：", str(rsp.status_code))
@@ -2660,12 +2663,12 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_skuid_wrong ({}) ....".format(skuId))
+            self.logger.info(".... End test_203012_add_visitor_result_skuid_wrong ({}) ....".format(skuId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("visitor值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-013")
     @pytest.mark.parametrize("visitor, result",
                              [('1' * 51, {"status": 200, "code": '300', "msg": "访客姓名不能超过50个字符"}),
                               (1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
@@ -2686,12 +2689,12 @@ class TestShoppingAddVisitorResult(object):
                                   "visitor(特殊字符)", "visitor(数字英文)", "visitor(数字中文)",
                                   "visitor(数字特殊字符)", "visitor(空格)", "visitor(空)",
                                   "visitor(1)", "visitor(0)", "visitor(-1)", "visitor(超大)", "visitor(超小)"])
-    def test_add_visitor_result_visitor(self, visitor, result):
-        """ Test wrong visitor values (FT-HTJK-xxx-xxx).
+    def test_203013_add_visitor_result_visitor(self, visitor, result):
+        """ Test wrong visitor values (FT-HTJK-203-013).
         :param visitor: visitor parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_visitor ({}) ....".format(visitor))
+        self.logger.info(".... Start test_203013_add_visitor_result_visitor ({}) ....".format(visitor))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2711,7 +2714,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2867,26 +2870,26 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_visitor ({}) ....".format(visitor))
+            self.logger.info(".... End test_203013_add_visitor_result_visitor ({}) ....".format(visitor))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误beginTime值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-014")
     @pytest.mark.parametrize("beginTime, result",
                              [(1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
                               (1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (2000000000, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "提交邀请失败"}),
+                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "开始时间必须在1970-1-1之后"}),
                               ('a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('*', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('1a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('1中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (' ', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              (' ', {"status": 200, "code": '300', "msg": "时间条件非法"}),
+                              ('', {"status": 200, "code": '300', "msg": "时间条件非法"}),
+                              ('2030-01-01', {"status": 200, "code": '300', "msg": "开始时间不能大于结束时间"}),
                               ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
                               (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
@@ -2895,12 +2898,12 @@ class TestShoppingAddVisitorResult(object):
                                   "beginTime(特殊字符)", "beginTime(数字英文)", "beginTime(数字中文)",
                                   "beginTime(数字特殊字符)", "beginTime(空格)", "beginTime(空)",
                                   "beginTime(1)", "beginTime(0)", "beginTime(-1)", "beginTime(超大)", "beginTime(超小)"])
-    def test_add_visitor_result_begintime_wrong(self, beginTime, result):
-        """ Test wrong beginTime values (FT-HTJK-xxx-xxx).
+    def test_203014_add_visitor_result_begintime_wrong(self, beginTime, result):
+        """ Test wrong beginTime values (FT-HTJK-203-014).
         :param beginTime: beginTime parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_begintime_wrong ({}) ....".format(beginTime))
+        self.logger.info(".... Start test_203014_add_visitor_result_begintime_wrong ({}) ....".format(beginTime))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -2920,7 +2923,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -2962,7 +2965,7 @@ class TestShoppingAddVisitorResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -3076,27 +3079,27 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_begintime_wrong ({}) ....".format(beginTime))
+            self.logger.info(".... End test_203014_add_visitor_result_begintime_wrong ({}) ....".format(beginTime))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误endTime值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-015")
     @pytest.mark.parametrize("endTime, result",
-                             [(1.5, {"status": 200, "code": '1', "msg": "提交邀请成功"}),
+                             [(1.5, {"status": 200, "code": '300', "msg": "时间条件过期"}),
                               (1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (2000000000, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "提交邀请失败"}),
+                              ("0001-01-01 01:01:01", {"status": 200, "code": '300', "msg": "时间条件过期"}),
                               ('a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('*', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('1a', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('1中', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              (' ', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
-                              ('', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
+                              (' ', {"status": 200, "code": '300', "msg": "时间条件非法"}),
+                              ('', {"status": 200, "code": '300', "msg": "时间条件非法"}),
                               ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
-                              ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              ('2025-01-01', {"status": 200, "code": '300', "msg": "开始时间不能大于结束时间"}),
                               (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (-9223372036854775809, {"status": 200, "code": '300', "msg": "输入时间格式有误"})],
@@ -3105,12 +3108,12 @@ class TestShoppingAddVisitorResult(object):
                                   "endTime(特殊字符)", "endTime(数字英文)", "endTime(数字中文)",
                                   "endTime(数字特殊字符)", "endTime(空格)", "endTime(空)",
                                   "endTime(1)", "endTime(0)", "endTime(-1)", "endTime(超大)", "endTime(超小)"])
-    def test_add_visitor_result_endtime_wrong(self, endTime, result):
-        """ Test wrong endTime values (FT-HTJK-xxx-xxx).
+    def test_203015_add_visitor_result_endtime_wrong(self, endTime, result):
+        """ Test wrong endTime values (FT-HTJK-203-015).
         :param endTime: endTime parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_endtime_wrong ({}) ....".format(endTime))
+        self.logger.info(".... Start test_203015_add_visitor_result_endtime_wrong ({}) ....".format(endTime))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3130,7 +3133,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -3286,12 +3289,12 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_endtime_wrong ({}) ....".format(endTime))
+            self.logger.info(".... End test_203015_add_visitor_result_endtime_wrong ({}) ....".format(endTime))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("picture支持的图片类型")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-016")
     @pytest.mark.parametrize("picture, result",
                              [("relate_face.png", {"status": 200, "code": "1", "msg": "提交邀请成功"}),
                               ("relate_face.jpg", {"status": 200, "code": "1", "msg": "提交邀请成功"}),
@@ -3300,12 +3303,12 @@ class TestShoppingAddVisitorResult(object):
                               ("relate_face.bmp", {"status": 200, "code": "1", "msg": "提交邀请成功"}), ],
                              ids=["picture(png)", "picture(jpg)", "picture(jpeg)",
                                   "picture(tif)", "picture(bmp)"])
-    def test_add_visitor_result_picture_correct(self, picture, result):
-        """ Test correct picture values (FT-HTJK-xxx-xxx).
+    def test_203016_add_visitor_result_picture_correct(self, picture, result):
+        """ Test correct picture values (FT-HTJK-203-016).
         :param picture: picture parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_picture_correct ({}) ....".format(picture))
+        self.logger.info(".... Start test_203016_add_visitor_result_picture_correct ({}) ....".format(picture))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3325,7 +3328,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -3481,27 +3484,27 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_picture_correct ({}) ....".format(picture))
+            self.logger.info(".... End test_203016_add_visitor_result_picture_correct ({}) ....".format(picture))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("picture不支持的文件类型")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-203-017")
     @pytest.mark.parametrize("picture, result",
-                             [("relate_face.gif", {"status": 200, "code": "300", "msg": "照片不合格"}),
-                              ("case.xlsx", {"status": 200, "code": "300", "msg": "照片不合格"}),
-                              ("temp.txt", {"status": 200, "code": "300", "msg": "照片不合格"}),
-                              ("hb.mp4", {"status": 200, "code": "300", "msg": "照片不合格"}),
-                              ("fore1.PNG", {"status": 200, "code": "300", "msg": "照片不合格"}),
-                              ("dog5.jpg", {"status": 200, "code": "300", "msg": "照片不合格"}), ],
+                             [("relate_face.gif", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
+                              ("case.xlsx", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
+                              ("temp.txt", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
+                              ("hb.mp4", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
+                              ("fore1.PNG", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
+                              ("dog5.jpg", {"status": 200, "code": "300", "msg": "提交邀请失败"}), ],
                              ids=["picture(gif)", "picture(xlsx)", "picture(txt)",
                                   "picture(mp4)", "picture(other)", "picture(dog)"])
-    def test_add_visitor_result_picture_wrong(self, picture, result):
-        """ Test wrong picture values (FT-HTJK-xxx-xxx).
+    def test_203017_add_visitor_result_picture_wrong(self, picture, result):
+        """ Test wrong picture values (FT-HTJK-203-017).
         :param picture: picture parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_add_visitor_result_picture_wrong ({}) ....".format(picture))
+        self.logger.info(".... Start test_203017_add_visitor_result_picture_wrong ({}) ....".format(picture))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3521,7 +3524,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -3677,15 +3680,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_picture_wrong ({}) ....".format(picture))
+            self.logger.info(".... End test_203017_add_visitor_result_picture_wrong ({}) ....".format(picture))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少providerId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_providerid(self):
-        """ Test add visitor result without providerid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_providerid ....")
+    @allure.testcase("FT-HTJK-203-018")
+    def test_203018_add_visitor_result_without_providerid(self):
+        """ Test add visitor result without providerid (FT-HTJK-203-018)."""
+        self.logger.info(".... Start test_203018_add_visitor_result_without_providerid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3705,7 +3708,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -3803,7 +3806,7 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
+                        assert rsp_content["status"] == '1'
                         assert "" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
@@ -3852,15 +3855,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_providerid ....")
+            self.logger.info(".... End test_203018_add_visitor_result_without_providerid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少productId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_productid(self):
-        """ Test add visitor result without productid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_productid ....")
+    @allure.testcase("FT-HTJK-203-019")
+    def test_203019_add_visitor_result_without_productid(self):
+        """ Test add visitor result without productid (FT-HTJK-203-019)."""
+        self.logger.info(".... Start test_203019_add_visitor_result_without_productid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -3880,7 +3883,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -3978,8 +3981,8 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert "" in rsp_content["message"]
+                        assert rsp_content["status"] == '1'
+                        assert "提交邀请成功" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4027,15 +4030,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_productid ....")
+            self.logger.info(".... End test_203019_add_visitor_result_without_productid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少skuId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_skuid(self):
-        """ Test add visitor result without skuid (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_skuid ....")
+    @allure.testcase("FT-HTJK-203-020")
+    def test_203020_add_visitor_result_without_skuid(self):
+        """ Test add visitor result without skuid (FT-HTJK-203-020)."""
+        self.logger.info(".... Start test_203020_add_visitor_result_without_skuid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4055,7 +4058,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -4153,8 +4156,8 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert "" in rsp_content["message"]
+                        assert rsp_content["status"] == '301'
+                        assert "该服务不存在或未上架" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4202,15 +4205,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_skuid ....")
+            self.logger.info(".... End test_203020_add_visitor_result_without_skuid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少visitor参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_visitor(self):
-        """ Test add visitor result without visitor (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_visitor ....")
+    @allure.testcase("FT-HTJK-203-021")
+    def test_203021_add_visitor_result_without_visitor(self):
+        """ Test add visitor result without visitor (FT-HTJK-203-021)."""
+        self.logger.info(".... Start test_203021_add_visitor_result_without_visitor ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4230,7 +4233,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -4328,8 +4331,8 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert "" in rsp_content["message"]
+                        assert rsp_content["status"] == '300'
+                        assert "姓名不能为空" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4377,15 +4380,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_visitor ....")
+            self.logger.info(".... End test_203021_add_visitor_result_without_visitor ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少beginTime参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_begintime(self):
-        """ Test add visitor result without beginTime (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_begintime ....")
+    @allure.testcase("FT-HTJK-203-022")
+    def test_203022_add_visitor_result_without_begintime(self):
+        """ Test add visitor result without beginTime (FT-HTJK-203-022)."""
+        self.logger.info(".... Start test_203022_add_visitor_result_without_begintime ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4405,7 +4408,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -4447,7 +4450,7 @@ class TestShoppingAddVisitorResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -4503,8 +4506,8 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert "" in rsp_content["message"]
+                        assert rsp_content["status"] == '300'
+                        assert "时间条件非法" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4552,15 +4555,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_begintime ....")
+            self.logger.info(".... End test_203022_add_visitor_result_without_begintime ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少endTime参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_endtime(self):
-        """ Test add visitor result without endTime (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_endtime ....")
+    @allure.testcase("FT-HTJK-203-023")
+    def test_203023_add_visitor_result_without_endtime(self):
+        """ Test add visitor result without endTime (FT-HTJK-203-023)."""
+        self.logger.info(".... Start test_203023_add_visitor_result_without_endtime ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4580,7 +4583,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -4622,7 +4625,7 @@ class TestShoppingAddVisitorResult(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                sku_name = self.config.getItem('sku', 'single_forever')
+                sku_name = self.config.getItem('sku', 'single_time_or_count')
                 sku_id = 0
                 for item in select_result:
                     if item[2] == sku_name:
@@ -4678,7 +4681,7 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
+                        assert rsp_content["status"] == '300'
                         assert "" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
@@ -4727,15 +4730,15 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_endtime ....")
+            self.logger.info(".... End test_203023_add_visitor_result_without_endtime ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少picture参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_add_visitor_result_without_picture(self):
-        """ Test add visitor result without picture (FT-HTJK-xxx-xxx)."""
-        self.logger.info(".... Start test_add_visitor_result_without_picture ....")
+    @allure.testcase("FT-HTJK-203-024")
+    def test_203024_add_visitor_result_without_picture(self):
+        """ Test add visitor result without picture (FT-HTJK-203-024)."""
+        self.logger.info(".... Start test_203024_add_visitor_result_without_picture ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -4755,7 +4758,7 @@ class TestShoppingAddVisitorResult(object):
                 headers = {"authorization": self.token}
                 self.httpclient.update_header(headers)
                 identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
+                                                 get_timestamp(), self.logger, '本人')
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 self.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -4853,8 +4856,8 @@ class TestShoppingAddVisitorResult(object):
                     with allure.step("teststep: assert the response content"):
                         allure.attach("response content：", str(rsp_content))
                         self.logger.info("response content: {}".format(rsp_content))
-                        assert rsp_content["status"] == ''
-                        assert "" in rsp_content["message"]
+                        assert rsp_content["status"] == '300'
+                        assert "提交信息无效" in rsp_content["message"]
 
             with allure.step("teststep9: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -4902,10 +4905,10 @@ class TestShoppingAddVisitorResult(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_add_visitor_result_without_picture ....")
+            self.logger.info(".... End test_203024_add_visitor_result_without_picture ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_add_visitor_result_other_with_whitelist'])
+    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
+    # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_203024_add_visitor_result_without_picture'])

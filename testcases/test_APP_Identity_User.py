@@ -390,7 +390,7 @@ class TestIdentityUser(object):
                               ("case.xlsx", {"code": 201307, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201307, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201307, "msg": "照片不合格"}),
-                              ("fore1.PNG", {"code": 201307, "msg": "验证不通过"}), ],
+                              ("fore1.PNG", {"code": 201307, "msg": "照片不合格"}), ],
                              ids=["identity_card_face(gif)", "identity_card_face(xlsx)", "identity_card_face(txt)",
                                   "identity_card_face(mp4)", "identity_card_face(other)"])
     def test_115005_identity_card_face_type_wrong(self, identity_card_face, result):
@@ -1020,5 +1020,5 @@ class TestIdentityUser(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Identity_User.py'])
-    pytest.main(['-s', 'test_APP_Identity_User.py::TestIdentityUser::test_115017_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Identity_User.py'])
+    # pytest.main(['-s', 'test_APP_Identity_User.py::TestIdentityUser::test_115017_no_timestamp'])

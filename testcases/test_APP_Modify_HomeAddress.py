@@ -830,9 +830,10 @@ class TestModifyHomeAddress(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-110-013")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 1, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
-                              (0, {"status": 200, "code": 1, "msg": ""}), (-1, {"status": 200, "code": 1, "msg": ""}),
+                             [(1, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
+                              (9223372036854775807, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               (1.0, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
@@ -1246,5 +1247,5 @@ class TestModifyHomeAddress(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
-    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110020_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
+    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110020_no_timestamp'])

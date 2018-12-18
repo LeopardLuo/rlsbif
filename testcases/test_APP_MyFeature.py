@@ -795,7 +795,207 @@ class TestMyFeature(object):
             self.logger.info(".... End test_124011_no_timestamp ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("正确feature_name值")
+    @allure.testcase("FT-HTJK-124-012")
+    @pytest.mark.parametrize("feature_name, result",
+                             [('1', {"code": 1, "msg": "采集成功"}), ('1' * 50, {"code": 1, "msg": "采集成功"}),
+                              ('abcd', {"code": 1, "msg": "采集成功"}), ('中中中中', {"code": 1, "msg": "采集成功"}),
+                              ('(*.)', {"code": 1, "msg": "采集成功"}), ('1a*中', {"code": 1, "msg": "采集成功"}),
+                              (1.123, {"code": 1, "msg": "采集成功"}),(' ', {"code": 1, "msg": "采集成功"}),
+                              ('', {"code": 1, "msg": "采集成功"})],
+                             ids=["feature_name值(最小长度值)", "feature_name值(最大长度值)", "feature_name值(字母)",
+                                  "feature_name值(中文)", "feature_name值(特殊字符)", "feature_name(数字字母中文特殊字符)",
+                                  "feature_name(小数)","feature_name(空格)","feature_name(空)", ])
+    def test_124012_myfeature_feature_name_correct(self, feature_name, result):
+        """ Test myfeature by correct feature_name(FT-HTJK-124012)."""
+        self.logger.info(".... Start test_124012_myfeature_feature_name_correct ({}) ....".format(feature_name))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "feature_name":feature_name, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert '采集成功' in rsp_content['message']
+
+            with allure.step("teststep5: query database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 1
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_124012_myfeature_feature_name_correct ({}) ....".format(feature_name))
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("超长feature_name值")
+    @allure.testcase("FT-HTJK-124-013")
+    def test_124013_myfeature_feature_name_overlength(self):
+        """ Test myfeature by overlength feature_name(FT-HTJK-124013)."""
+        self.logger.info(".... Start test_124013_myfeature_feature_name_overlength ....")
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "feature_name":'1'*101, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 201903
+                assert '采集失败' in rsp_content['message']
+
+            with allure.step("teststep5: query database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                assert len(select_result) == 0
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_124013_myfeature_feature_name_overlength ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("正确feature_sex值")
+    @allure.testcase("FT-HTJK-124-014")
+    @pytest.mark.parametrize("feature_sex, result",
+                             [(1, {"status": 200, "code": 1, "msg": "采集成功"}),
+                              (2, {"status": 200, "code": 1, "msg": "采集成功"}),
+                              ('1', {"status": 200, "code": 1, "msg": "采集成功"}),
+                              ('1' * 50, {"status": 400, "code": 1, "msg": ""}),
+                              ('a', {"status": 400, "code": 1, "msg": ""}),
+                              ('中', {"status": 400, "code": 1, "msg": ""}),
+                              ('(*.)', {"status": 400, "code": 1, "msg": ""}),
+                              ('1a*中', {"status": 400, "code": 1, "msg": ""}),
+                              (1.123, {"status": 400, "code": 1, "msg": ""}),
+                              (' ', {"status": 400, "code": 1, "msg": ""}),
+                              ('', {"status": 400, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 1, "msg": "采集成功"}),
+                              (3, {"status": 200, "code": 1, "msg": "采集成功"}),
+                              (4, {"status": 200, "code": 1, "msg": "采集成功"})],
+                             ids=["feature_sex(1)", "feature_sex(2)", "feature_sex(最小长度值)", "feature_sex(最大长度值)",
+                                  "feature_sex(字母)", "feature_sex(中文)", "feature_sex(特殊字符)",
+                                  "feature_sex(数字字母中文特殊字符)", "feature_sex(小数)", "feature_sex(空格)",
+                                  "feature_sex(空)", "feature_sex(0)", "feature_sex(3)", "feature_sex(4)"])
+    def test_124014_myfeature_feature_sex_correct(self, feature_sex, result):
+        """ Test myfeature by correct feature_sex(FT-HTJK-124014)."""
+        self.logger.info(".... Start test_124014_myfeature_feature_sex_correct ({}) ....".format(feature_sex))
+        try:
+            with allure.step("teststep1: get parameters."):
+                params = {"member_id": self.member_id, "feature_sex": feature_sex, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"face_photo": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep2: requests http post."):
+                self.httpclient.update_header(headers)
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep3: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == result['status']
+                if rsp.status_code == 200:
+                    rsp_content = rsp.json()
+                else:
+                    rsp_content = rsp.text
+
+            with allure.step("teststep4: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                if rsp.status_code == 200:
+                    assert rsp_content["code"] == result['code']
+                    assert result['msg'] in rsp_content['message']
+
+            with allure.step("teststep5: query database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                select_result = self.mysql.execute_select_condition(table, condition)
+                allure.attach("query result", str(select_result))
+                self.logger.info("query result: {0}".format(select_result))
+                if rsp.status_code == 200:
+                    assert len(select_result) == 1
+                else:
+                    assert len(select_result) == 0
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_124014_myfeature_feature_sex_correct ({}) ....".format(feature_sex))
+            self.logger.info("")
+
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_MyFeature.py'])
-    pytest.main(['-s', 'test_APP_MyFeature.py::TestMyFeature::test_124011_no_timestamp'])
+    pytest.main(['-s', 'test_APP_MyFeature.py::TestMyFeature::test_124014_myfeature_feature_sex_correct'])

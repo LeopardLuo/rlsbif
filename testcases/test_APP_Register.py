@@ -1659,5 +1659,5 @@ class TestRegister(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Register.py'])
-    pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102007_devicetoken_wrong'])
+    pytest.main(['-s', 'test_APP_Register.py'])
+    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102007_devicetoken_wrong'])

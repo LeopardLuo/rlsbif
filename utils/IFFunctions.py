@@ -727,13 +727,14 @@ def unbind_wx(httpclient, member_id, auth_id, timestamp=None, logger=None):
 
 
 @allure.step("User-MyFeature")
-def user_myfeature(httpclient, member_id, face_photo, timestamp=None, logger=None):
+def user_myfeature(httpclient, member_id, face_photo, timestamp=None, logger=None, feature_name='', feature_sex=None):
     """ Identify user by images, return True or False.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
     :param face_photo: interface defined parameter face_photo from upload photo url string type.
     :param timestamp: interface defined parameter timestamp int type, optional.
     :param logger: logger instance for logging, optional.
+    :param feature_name: interface defined parameter feature_name String type, optional.
     :rtype: return True successfully, False failed.
     """
     logger and logger.info("")
@@ -741,7 +742,7 @@ def user_myfeature(httpclient, member_id, face_photo, timestamp=None, logger=Non
     uri = ConfigParse().getItem("uri", "MyFeature")
     if not timestamp:
         timestamp = get_timestamp()
-    params = {"member_id": member_id, "timestamp": get_timestamp()}
+    params = {"member_id": member_id, "feature_name": feature_name,"feature_sex": feature_sex, "timestamp": get_timestamp()}
     files = {"face_photo": open(get_image_path(face_photo), 'rb')}
     allure.attach("request params", str(params))
     logger and logger.info("UserIdentity json: {}".format(params))
@@ -749,7 +750,7 @@ def user_myfeature(httpclient, member_id, face_photo, timestamp=None, logger=Non
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.files", str(files))
-    logger and logger.info("request.files: {}".format(files))
+    logger and logger.info("request.files: {}".format(str(files)))
     status_code = rsp.status_code
     allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
@@ -795,7 +796,7 @@ def user_identity(httpclient, member_id, identity_card_face, identity_card_emble
     allure.attach("request.headers", str(rsp.request.headers))
     logger and logger.info("request.headers: {}".format(rsp.request.headers))
     allure.attach("request.files", str(files))
-    logger and logger.info("request.files: {}".format(files))
+    logger and logger.info("request.files: {}".format(str(files)))
     status_code = rsp.status_code
     allure.attach("status_code", str(status_code))
     logger and logger.info("status_code: {}".format(status_code))
@@ -863,7 +864,7 @@ def get_identity_other_list(httpclient, member_id, page_index, page_size, timest
 
 
 @allure.step("associates-Identify")
-def identity_other(httpclient, member_id, features_name, other_photo, my_photo, timestamp=None, logger=None, feature_sex=1):
+def identity_other(httpclient, member_id, features_name, other_photo, my_photo, timestamp=None, logger=None, feature_sex=None):
     """ Identify the related peoples of user.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
@@ -910,7 +911,7 @@ def identity_other(httpclient, member_id, features_name, other_photo, my_photo, 
 
 
 @allure.step("associates-temp-Identify")
-def identity_temp(httpclient, member_id, feature_name, temp_photo, timestamp=None, logger=None):
+def identity_temp(httpclient, member_id, feature_name, temp_photo, timestamp=None, logger=None, feature_sex=None):
     """ Identify the related peoples of user.
     :param httpclient: http request client.
     :param member_id: interface defined parameter member_id return by login string type.
@@ -925,7 +926,7 @@ def identity_temp(httpclient, member_id, feature_name, temp_photo, timestamp=Non
     uri = ConfigParse().getItem("uri", "IdentityTemp")
     if not timestamp:
         timestamp = get_timestamp()
-    params = {"member_id": member_id, "feature_name": feature_name, "timestamp": timestamp}
+    params = {"member_id": member_id, "feature_name": feature_name, "feature_sex":feature_sex, "timestamp": timestamp}
     files = {"temp_photo": open(get_image_path(temp_photo), 'rb')}
     allure.attach("request params", str(params))
     logger and logger.info("IdentityOther json: {}".format(params))

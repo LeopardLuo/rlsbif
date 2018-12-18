@@ -277,8 +277,8 @@ class TestLogin(object):
     @allure.story("正确client_type值")
     @allure.testcase("FT-HTJK-103-003")
     @pytest.mark.parametrize("client_type, result",
-                             [(1, {"code": 1, "msg": ""}), (2, {"code": 1, "msg": ""}),
-                              (3, {"code": 1, "msg": ""}), (4, {"code": 1, "msg": ""})],
+                             [(0, {"code": 1, "msg": ""}), (1, {"code": 1, "msg": ""}),
+                              (2, {"code": 1, "msg": ""}), (3, {"code": 1, "msg": ""})],
                              ids=["client_type(0)", "client_type(1)", "client_type(2)", "client_type(3)"])
     def test_103003_clienttype_correct(self, client_type, result):
         """ Test correct client_type values (0, 1, 2, 3) (FT-HTJK-103-003).
@@ -1033,8 +1033,8 @@ class TestLogin(object):
                               ("1351122105a", {"code": 101000, "msg": "手机号码格式不正确"}),
                               ("1351122105中", {"code": 101000, "msg": "手机号码格式不正确"}),
                               ("1351122105*", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              (" ", {"code": 101000, "msg": "手机号码格式不正确"}),
-                              ("", {"code": 101000, "msg": "手机号码格式不正确"})],
+                              (" ", {"code": 101000, "msg": "不能为空"}),
+                              ("", {"code": 101000, "msg": "不能为空"})],
                              ids=["phone(1)", "phone(12位)", "phone(0)", "phone(-1)", "phone(小数)", "phone(超长值)",
                                   "phone(字母)", "phone(中文)", "phone(特殊字符)", "phone(数字字母)", "phone(数字中文)",
                                   "phone(数字特殊字符)", "phone(空格)", "phone(空)"])
@@ -1508,8 +1508,8 @@ class TestLogin(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                assert rsp_content["code"] == 101000
-                assert 'client_type值非法' in rsp_content["message"]
+                assert rsp_content["code"] == 1
+                assert '登录成功' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception ocurr: ")

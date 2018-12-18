@@ -76,7 +76,7 @@ class TestGetIdentityList(object):
                 headers = {"authorization": cls.token}
                 cls.httpclient.update_header(headers)
                 identity_result = user_myfeature(cls.httpclient, cls.member_id, 'face2.jpg',
-                                                get_timestamp(), cls.logger)
+                                                get_timestamp(), cls.logger, "本人")
                 allure.attach("upload user feature result", "{0}".format(identity_result))
                 cls.logger.info("upload user feature result: {0}".format(identity_result))
 
@@ -1301,5 +1301,5 @@ class TestGetIdentityList(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Identity_GetList.py'])
-    pytest.main(['-s', 'test_APP_Identity_GetList.py::TestGetIdentityList::test_116021_without_relationships'])
+    pytest.main(['-s', 'test_APP_Identity_GetList.py'])
+    # pytest.main(['-s', 'test_APP_Identity_GetList.py::TestGetIdentityList::test_116021_without_relationships'])

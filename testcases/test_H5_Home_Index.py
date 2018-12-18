@@ -80,10 +80,10 @@ class TestHomeIndex(object):
 
     @allure.severity("critical")
     @allure.story("登录成功")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_home_index_correct(self):
+    @allure.testcase("FT-HTJK-201-001")
+    def test_201001_home_index_correct(self):
         """ Test home index with correct parameters. """
-        self.logger.info(".... Start test_home_index_correct ....")
+        self.logger.info(".... Start test_201001_home_index_correct ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -151,39 +151,39 @@ class TestHomeIndex(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_home_index_correct ....")
+            self.logger.info(".... End test_201001_home_index_correct ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误userId值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-201-002")
     @pytest.mark.parametrize("userId, result",
-                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该服务商已停止服务"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             [('1' * 256, {"status": 200, "code": 97, "msg": ""}),
+                              (1.5, {"status": 200, "code": 97, "msg": ""}),
+                              ('a', {"status": 200, "code": 97, "msg": ""}),
+                              ('中', {"status": 200, "code": 97, "msg": ""}),
+                              ('*', {"status": 200, "code": 97, "msg": ""}),
+                              ('1a', {"status": 200, "code": 97, "msg": ""}),
+                              ('1中', {"status": 200, "code": 97, "msg": ""}),
+                              ('%1%', {"status": 200, "code": 97, "msg": ""}),
+                              (' ', {"status": 200, "code": 97, "msg": ""}),
+                              ('', {"status": 200, "code": 97, "msg": ""}),
+                              (11111, {"status": 200, "code": '301', "msg": ""}),
+                              (0, {"status": 200, "code": '300', "msg": ""}),
+                              (-1, {"status": 200, "code": '300', "msg": ""}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": ""}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": ""})],
                              ids=["userId(超长值)", "userId(小数)", "userId(英文)", "userId(中文)",
                                   "userId(特殊字符)", "userId(数字英文)", "userId(数字中文)",
                                   "userId(数字特殊字符)", "userId(空格)", "userId(空)",
                                   "userId(1)", "userId(0)", "userId(-1)", "userId(超大)",
                                   "userId(超小)"])
-    def test_home_index_userid_wrong(self, userId, result):
-        """ Test wrong userId values (FT-HTJK-xxx-xxx).
+    def test_201002_home_index_userid_wrong(self, userId, result):
+        """ Test wrong userId values (FT-HTJK-201-002).
         :param userId: userId parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_home_index_userid_wrong ({}) ....".format(userId))
+        self.logger.info(".... Start test_201002_home_index_userid_wrong ({}) ....".format(userId))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -230,7 +230,6 @@ class TestHomeIndex(object):
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
                         assert rsp_content
-                        assert 'Set-Cookie' not in rsp_headers
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -251,39 +250,39 @@ class TestHomeIndex(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_home_index_userid_wrong ({}) ....".format(userId))
+            self.logger.info(".... End test_201002_home_index_userid_wrong ({}) ....".format(userId))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("错误token值")
-    @allure.testcase("FT-HTJK-xxx-xxx")
+    @allure.testcase("FT-HTJK-201-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1.5, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1a', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('1中', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('%1%', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (11111, {"status": 200, "code": '301', "msg": "该服务商已停止服务"}),
-                              (0, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (-1, {"status": 200, "code": '300', "msg": "提交信息无效"}),
-                              (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (-9223372036854775809, {"status": 200, "code": 97, "msg": "参数格式不正确"})],
+                             [('1' * 256, {"status": 200, "code": 97, "msg": ""}),
+                              (1.5, {"status": 200, "code": 97, "msg": ""}),
+                              ('a', {"status": 200, "code": 97, "msg": ""}),
+                              ('中', {"status": 200, "code": 97, "msg": ""}),
+                              ('*', {"status": 200, "code": 97, "msg": ""}),
+                              ('1a', {"status": 200, "code": 97, "msg": ""}),
+                              ('1中', {"status": 200, "code": 97, "msg": ""}),
+                              ('%1%', {"status": 200, "code": 97, "msg": ""}),
+                              (' ', {"status": 200, "code": 97, "msg": ""}),
+                              ('', {"status": 200, "code": 97, "msg": ""}),
+                              (11111, {"status": 200, "code": '301', "msg": ""}),
+                              (0, {"status": 200, "code": '300', "msg": ""}),
+                              (-1, {"status": 200, "code": '300', "msg": ""}),
+                              (9223372036854775808, {"status": 200, "code": 97, "msg": ""}),
+                              (-9223372036854775809, {"status": 200, "code": 97, "msg": ""})],
                              ids=["token(超长值)", "token(小数)", "token(英文)", "token(中文)",
                                   "token(特殊字符)", "token(数字英文)", "token(数字中文)",
                                   "token(数字特殊字符)", "token(空格)", "token(空)",
                                   "token(1)", "token(0)", "token(-1)", "token(超大)",
                                   "token(超小)"])
-    def test_home_index_token_wrong(self, token, result):
-        """ Test wrong token values (FT-HTJK-xxx-xxx).
+    def test_201003_home_index_token_wrong(self, token, result):
+        """ Test wrong token values (FT-HTJK-201-003).
         :param token: token parameter value.
         :param result: expect result.
         """
-        self.logger.info(".... Start test_home_index_token_wrong ({}) ....".format(token))
+        self.logger.info(".... Start test_201003_home_index_token_wrong ({}) ....".format(token))
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -330,7 +329,6 @@ class TestHomeIndex(object):
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
                         assert rsp_content
-                        assert 'Set-Cookie' not in rsp_headers
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -351,15 +349,15 @@ class TestHomeIndex(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_home_index_token_wrong ({}) ....".format(token))
+            self.logger.info(".... End test_201003_home_index_token_wrong ({}) ....".format(token))
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少userId参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_home_index_without_userid(self):
+    @allure.testcase("FT-HTJK-201-004")
+    def test_201004_home_index_without_userid(self):
         """ Test home index without userId parameters. """
-        self.logger.info(".... Start test_home_index_without_userid ....")
+        self.logger.info(".... Start test_201004_home_index_without_userid ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -406,7 +404,6 @@ class TestHomeIndex(object):
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
                         assert rsp_content
-                        assert 'Set-Cookie' not in rsp_headers.keys()
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -427,15 +424,15 @@ class TestHomeIndex(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_home_index_without_userid ....")
+            self.logger.info(".... End test_201004_home_index_without_userid ....")
             self.logger.info("")
 
     @allure.severity("critical")
     @allure.story("缺少token参数")
-    @allure.testcase("FT-HTJK-xxx-xxx")
-    def test_home_index_without_token(self):
+    @allure.testcase("FT-HTJK-201-005")
+    def test_201005_home_index_without_token(self):
         """ Test home index without token parameters. """
-        self.logger.info(".... Start test_home_index_without_token ....")
+        self.logger.info(".... Start test_201005_home_index_without_token ....")
         try:
             with allure.step("teststep1: user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
@@ -482,7 +479,6 @@ class TestHomeIndex(object):
                         allure.attach("response headers：", str(rsp_headers))
                         self.logger.info("response headers: {}".format(rsp_headers))
                         assert rsp_content
-                        assert 'Set-Cookie' not in rsp_headers.keys()
 
             with allure.step("teststep3: user logout."):
                 logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -503,10 +499,10 @@ class TestHomeIndex(object):
                 delete_result = self.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 self.logger.info("delete result: {0}".format(delete_result))
-            self.logger.info(".... End test_home_index_without_token ....")
+            self.logger.info(".... End test_201005_home_index_without_token ....")
             self.logger.info("")
 
 
 if __name__ == "__main__":
-    # pytest.main(['-s', 'test_H5_Home_Index.py'])
-    pytest.main(['-s', 'test_H5_Home_Index.py::TestHomeIndex::test_home_index_userid_wrong'])
+    pytest.main(['-s', 'test_H5_Home_Index.py'])
+    # pytest.main(['-s', 'test_H5_Home_Index.py::TestHomeIndex::test_201005_home_index_without_token'])
