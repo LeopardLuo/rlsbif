@@ -184,8 +184,8 @@ class TestGetUserInfo(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 1
-                assert '' in rsp_content["message"]
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -449,8 +449,8 @@ class TestGetUserInfo(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content['code'] == 201200
-                assert '拉取用户信息失败' in rsp_content['message']
+                assert rsp_content['code'] == 201001
+                assert '授权非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -503,5 +503,5 @@ class TestGetUserInfo(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Get_UserInfo.py'])
-    # pytest.main(['-s', 'test_APP_Get_UserInfo.py::TestGetUserInfo::test_106008_no_timestamp'])
+    # pytest.main(['-s', 'test_APP_Get_UserInfo.py'])
+    pytest.main(['-s', 'test_APP_Get_UserInfo.py::TestGetUserInfo::test_106002_get_userinfo_without_login'])

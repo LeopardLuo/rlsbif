@@ -69,12 +69,6 @@ class TestModifyPhoneCheckPhone(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
-        with allure.step("user logout."):
-            cls.httpclient.update_header({"authorization": cls.token})
-            logout_result = logout(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-            cls.httpclient.update_header({"authorization": None})
-            allure.attach("logout result", str(logout_result))
-            cls.logger.info("logout result: {0}".format(logout_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -91,7 +85,7 @@ class TestModifyPhoneCheckPhone(object):
         try:
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
-                        "imei": "460011234567890", "phone": "13511222668", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511222008", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 self.logger.info("register params: {0}".format(json))
@@ -103,7 +97,7 @@ class TestModifyPhoneCheckPhone(object):
                 self.token = register_result['token']
                 self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222668", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222008", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],self.logger)
@@ -113,7 +107,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222668', "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": '13511222008', "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -139,6 +133,12 @@ class TestModifyPhoneCheckPhone(object):
                 assert rsp_content["code"] == 1
                 assert not rsp_content['message']
                 assert rsp_content['result']['phone_token']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -205,6 +205,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201109
                 assert '当前手机号码与验证手机号不符' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -282,6 +288,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -369,6 +381,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -459,6 +477,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -545,6 +569,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -631,6 +661,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -707,6 +743,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert not rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -801,6 +843,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -867,6 +915,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -933,6 +987,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201001
                 assert '授权非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -999,6 +1059,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'phone值非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1065,6 +1131,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'sms_code值非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1131,6 +1203,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'code_token值非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1197,6 +1275,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1209,4 +1293,4 @@ class TestModifyPhoneCheckPhone(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py'])
-    # pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py::TestModifyPhoneCheckPhone::test_111009_timestamp_wrong'])
+    # pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py::TestModifyPhoneCheckPhone::test_111015_no_timestamp'])
