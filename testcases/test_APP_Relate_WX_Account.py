@@ -151,12 +151,12 @@ class TestRelateWXAccount(object):
     @allure.testcase("FT-HTJK-113-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 1001, {"status": 400, "code": 0, "msg": ""}),
-                              (25647141972344832, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
-                              (0, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
-                              (1, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
-                              (9223372036854775807, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
-                              (-1, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
-                              (1.5, {"status": 200, "code": 201103, "msg": "获取授权失败"}),
+                              (25647141972344832, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (1, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (9223372036854775807, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (-1, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (1.5, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
@@ -483,8 +483,8 @@ class TestRelateWXAccount(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 201103
-                    assert '获取授权失败' in rsp_content["message"]
+                    assert rsp_content["code"] == 201001
+                    assert '授权非法' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:
@@ -587,5 +587,5 @@ class TestRelateWXAccount(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Relate_WX_Account.py'])
-    pytest.main(['-s', 'test_APP_Relate_WX_Account.py::TestRelateWXAccount::test_113010_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Relate_WX_Account.py'])
+    # pytest.main(['-s', 'test_APP_Relate_WX_Account.py::TestRelateWXAccount::test_113010_no_timestamp'])

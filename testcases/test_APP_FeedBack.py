@@ -238,16 +238,16 @@ class TestFeedBack(object):
     @allure.testcase("FT-HTJK-120-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
-                              (9223372036854775807, {"status": 200, "code": 201100, "msg": "用户账户不存在"}),
-                              (1.0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
+                              (1, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (9223372036854775807, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (1.0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}),
                               ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(最小值)", "member_id(最大值)", "member_id(小数)",
                                   "member_id(中文)", "member_id(特殊字符)", "member_id(数字中文)",
@@ -679,8 +679,8 @@ class TestFeedBack(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'member_id值非法' in rsp_content["message"]
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content["message"]
 
             with allure.step("teststep5: query database records"):
                 table = 'sys_feedback'
@@ -727,24 +727,8 @@ class TestFeedBack(object):
                 allure.attach("Expect response code：", '200')
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
-                assert rsp.status_code == 200
-                rsp_content = rsp.json()
+                assert rsp.status_code == 500
 
-            with allure.step("teststep4: assert the response content"):
-                allure.attach("response content：", str(rsp_content))
-                self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content['code'] == 201100
-
-            with allure.step("teststep5: query database records"):
-                table = 'sys_feedback'
-                condition = ("member_id", self.member_id)
-                allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                self.logger.info("")
-                self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                select_result = self.mysql.execute_select_condition(table, condition)
-                allure.attach("query result", str(select_result))
-                self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

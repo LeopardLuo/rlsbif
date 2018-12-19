@@ -445,10 +445,10 @@ class TestGetRecognizeRecordList(object):
     @allure.testcase("FT-HTJK-122-004")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 1001, {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": "授权非法"}),
-                              (1, {"status": 200, "code": 101000, "msg": "授权非法"}),
-                              (9223372036854775807, {"status": 200, "code": 101000, "msg": "授权非法"}),
-                              (-1, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (1, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (9223372036854775807, {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (-1, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (1.5, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
@@ -680,8 +680,8 @@ class TestGetRecognizeRecordList(object):
     @allure.testcase("FT-HTJK-122-008")
     @pytest.mark.parametrize("page_size, result",
                              [(-1, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
-                              (0, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
-                              (21, {"status": 200, "code": 101000, "msg": "page_size值非法"}),
+                              (0, {"status": 200, "code": 1, "msg": ""}),
+                              (21, {"status": 200, "code": 1, "msg": ""}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -800,16 +800,16 @@ class TestGetRecognizeRecordList(object):
     @allure.story("错误orderby值")
     @allure.testcase("FT-HTJK-122-010")
     @pytest.mark.parametrize("orderby, result",
-                             [(0, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              (1, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('a' * 300, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              (1.0, {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('a', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('中', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('*', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('1a', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('1中', {"status": 200, "code": 0, "msg": "不是合法的排序字段"}),
-                              ('1*', {"status": 200, "code": 0, "msg": "不是合法的排序字段"})],
+                             [(0, {"status": 200, "code": 1, "msg": ""}),
+                              (1, {"status": 200, "code": 1, "msg": ""}),
+                              ('a' * 300, {"status": 200, "code": 1, "msg": ""}),
+                              (1.0, {"status": 200, "code": 1, "msg": ""}),
+                              ('a', {"status": 200, "code": 1, "msg": ""}),
+                              ('中', {"status": 200, "code": 1, "msg": ""}),
+                              ('*', {"status": 200, "code": 1, "msg": ""}),
+                              ('1a', {"status": 200, "code": 1, "msg": ""}),
+                              ('1中', {"status": 200, "code": 1, "msg": ""}),
+                              ('1*', {"status": 200, "code": 1, "msg": ""})],
                              ids=["orderby(0)", "orderby(1)", "orderby(超长值)", "orderby(1.0)",
                                   "orderby(字母)", "orderby(中文)", "orderby(特殊字符)", "orderby(数字字母)",
                                   "orderby(数字中文)", "orderby(数字特殊字符)"])
@@ -912,8 +912,8 @@ class TestGetRecognizeRecordList(object):
     @allure.story("错误search值")
     @allure.testcase("FT-HTJK-122-012")
     @pytest.mark.parametrize("search, result",
-                             [(1.5, {"status": 200, "code": 0, "msg": ""}),
-                              ('1*' * 100, {"status": 200, "code": 0, "msg": ""})],
+                             [(1.5, {"status": 200, "code": 1, "msg": ""}),
+                              ('1*' * 100, {"status": 200, "code": 1, "msg": ""})],
                              ids=["search(小数)", "search(超长值)"])
     def test_122012_search_wrong(self, search, result):
         """ Test wrong orderby values (超长值、1.0）(FT-HTJK-122-012).
@@ -1014,10 +1014,10 @@ class TestGetRecognizeRecordList(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-122-014")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (9223372036854775807, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (0, {"status": 200, "code": 0, "msg": "is invalid"}),
-                              (-1, {"status": 200, "code": 0, "msg": "is invalid"}),
+                             [(1, {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
+                              (0, {"status": 200, "code": 0, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (1.0, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -1148,7 +1148,7 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
+                assert rsp_content["code"] == 201001
                 assert '授权非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
@@ -1188,8 +1188,8 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content['message']
+                assert rsp_content["code"] == 1
+                assert rsp_content['result']['page']['page_index'] == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1228,8 +1228,8 @@ class TestGetRecognizeRecordList(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '' in rsp_content['message']
+                assert rsp_content["code"] == 1
+                assert rsp_content['result']['page']['page_size'] == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1361,5 +1361,5 @@ class TestGetRecognizeRecordList(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
+    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
+    # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
