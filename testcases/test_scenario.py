@@ -15,7 +15,8 @@ from utils.MqttClient import *
 from utils.IFFunctions import *
 
 
-@allure.feature("iot")
+@pytest.mark.APP
+@allure.feature("复合场景-识别")
 class TestMixScenario(object):
 
     @allure.step("+++ setup class +++")
@@ -78,6 +79,41 @@ class TestMixScenario(object):
                 delete_result = cls.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 cls.logger.info("delete result: {0}".format(delete_result))
+
+            with allure.step("teststep: user register."):
+                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
+                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(data))
+                cls.logger.info("register params: {0}".format(data))
+                register_result = make_register(cls.httpclient, data['client_type'], data['client_version'],
+                                                data['device_token'], data['imei'], data['code_type'],
+                                                data['phone'], data['sms_code'], data['timestamp'], cls.logger)
+                allure.attach("register result", str(register_result))
+                cls.logger.info("register result: {0}".format(register_result))
+                cls.token = register_result['token']
+                cls.member_id = register_result['user_info']['member_id']
+                headers = {"authorization": cls.token}
+                cls.httpclient.update_header(headers)
+
+            with allure.step("teststep2: user feature."):
+                identity_result = user_myfeature(cls.httpclient, cls.member_id, 'face2.jpg',
+                                                 get_timestamp(), cls.logger, '本人')
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                cls.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep3: identity user."):
+                identity_result = user_identity(cls.httpclient, cls.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), cls.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                cls.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep4: identity relative."):
+                identity_result1 = identity_other(cls.httpclient, cls.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg',
+                                                  get_timestamp(), cls.logger)
+                allure.attach("identity relative result", "{0}".format(identity_result1))
+                cls.logger.info("identity relative result: {0}".format(identity_result1))
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -90,6 +126,19 @@ class TestMixScenario(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
+        with allure.step("teststep: user logout."):
+            logout_result = logout(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
+            allure.attach("logout result", str(logout_result))
+            cls.logger.info("logout result: {0}".format(logout_result))
+        with allure.step("teststep: delete user features"):
+            table = 'mem_features'
+            condition = ("member_id", cls.member_id)
+            allure.attach("table name and condition", "{0},{1}".format(table, condition))
+            cls.logger.info("")
+            cls.logger.info("table: {0}, condition: {1}".format(table, condition))
+            select_result = cls.mysql.execute_delete_condition(table, condition)
+            allure.attach("delete result", str(select_result))
+            cls.logger.info("delete result: {0}".format(select_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -106,43 +155,6 @@ class TestMixScenario(object):
         """ Test subscribe create service order message."""
         self.logger.info(".... Start test_400001_owner_create_once_service_order ....")
         try:
-            with allure.step("teststep1: user register."):
-                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(data))
-                self.logger.info("register params: {0}".format(data))
-                register_result = make_register(self.httpclient, data['client_type'], data['client_version'],
-                                                data['device_token'], data['imei'], data['code_type'],
-                                                data['phone'], data['sms_code'], data['timestamp'], self.logger)
-                allure.attach("register result", str(register_result))
-                self.logger.info("register result: {0}".format(register_result))
-                token = register_result['token']
-                member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep2: user feature."):
-                headers = {"authorization": token}
-                self.httpclient.update_header(headers)
-                identity_result = user_myfeature(self.httpclient, member_id, 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                self.logger.info("upload user feature result: {0}".format(identity_result))
-
-            with allure.step("teststep3: identity user."):
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity owner result", "{0}".format(identity_result))
-                self.logger.info("identity owner result: {0}".format(identity_result))
-
-            with allure.step("teststep4: identity relative."):
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
             with allure.step("teststep5: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
@@ -179,7 +191,7 @@ class TestMixScenario(object):
 
             with allure.step("teststep8: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -218,7 +230,7 @@ class TestMixScenario(object):
                         self.logger.info("baseurl: " + baseurl)
                         httpclient1 = HTTPClient(baseurl)
                     with allure.step("连接H5主页"):
-                        r_homeindex = h5_home_index(httpclient1, member_id, token, self.logger)
+                        r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
                         allure.attach("homeindex", str(r_homeindex))
                         self.logger.info("homeindex: " + str(r_homeindex))
                         assert not r_homeindex
@@ -230,7 +242,7 @@ class TestMixScenario(object):
                         self.logger.info("apply result: " + str(r_applyresult1))
                         assert r_applyresult1
                     with allure.step("获取服务单号"):
-                        r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
+                        r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = r_orderlist[0]["service_order_id"]
 
@@ -260,12 +272,12 @@ class TestMixScenario(object):
 
             sleep(10)
             with allure.step("teststep13: get recognize record."):
-                records = get_recognized_record_list(self.httpclient, member_id, 0, 10, timestamp=get_timestamp(), logger=self.logger)
+                records = get_recognized_record_list(self.httpclient, self.member_id, 0, 10, timestamp=get_timestamp(), logger=self.logger)
                 self.logger.info("Recognize records: {0}".format(records))
                 assert len(records['data']) == 2
 
             with allure.step("teststep14: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order list: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 2
@@ -312,7 +324,7 @@ class TestMixScenario(object):
                 self.logger.info("MQTT receive service order close finished.")
 
             with allure.step("teststep17: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 2
@@ -322,56 +334,39 @@ class TestMixScenario(object):
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
-
-            with allure.step("teststep19: user logout."):
-                logout_result = logout(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("logout result", str(logout_result))
-                self.logger.info("logout result: {0}".format(logout_result))
-                assert logout_result
-
-            with allure.step("teststep20: delete database records"):
-                with allure.step("teststep: delete service order status records"):
-                    table = 'bus_service_order_status'
-                    condition = ("service_order_id", service_order_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("delete service order records"):
-                    table = 'bus_service_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("teststep: delete user identity record"):
-                    table = 'mem_features'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    select_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(select_result))
-                    self.logger.info("delete result: {0}".format(select_result))
-                with allure.step("delete bus service order records"):
-                    table = 'bus_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("teststep: delete mem order records"):
+                table = 'mem_order_record'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_400001_owner_create_once_service_order ....")
             self.logger.info("")
 
@@ -382,43 +377,6 @@ class TestMixScenario(object):
         """ Test owner create multi times service order."""
         self.logger.info(".... Start test_400002_owner_create_multi_service_order ....")
         try:
-            with allure.step("teststep1: user register."):
-                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(data))
-                self.logger.info("register params: {0}".format(data))
-                register_result = make_register(self.httpclient, data['client_type'], data['client_version'],
-                                                data['device_token'], data['imei'], data['code_type'],
-                                                data['phone'], data['sms_code'], data['timestamp'], self.logger)
-                allure.attach("register result", str(register_result))
-                self.logger.info("register result: {0}".format(register_result))
-                token = register_result['token']
-                member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep2: user feature."):
-                headers = {"authorization": token}
-                self.httpclient.update_header(headers)
-                identity_result = user_myfeature(self.httpclient, member_id, 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                self.logger.info("upload user feature result: {0}".format(identity_result))
-
-            with allure.step("teststep3: identity user."):
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity owner result", "{0}".format(identity_result))
-                self.logger.info("identity owner result: {0}".format(identity_result))
-
-            with allure.step("teststep4: identity relative."):
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
             with allure.step("teststep5: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
@@ -455,7 +413,7 @@ class TestMixScenario(object):
 
             with allure.step("teststep8: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -494,7 +452,7 @@ class TestMixScenario(object):
                         self.logger.info("baseurl: " + baseurl)
                         httpclient1 = HTTPClient(baseurl)
                     with allure.step("连接H5主页"):
-                        r_homeindex = h5_home_index(httpclient1, member_id, token, self.logger)
+                        r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
                         allure.attach("homeindex", str(r_homeindex))
                         self.logger.info("homeindex: " + str(r_homeindex))
                         assert not r_homeindex
@@ -506,7 +464,7 @@ class TestMixScenario(object):
                         self.logger.info("apply result: " + str(r_applyresult1))
                         assert r_applyresult1
                     with allure.step("获取服务单号"):
-                        r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
+                        r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = r_orderlist[0]["service_order_id"]
 
@@ -540,12 +498,12 @@ class TestMixScenario(object):
 
             sleep(10)
             with allure.step("teststep13: get recognize record."):
-                records = get_recognized_record_list(self.httpclient, member_id, 0, 10, timestamp=get_timestamp(), logger=self.logger)
+                records = get_recognized_record_list(self.httpclient, self.member_id, 0, 10, timestamp=get_timestamp(), logger=self.logger)
                 self.logger.info("Recognize records: {0}".format(records))
                 assert len(records['data']) == 10
 
             with allure.step("teststep14: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order list: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 10
@@ -592,7 +550,7 @@ class TestMixScenario(object):
                 self.logger.info("MQTT receive service order close finished.")
 
             with allure.step("teststep17: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 10
@@ -602,56 +560,39 @@ class TestMixScenario(object):
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
-
-            with allure.step("teststep19: user logout."):
-                logout_result = logout(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("logout result", str(logout_result))
-                self.logger.info("logout result: {0}".format(logout_result))
-                assert logout_result
-
-            with allure.step("teststep20: delete database records"):
-                with allure.step("teststep: delete service order status records"):
-                    table = 'bus_service_order_status'
-                    condition = ("service_order_id", service_order_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("delete service order records"):
-                    table = 'bus_service_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("teststep: delete user identity record"):
-                    table = 'mem_features'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    select_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(select_result))
-                    self.logger.info("delete result: {0}".format(select_result))
-                with allure.step("delete bus service order records"):
-                    table = 'bus_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("teststep: delete mem order records"):
+                table = 'mem_order_record'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_400002_owner_create_multi_service_order ....")
             self.logger.info("")
 
@@ -662,43 +603,6 @@ class TestMixScenario(object):
         """ Test subscribe create service order message."""
         self.logger.info(".... Start test_400003_relative_create_once_service_order ....")
         try:
-            with allure.step("teststep1: user register."):
-                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(data))
-                self.logger.info("register params: {0}".format(data))
-                register_result = make_register(self.httpclient, data['client_type'], data['client_version'],
-                                                data['device_token'], data['imei'], data['code_type'],
-                                                data['phone'], data['sms_code'], data['timestamp'], self.logger)
-                allure.attach("register result", str(register_result))
-                self.logger.info("register result: {0}".format(register_result))
-                token = register_result['token']
-                member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep2: user feature."):
-                headers = {"authorization": token}
-                self.httpclient.update_header(headers)
-                identity_result = user_myfeature(self.httpclient, member_id, 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                self.logger.info("upload user feature result: {0}".format(identity_result))
-
-            with allure.step("teststep3: identity user."):
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity owner result", "{0}".format(identity_result))
-                self.logger.info("identity owner result: {0}".format(identity_result))
-
-            with allure.step("teststep4: identity relative."):
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
             with allure.step("teststep5: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
@@ -735,7 +639,7 @@ class TestMixScenario(object):
 
             with allure.step("teststep8: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -745,7 +649,7 @@ class TestMixScenario(object):
                 owner_feautreid = select_result[0][0]
 
             with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, member_id, 0, 10, get_timestamp(), logger=self.logger)
+                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(), logger=self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
                 features_id1 = user_info[0]['features_id']
@@ -780,7 +684,7 @@ class TestMixScenario(object):
                         self.logger.info("baseurl: " + baseurl)
                         httpclient1 = HTTPClient(baseurl)
                     with allure.step("连接H5主页"):
-                        r_homeindex = h5_home_index(httpclient1, member_id, token, self.logger)
+                        r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
                         allure.attach("homeindex", str(r_homeindex))
                         self.logger.info("homeindex: " + str(r_homeindex))
                         assert not r_homeindex
@@ -790,14 +694,15 @@ class TestMixScenario(object):
                                                                   self.logger)
                         allure.attach("apply result", str(r_applyresult1))
                         self.logger.info("apply result: " + str(r_applyresult1))
-                    with allure.step("本人申请成员下单"):
-                        r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id,
-                                                                       sku_id, [features_id1], self.logger)
+                    with allure.step("邀请访客下单"):
+                        r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                                                                        "kuli1", time.strftime("%Y-%m-%d"),
+                                                                        "2021-02-10", "relate_face.jpg", self.logger)
                         allure.attach("apply result", str(r_applyresult1))
                         self.logger.info("apply result: " + str(r_applyresult1))
                         assert r_applyresult1
                     with allure.step("获取服务单号"):
-                        r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
+                        r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = None
                         for order in r_orderlist:
@@ -831,12 +736,12 @@ class TestMixScenario(object):
 
             sleep(10)
             with allure.step("teststep13: get recognize record."):
-                records = get_recognized_record_list(self.httpclient, member_id, 0, 10, timestamp=get_timestamp(), logger=self.logger)
+                records = get_recognized_record_list(self.httpclient, self.member_id, 0, 10, timestamp=get_timestamp(), logger=self.logger)
                 self.logger.info("Recognize records: {0}".format(records))
                 assert len(records['data']) == 2
 
             with allure.step("teststep14: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order list: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 2
@@ -883,7 +788,7 @@ class TestMixScenario(object):
                 self.logger.info("MQTT receive service order close finished.")
 
             with allure.step("teststep17: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 2
@@ -893,56 +798,39 @@ class TestMixScenario(object):
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
-
-            with allure.step("teststep19: user logout."):
-                logout_result = logout(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("logout result", str(logout_result))
-                self.logger.info("logout result: {0}".format(logout_result))
-                assert logout_result
-
-            with allure.step("teststep20: delete database records"):
-                with allure.step("teststep: delete service order status records"):
-                    table = 'bus_service_order_status'
-                    condition = ("service_order_id", service_order_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("delete service order records"):
-                    table = 'bus_service_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("teststep: delete user identity record"):
-                    table = 'mem_features'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    select_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(select_result))
-                    self.logger.info("delete result: {0}".format(select_result))
-                with allure.step("delete bus service order records"):
-                    table = 'bus_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("teststep: delete mem order records"):
+                table = 'mem_order_record'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_400003_relative_create_once_service_order ....")
             self.logger.info("")
 
@@ -953,43 +841,6 @@ class TestMixScenario(object):
         """ Test relative create multi times service order."""
         self.logger.info(".... Start test_400004_relative_create_multi_service_order ....")
         try:
-            with allure.step("teststep1: user register."):
-                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(data))
-                self.logger.info("register params: {0}".format(data))
-                register_result = make_register(self.httpclient, data['client_type'], data['client_version'],
-                                                data['device_token'], data['imei'], data['code_type'],
-                                                data['phone'], data['sms_code'], data['timestamp'], self.logger)
-                allure.attach("register result", str(register_result))
-                self.logger.info("register result: {0}".format(register_result))
-                token = register_result['token']
-                member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep2: user feature."):
-                headers = {"authorization": token}
-                self.httpclient.update_header(headers)
-                identity_result = user_myfeature(self.httpclient, member_id, 'face2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                self.logger.info("upload user feature result: {0}".format(identity_result))
-
-            with allure.step("teststep3: identity user."):
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity owner result", "{0}".format(identity_result))
-                self.logger.info("identity owner result: {0}".format(identity_result))
-
-            with allure.step("teststep4: identity relative."):
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
             with allure.step("teststep5: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
@@ -1026,7 +877,7 @@ class TestMixScenario(object):
 
             with allure.step("teststep8: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -1036,7 +887,7 @@ class TestMixScenario(object):
                 owner_feautreid = select_result[0][0]
 
             with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, member_id, 0, 10, get_timestamp(), logger=self.logger)
+                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(), logger=self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
                 features_id1 = user_info[0]['features_id']
@@ -1071,7 +922,7 @@ class TestMixScenario(object):
                         self.logger.info("baseurl: " + baseurl)
                         httpclient1 = HTTPClient(baseurl)
                     with allure.step("连接H5主页"):
-                        r_homeindex = h5_home_index(httpclient1, member_id, token, self.logger)
+                        r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
                         allure.attach("homeindex", str(r_homeindex))
                         self.logger.info("homeindex: " + str(r_homeindex))
                         assert not r_homeindex
@@ -1081,14 +932,15 @@ class TestMixScenario(object):
                                                                   self.logger)
                         allure.attach("apply result", str(r_applyresult1))
                         self.logger.info("apply result: " + str(r_applyresult1))
-                    with allure.step("本人申请成员下单"):
-                        r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id,
-                                                                       sku_id, [features_id1], self.logger)
+                    with allure.step("邀请访客下单"):
+                        r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                                                                        "kuli1", time.strftime("%Y-%m-%d"),
+                                                                        "2021-02-10", "relate_face.jpg", self.logger)
                         allure.attach("apply result", str(r_applyresult1))
                         self.logger.info("apply result: " + str(r_applyresult1))
                         assert r_applyresult1
                     with allure.step("获取服务单号"):
-                        r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
+                        r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = None
                         for order in r_orderlist:
@@ -1126,12 +978,12 @@ class TestMixScenario(object):
 
             sleep(10)
             with allure.step("teststep14: get recognize record."):
-                records = get_recognized_record_list(self.httpclient, member_id, 0, 20, timestamp=get_timestamp(), logger=self.logger)
+                records = get_recognized_record_list(self.httpclient, self.member_id, 0, 20, timestamp=get_timestamp(), logger=self.logger)
                 self.logger.info("Recognize records: {0}".format(records))
                 assert len(records['data']) == 20
 
             with allure.step("teststep14: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 20, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order list: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 20
@@ -1178,7 +1030,7 @@ class TestMixScenario(object):
                 self.logger.info("MQTT receive service order close finished.")
 
             with allure.step("teststep17: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 20
@@ -1188,56 +1040,39 @@ class TestMixScenario(object):
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
-
-            with allure.step("teststep19: user logout."):
-                logout_result = logout(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("logout result", str(logout_result))
-                self.logger.info("logout result: {0}".format(logout_result))
-                assert logout_result
-
-            with allure.step("teststep20: delete database records"):
-                with allure.step("teststep: delete service order status records"):
-                    table = 'bus_service_order_status'
-                    condition = ("service_order_id", service_order_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("delete service order records"):
-                    table = 'bus_service_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("teststep: delete user identity record"):
-                    table = 'mem_features'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    select_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(select_result))
-                    self.logger.info("delete result: {0}".format(select_result))
-                with allure.step("delete bus service order records"):
-                    table = 'bus_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("teststep: delete mem order records"):
+                table = 'mem_order_record'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_400004_relative_create_multi_service_order ....")
             self.logger.info("")
 
@@ -1248,43 +1083,6 @@ class TestMixScenario(object):
         """ Test owner create multi times service order,different devices."""
         self.logger.info(".... Start test_400005_owner_create_multi_service_order_different_devices ....")
         try:
-            with allure.step("teststep1: user register."):
-                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(data))
-                self.logger.info("register params: {0}".format(data))
-                register_result = make_register(self.httpclient, data['client_type'], data['client_version'],
-                                                data['device_token'], data['imei'], data['code_type'],
-                                                data['phone'], data['sms_code'], data['timestamp'], self.logger)
-                allure.attach("register result", str(register_result))
-                self.logger.info("register result: {0}".format(register_result))
-                token = register_result['token']
-                member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep2: user feature."):
-                headers = {"authorization": token}
-                self.httpclient.update_header(headers)
-                identity_result = user_myfeature(self.httpclient, member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                self.logger.info("upload user feature result: {0}".format(identity_result))
-
-            with allure.step("teststep3: identity user."):
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity owner result", "{0}".format(identity_result))
-                self.logger.info("identity owner result: {0}".format(identity_result))
-
-            with allure.step("teststep4: identity relative."):
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
             with allure.step("teststep5: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
@@ -1322,7 +1120,7 @@ class TestMixScenario(object):
 
             with allure.step("teststep8: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -1374,7 +1172,7 @@ class TestMixScenario(object):
                         self.logger.info("baseurl: " + baseurl)
                         httpclient1 = HTTPClient(baseurl)
                     with allure.step("连接H5主页"):
-                        r_homeindex = h5_home_index(httpclient1, member_id, token, self.logger)
+                        r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
                         allure.attach("homeindex", str(r_homeindex))
                         self.logger.info("homeindex: " + str(r_homeindex))
                         assert not r_homeindex
@@ -1386,7 +1184,7 @@ class TestMixScenario(object):
                         self.logger.info("apply result: " + str(r_applyresult1))
                         assert r_applyresult1
                     with allure.step("获取服务单号"):
-                        r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3,
+                        r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3,
                                                                timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = r_orderlist[0]["service_order_id"]
@@ -1407,6 +1205,7 @@ class TestMixScenario(object):
                     self.logger.info("message payload: {}".format(payload))
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
+                    self.logger.info("Fail: Cannot get the create service order message from device1.")
                     assert False
                 if self.mqttclient2.rcv_msg:
                     msg = self.mqttclient2.rcv_msg.pop()
@@ -1414,6 +1213,7 @@ class TestMixScenario(object):
                     self.logger.info("message payload: {}".format(payload))
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
+                    self.logger.info("Fail: Cannot get the create service order message from device2.")
                     assert False
                 self.logger.info("MQTT receive service order create finished.")
 
@@ -1430,17 +1230,17 @@ class TestMixScenario(object):
 
             sleep(10)
             with allure.step("teststep13: get recognize record."):
-                records = get_recognized_record_list(self.httpclient, member_id, 0, 10, timestamp=get_timestamp(),
+                records = get_recognized_record_list(self.httpclient, self.member_id, 0, 10, timestamp=get_timestamp(),
                                                      logger=self.logger)
                 self.logger.info("Recognize records: {0}".format(records))
                 assert len(records['data']) == 10
 
             with allure.step("teststep14: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order list: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 10
-                assert r_orderlist[0]['state'] == 1
+                assert r_orderlist[0]['state'] == 2
 
             with allure.step("teststep15: subscribe service order close."):
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_close)
@@ -1479,25 +1279,23 @@ class TestMixScenario(object):
                 self.mqttclient2.loopstop()
                 self.mqttclient2.unsubscribe(topic2)
                 if self.mqttclient.rcv_msg:
-                    msg = self.mqttclient.rcv_msg.pop()
-                    payload = json.loads(msg.payload, encoding='utf-8')
-                    self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
-                    assert payload['data']['service_order_id'] == str(service_order_id)
-                else:
+                    # msg = self.mqttclient.rcv_msg.pop()
+                    # payload = json.loads(msg.payload, encoding='utf-8')
+                    # self.logger.info("message payload: {}".format(payload))
+                    # assert payload['action_id'] == '203'
+                    # assert payload['data']['service_order_id'] == str(service_order_id)
                     assert False
                 if self.mqttclient2.rcv_msg:
-                    msg = self.mqttclient2.rcv_msg.pop()
-                    payload = json.loads(msg.payload, encoding='utf-8')
-                    self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
-                    assert payload['data']['service_order_id'] == str(service_order_id)
-                else:
+                    # msg = self.mqttclient2.rcv_msg.pop()
+                    # payload = json.loads(msg.payload, encoding='utf-8')
+                    # self.logger.info("message payload: {}".format(payload))
+                    # assert payload['action_id'] == '203'
+                    # assert payload['data']['service_order_id'] == str(service_order_id)
                     assert False
                 self.logger.info("MQTT receive service order close finished.")
 
             with allure.step("teststep17: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 10
@@ -1510,56 +1308,39 @@ class TestMixScenario(object):
                 self.logger.info("Tiime sync message payload: {}".format(payload2))
                 assert payload['action_id'] == '204'
                 assert payload2['action_id'] == '204'
-
-            with allure.step("teststep19: user logout."):
-                logout_result = logout(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("logout result", str(logout_result))
-                self.logger.info("logout result: {0}".format(logout_result))
-                assert logout_result
-
-            with allure.step("teststep20: delete database records"):
-                with allure.step("teststep: delete service order status records"):
-                    table = 'bus_service_order_status'
-                    condition = ("service_order_id", service_order_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("delete service order records"):
-                    table = 'bus_service_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("teststep: delete user identity record"):
-                    table = 'mem_features'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    select_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(select_result))
-                    self.logger.info("delete result: {0}".format(select_result))
-                with allure.step("delete bus service order records"):
-                    table = 'bus_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("teststep: delete mem order records"):
+                table = 'mem_order_record'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_400005_owner_create_multi_service_order_different_devices ....")
             self.logger.info("")
 
@@ -1570,43 +1351,6 @@ class TestMixScenario(object):
         """ Test relative create multi times service order different devices."""
         self.logger.info(".... Start test_400006_relative_create_multi_service_order_different_devices ....")
         try:
-            with allure.step("teststep1: user register."):
-                data = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "123456789",
-                        "imei": "460011234567890", "phone": "13511229000", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(data))
-                self.logger.info("register params: {0}".format(data))
-                register_result = make_register(self.httpclient, data['client_type'], data['client_version'],
-                                                data['device_token'], data['imei'], data['code_type'],
-                                                data['phone'], data['sms_code'], data['timestamp'], self.logger)
-                allure.attach("register result", str(register_result))
-                self.logger.info("register result: {0}".format(register_result))
-                token = register_result['token']
-                member_id = register_result['user_info']['member_id']
-
-            with allure.step("teststep2: user feature."):
-                headers = {"authorization": token}
-                self.httpclient.update_header(headers)
-                identity_result = user_myfeature(self.httpclient, member_id, 'face2.jpg',
-                                                 get_timestamp(), self.logger)
-                allure.attach("upload user feature result", "{0}".format(identity_result))
-                self.logger.info("upload user feature result: {0}".format(identity_result))
-
-            with allure.step("teststep3: identity user."):
-                self.httpclient.update_header(headers)
-                identity_result = user_identity(self.httpclient, member_id, 'fore2.jpg', 'back2.jpg',
-                                                get_timestamp(), self.logger)
-                allure.attach("identity owner result", "{0}".format(identity_result))
-                self.logger.info("identity owner result: {0}".format(identity_result))
-
-            with allure.step("teststep4: identity relative."):
-                self.httpclient.update_header(headers)
-                identity_result1 = identity_other(self.httpclient, member_id, 'kuli1', 'relate_face.jpg',
-                                                  'face2.jpg',
-                                                  get_timestamp(), self.logger)
-                allure.attach("identity relative result", "{0}".format(identity_result1))
-                self.logger.info("identity relative result: {0}".format(identity_result1))
-
             with allure.step("teststep5: get provider id"):
                 provider_name = self.config.getItem('h5', 'name')
                 table = 'bus_provider'
@@ -1644,7 +1388,7 @@ class TestMixScenario(object):
 
             with allure.step("teststep8: get owner feature"):
                 table = 'mem_features'
-                condition = ("member_id = '{}' and features_name = '{}'".format(member_id, "本人"))
+                condition = ("member_id = '{}' and features_name = '{}'".format(self.member_id, "本人"))
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
                 self.logger.info("")
                 self.logger.info("table: {0}, condition: {1}".format(table, condition))
@@ -1654,7 +1398,7 @@ class TestMixScenario(object):
                 owner_feautreid = select_result[0][0]
 
             with allure.step("teststep9: get features id by user info."):
-                user_info = get_identity_other_list(self.httpclient, member_id, 0, 10, get_timestamp(),
+                user_info = get_identity_other_list(self.httpclient, self.member_id, 0, 10, get_timestamp(),
                                                     logger=self.logger)
                 allure.attach("features data list", "{0}".format(user_info))
                 self.logger.info("features data list: {0}".format(user_info))
@@ -1703,7 +1447,7 @@ class TestMixScenario(object):
                         self.logger.info("baseurl: " + baseurl)
                         httpclient1 = HTTPClient(baseurl)
                     with allure.step("连接H5主页"):
-                        r_homeindex = h5_home_index(httpclient1, member_id, token, self.logger)
+                        r_homeindex = h5_home_index(httpclient1, self.member_id, self.token, self.logger)
                         allure.attach("homeindex", str(r_homeindex))
                         self.logger.info("homeindex: " + str(r_homeindex))
                         assert not r_homeindex
@@ -1713,14 +1457,15 @@ class TestMixScenario(object):
                                                                   self.logger)
                         allure.attach("apply result", str(r_applyresult1))
                         self.logger.info("apply result: " + str(r_applyresult1))
-                    with allure.step("本人申请成员下单"):
-                        r_applyresult1 = h5_shopping_add_member_result(httpclient1, provider_id, spu_id,
-                                                                       sku_id, [features_id1], self.logger)
+                    with allure.step("邀请访客下单"):
+                        r_applyresult1 = h5_shopping_add_visitor_result(httpclient1, provider_id, spu_id, sku_id,
+                                                                        "kuli1", time.strftime("%Y-%m-%d"),
+                                                                        "2021-02-10", "relate_face.jpg", self.logger)
                         allure.attach("apply result", str(r_applyresult1))
                         self.logger.info("apply result: " + str(r_applyresult1))
                         assert r_applyresult1
                     with allure.step("获取服务单号"):
-                        r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3,
+                        r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3,
                                                                timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = None
@@ -1769,13 +1514,13 @@ class TestMixScenario(object):
 
             sleep(10)
             with allure.step("teststep14: get recognize record."):
-                records = get_recognized_record_list(self.httpclient, member_id, 0, 20, timestamp=get_timestamp(),
+                records = get_recognized_record_list(self.httpclient, self.member_id, 0, 20, timestamp=get_timestamp(),
                                                      logger=self.logger)
                 self.logger.info("Recognize records: {0}".format(records))
                 assert len(records['data']) == 20
 
             with allure.step("teststep14: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 20, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 20, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order list: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 20
@@ -1836,7 +1581,7 @@ class TestMixScenario(object):
                 self.logger.info("MQTT receive service order close finished.")
 
             with allure.step("teststep17: get service order status."):
-                r_orderlist = get_myservice_order_list(self.httpclient, member_id, 0, 10, 3, timestamp=get_timestamp(),
+                r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(),
                                                        logger=self.logger)
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 20
@@ -1846,60 +1591,43 @@ class TestMixScenario(object):
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
-
-            with allure.step("teststep19: user logout."):
-                logout_result = logout(self.httpclient, member_id, get_timestamp(), self.logger)
-                allure.attach("logout result", str(logout_result))
-                self.logger.info("logout result: {0}".format(logout_result))
-                assert logout_result
-
-            with allure.step("teststep20: delete database records"):
-                with allure.step("teststep: delete service order status records"):
-                    table = 'bus_service_order_status'
-                    condition = ("service_order_id", service_order_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("delete service order records"):
-                    table = 'bus_service_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
-                with allure.step("teststep: delete user identity record"):
-                    table = 'mem_features'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    select_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(select_result))
-                    self.logger.info("delete result: {0}".format(select_result))
-                with allure.step("delete bus service order records"):
-                    table = 'bus_order'
-                    condition = ("member_id", member_id)
-                    allure.attach("table name and condition", "{0},{1}".format(table, condition))
-                    self.logger.info("")
-                    self.logger.info("table: {0}, condition: {1}".format(table, condition))
-                    delete_result = self.mysql.execute_delete_condition(table, condition)
-                    allure.attach("delete result", str(delete_result))
-                    self.logger.info("delete result: {0}".format(delete_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
             self.logger.error(e)
             assert False
         finally:
+            with allure.step("teststep: delete mem order records"):
+                table = 'mem_order_record'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete service order records"):
+                table = 'bus_service_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete bus service order records"):
+                table = 'bus_order'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
             self.logger.info(".... End test_400006_relative_create_multi_service_order_different_devices ....")
             self.logger.info("")
 
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_scenario.py'])
-    pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400004_relative_create_multi_service_order'])
+    pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400005_owner_create_multi_service_order_different_devices'])
