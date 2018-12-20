@@ -149,6 +149,8 @@ class MqttClient(object):
         """  清空消息队列。"""
         while not self.__rcv_msg.empty():
             self.__rcv_msg.get()
+        if self.msgs:
+            self.msgs.clear()
 
     def close(self):
         """ 关闭MQTT客户端的连接。"""
