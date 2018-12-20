@@ -15,7 +15,7 @@ from utils.MqttClient import *
 from utils.IFFunctions import *
 
 
-@pytest.mark.APP
+@pytest.mark.IOT
 @allure.feature("复合场景-识别")
 class TestMixScenario(object):
 
@@ -670,6 +670,7 @@ class TestMixScenario(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep11: subscribe service order create."):
+                self.mqttclient.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_create)
                 self.logger.info("topic: {0}".format(topic))
                 self.mqttclient.subscribe(topic, 1)
@@ -748,6 +749,7 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 1
 
             with allure.step("teststep15: subscribe service order close."):
+                self.mqttclient.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_close)
                 self.logger.info("topic: {0}".format(topic))
                 self.mqttclient.subscribe(topic, 1)
@@ -795,6 +797,7 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 2
 
             with allure.step("teststep18: subscribe sync time."):
+                self.mqttclient.clear()
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
@@ -908,6 +911,7 @@ class TestMixScenario(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep11: subscribe service order create."):
+                self.mqttclient.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_create)
                 self.logger.info("topic: {0}".format(topic))
                 self.mqttclient.subscribe(topic, 1)
@@ -990,6 +994,7 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 1
 
             with allure.step("teststep15: subscribe service order close."):
+                self.mqttclient.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_close)
                 self.logger.info("topic: {0}".format(topic))
                 self.mqttclient.subscribe(topic, 1)
@@ -1037,6 +1042,7 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 2
 
             with allure.step("teststep18: subscribe sync time."):
+                self.mqttclient.clear()
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
@@ -1155,6 +1161,8 @@ class TestMixScenario(object):
                     devices_ids.append(select_result2[0][0])
 
             with allure.step("teststep10: subscribe service order create."):
+                self.mqttclient.clear()
+                self.mqttclient2.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_create)
                 topic2 = "/{0}/{1}/{2}".format(self.productkey2, self.devicename2, self.order_create)
                 self.logger.info("topic: {0}".format(topic))
@@ -1191,7 +1199,7 @@ class TestMixScenario(object):
 
                 end_time = int(time.time())
                 during = end_time - start_time
-                while (not self.mqttclient.rcv_msg) and (not self.mqttclient2.rcv_msg) and during < 60:
+                while (not self.mqttclient.rcv_msg) or (not self.mqttclient2.rcv_msg) and during < 60:
                     sleep(5)
                     end_time = int(time.time())
                     during = end_time - start_time
@@ -1243,6 +1251,8 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 2
 
             with allure.step("teststep15: subscribe service order close."):
+                self.mqttclient.clear()
+                self.mqttclient2.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_close)
                 topic2 = "/{0}/{1}/{2}".format(self.productkey2, self.devicename2, self.order_close)
                 self.logger.info("topic: {0}".format(topic))
@@ -1302,6 +1312,8 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 2
 
             with allure.step("teststep18: subscribe sync time."):
+                self.mqttclient.clear()
+                self.mqttclient2.clear()
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 payload2 = iot_publish_SyncTime(self.mqttclient2, self.productkey2, self.devicename2, 1, logger=self.logger)
@@ -1430,6 +1442,8 @@ class TestMixScenario(object):
                     devices_ids.append(select_result2[0][0])
 
             with allure.step("teststep11: subscribe service order create."):
+                self.mqttclient.clear()
+                self.mqttclient2.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_create)
                 topic2 = "/{0}/{1}/{2}".format(self.productkey2, self.devicename2, self.order_create)
                 self.logger.info("topic: {0}".format(topic))
@@ -1527,6 +1541,8 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 1
 
             with allure.step("teststep15: subscribe service order close."):
+                self.mqttclient.clear()
+                self.mqttclient2.clear()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_close)
                 topic2 = "/{0}/{1}/{2}".format(self.productkey2, self.devicename2, self.order_close)
                 self.logger.info("topic: {0}".format(topic))
@@ -1588,6 +1604,8 @@ class TestMixScenario(object):
                 assert r_orderlist[0]['state'] == 2
 
             with allure.step("teststep18: subscribe sync time."):
+                self.mqttclient.clear()
+                self.mqttclient2.clear()
                 payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
                 self.logger.info("Tiime sync message payload: {}".format(payload))
                 assert payload['action_id'] == '204'
@@ -1629,5 +1647,5 @@ class TestMixScenario(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_scenario.py'])
-    pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400005_owner_create_multi_service_order_different_devices'])
+    pytest.main(['-s', 'test_scenario.py'])
+    # pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400005_owner_create_multi_service_order_different_devices'])
