@@ -85,7 +85,7 @@ class TestServiceOrderClose(object):
                 cls.logger.info("query result: {0}".format(select_result))
                 cls.spu_id = select_result[0][0]
             with allure.step("get sku id"):
-                sku_name = cls.config.getItem('sku', 'single_time_or_count')
+                sku_name = cls.config.getItem('sku', 'single_count')
                 table = 'bus_sku'
                 condition = ("name", sku_name)
                 allure.attach("table name and condition", "{0},{1}".format(table, condition))
@@ -425,8 +425,67 @@ class TestServiceOrderClose(object):
             self.logger.info(".... End test_003035_get_payload_timestamp_after_closed ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("服务单次数达到限定值时，服务单自动关闭")
+    @allure.testcase("FT-HTJK-003-036")
+    def test_003036_service_order_closed_after_in_count_enough(self):
+        self.logger.info(".... start test_003036_service_order_closed_after_in_count_enough ....")
+        topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
+        try:
+            with allure.step("teststep1: subscribe the topic."):
+                self.mqtt_client.subscribe(topic)
+                self.mqtt_client.loopstart()
+                self.logger.info("subscribe topic succeed!")
+            with allure.step("teststep2:report the service order status"):
+                self.logger.info("report the service order status.")
+                for i in range(5):
+                    self.logger.info("")
+                    self.logger.info("Publish service order report {} times.".format(i))
+                    iot_publish_ServiceOrderReport(self.mqtt_client, self.ProductKey, self.DeviceName, self.service_order_id,
+                                                   self.device_id, 1, 1, logger=self.logger)
+                    sleep(3)
+                    iot_publish_ServiceOrderReport(self.mqtt_client, self.ProductKey, self.DeviceName, self.service_order_id,
+                                                   self.device_id, 0, 1, logger=self.logger)
+                    sleep(3)
+                time.sleep(5)
+            with allure.step("teststep3:assert the action_id in payload"):
+                start_time = datetime.datetime.now()
+                while not self.mqtt_client.rcv_msg:
+                    time.sleep(5)
+                    end_time = datetime.datetime.now()
+                    during = (end_time - start_time).seconds
+                    if during > 60:
+                        self.logger.error("no iot msg received")
+                        assert False
+                # time.sleep(5)
+                mqtt_msg = self.mqtt_client.rcv_msg.pop()
+                msg_payload = mqtt_msg.payload.decode('utf-8')
+                msg_payload_dict = json.loads(msg_payload)
+                action_id = msg_payload_dict["action_id"]
+                service_order_id_payload = msg_payload_dict["data"]["service_order_id"]
+                allure.attach("Expect service_order_id:", str(self.service_order_id))
+                allure.attach("Actual service_order_id:", str(service_order_id_payload))
+                self.logger.info("Actual payload:{0}".format(msg_payload))
+                self.logger.info("Actual service_order_id:{0}".format(service_order_id_payload))
+                allure.attach("Expect action id:", str(203))
+                allure.attach("Actual action id:", str(action_id))
+                assert int(service_order_id_payload) == self.service_order_id
+                self.logger.info("Actual payload:{0}".format(msg_payload))
+                self.logger.info("Actual action id:{0}".format(action_id))
+                assert action_id == "203"
+        except Exception as e:
+            allure.attach("Exception: ", "{0}".format(e))
+            self.logger.error("Error: exception ocurr: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.mqtt_client.unsubscribe(topic)
+            self.mqtt_client.loopstop()
+            self.logger.info(".... End test_003036_service_order_closed_after_in_count_enough ....")
+            self.logger.info("")
+
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])
     pytest.main(
-        ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003033_get_payload_action_id_after_closed'])
+        ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003036_service_order_closed_after_in_count_enough'])
