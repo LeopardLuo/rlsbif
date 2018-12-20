@@ -79,10 +79,10 @@ class TestDeviceErrorReport(object):
         self.logger.info("Add some datas to database.")
         with allure.step("delete device error log"):
             table = 'bus_device_log'
-            condition = ("log_type", "error")
+            condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
             allure.attach("table name", str(table))
             self.logger.info("table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_condition(table, condition)
+            delete_result = self.mysql.execute_delete_conditions(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
         self.logger.info("=== End setup method ===")
@@ -95,10 +95,10 @@ class TestDeviceErrorReport(object):
         self.logger.info("do some database clean operation.")
         with allure.step("delete device error log"):
             table = 'bus_device_log'
-            condition = ("log_type", "error")
+            condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
             allure.attach("table name", str(table))
             self.logger.info("table: {0}".format(table))
-            delete_result = self.mysql.execute_delete_condition(table, condition)
+            delete_result = self.mysql.execute_delete_conditions(table, condition)
             allure.attach("delete result", str(delete_result))
             self.logger.info("delete result: {0}".format(delete_result))
         self.logger.info("=== End teardown method ===")
@@ -126,8 +126,8 @@ class TestDeviceErrorReport(object):
                 self.logger.info("finish report device error. ")
             with allure.step("teststep3:get device error log from db."):
                 table = "bus_device_log"
-                condition = ("log_type","error")
-                query_result = self.mysql.execute_select_condition(table,condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 start_time = datetime.datetime.now()
                 while not query_result:
                     time.sleep(5)
@@ -136,7 +136,7 @@ class TestDeviceErrorReport(object):
                     if during.seconds > 60:
                         self.logger.error("no device error log!")
                         assert False
-                    query_result = self.mysql.execute_select_condition(table, condition)
+                    query_result = self.mysql.execute_select_conditions(table, condition)
                 device_error_log = query_result[0]
                 allure.attach("device_error_log", str(device_error_log))
                 self.logger.info("device_error_log:{0}".format(device_error_log))
@@ -239,8 +239,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -286,8 +286,8 @@ class TestDeviceErrorReport(object):
                 self.logger.info("finish report device error. ")
             with allure.step("teststep3:get device error log from db."):
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 start_time = datetime.datetime.now()
                 while not query_result:
                     time.sleep(5)
@@ -296,7 +296,7 @@ class TestDeviceErrorReport(object):
                     if during.seconds > 60:
                         self.logger.error("no device error log!")
                         assert False
-                    query_result = self.mysql.execute_select_condition(table, condition)
+                    query_result = self.mysql.execute_select_conditions(table, condition)
                 device_error_log = query_result[0]
                 allure.attach("device_error_log", str(device_error_log))
                 self.logger.info("device_error_log:{0}".format(device_error_log))
@@ -347,8 +347,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -391,8 +391,8 @@ class TestDeviceErrorReport(object):
                 self.logger.info("finish report device error. ")
             with allure.step("teststep3:get device error log from db."):
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 start_time = datetime.datetime.now()
                 while not query_result:
                     time.sleep(5)
@@ -401,7 +401,7 @@ class TestDeviceErrorReport(object):
                     if during.seconds > 60:
                         self.logger.error("no device error log!")
                         assert False
-                    query_result = self.mysql.execute_select_condition(table, condition)
+                    query_result = self.mysql.execute_select_conditions(table, condition)
                 device_error_log = query_result[0]
                 allure.attach("device_error_log", str(device_error_log))
                 self.logger.info("device_error_log:{0}".format(device_error_log))
@@ -458,8 +458,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -500,8 +500,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -541,8 +541,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -582,8 +582,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -623,8 +623,8 @@ class TestDeviceErrorReport(object):
             with allure.step("teststep3:get device error log from db."):
                 time.sleep(10)
                 table = "bus_device_log"
-                condition = ("log_type", "error")
-                query_result = self.mysql.execute_select_condition(table, condition)
+                condition = "log_type like '%error%' and device_id = {0}".format(self.device_id)
+                query_result = self.mysql.execute_select_conditions(table, condition)
                 allure.attach("device_error_log", str(query_result))
                 self.logger.info("device_error_log:{0}".format(query_result))
             with allure.step("teststep4:assert device error log."):
@@ -644,4 +644,4 @@ class TestDeviceErrorReport(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_IOT_Device_Error_Report.py'])
-    pytest.main(['-s', 'test_IOT_Device_Error_Report.py::TestDeviceErrorReport::test_003084_device_error_report_incorrect_device_id'])
+    pytest.main(['-s', 'test_IOT_Device_Error_Report.py::TestDeviceErrorReport::test_003082_device_error_report'])

@@ -1629,5 +1629,5 @@ class TestServiceOrderPush(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003001_get_payload_action_id'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])
+    pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003001_get_payload_action_id'])
