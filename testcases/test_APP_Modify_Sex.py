@@ -3,6 +3,7 @@
 
 import pytest
 import allure
+import random
 
 from utils.LogTool import Logger
 from utils.ConfigParse import ConfigParse
@@ -205,13 +206,13 @@ class TestModifySex(object):
     @allure.testcase("FT-HTJK-108-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 101000, "msg": ""}),
+                              (1.0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": ""}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -473,7 +474,7 @@ class TestModifySex(object):
         self.logger.info(".... Start test_108007_timestamp_wrong ({0}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "sex": 1, "timestamp": timestamp}
+                json = {"member_id": self.member_id, "sex": random.randint(1,2), "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -490,21 +491,9 @@ class TestModifySex(object):
                 allure.attach("Actual response code：", str(rsp.status_code))
                 self.logger.info("Actual response code：{0}".format(rsp.status_code))
                 assert rsp.status_code == result['status']
-                rsp_content = rsp.json()
-
-            with allure.step("teststep4: assert the response content"):
+                rsp_content = rsp.text
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                if rsp.status_code == 200:
-                    assert rsp_content["code"] == result['code']
-                    assert result['msg'] in rsp_content["message"]
-                else:
-                    assert rsp_content
-
-            with allure.step("teststep5: check user info"):
-                info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", str(info))
-                self.logger.info("user info: {}".format(info))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -592,8 +581,8 @@ class TestModifySex(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'member_id值非法' in rsp_content["message"]
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
@@ -703,4 +692,4 @@ class TestModifySex(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Modify_Sex.py'])
-    pytest.main(['-s', 'test_APP_Modify_Sex.py::TestModifySex::test_108011_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Modify_Sex.py::TestModifySex::test_108007_timestamp_wrong'])

@@ -317,7 +317,7 @@ class TestIdentityTemp(object):
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}),
                               ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 201401, "msg": "请先完成本人的信息采集"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -916,8 +916,8 @@ class TestIdentityTemp(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201401
-                assert '请先完成本人的信息采集' in rsp_content['message']
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")

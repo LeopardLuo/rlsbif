@@ -258,8 +258,8 @@ class TestWXLogin(object):
     @allure.story("错误device_token值")
     @allure.testcase("FT-HTJK-104-007")
     @pytest.mark.parametrize("device_token, result",
-                             [('1' * 256, {"code": 101000, "msg": "device_token值非法"}),
-                              (' ', {"code": 101000, "msg": "必须大于或等于44个字符"}), ('', {"code": 101000, "msg": "必须大于或等于44个字符"})],
+                             [('1' * 256, {"code": 101000, "msg": "设备Token取值错误"}),
+                              (' ', {"code": 101000, "msg": "设备Token取值错误"}), ('', {"code": 201103, "msg": "获取授权失败"})],
                              ids=["device_token(超长值)", "device_token(空格)", "device_token(空)"])
     def test_104007_devicetoken_wrong(self, device_token, result):
         """ Test wrong device_token values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-104-007).
@@ -314,7 +314,7 @@ class TestWXLogin(object):
                               ('a' * 15, {"code": 201103, "msg": "获取授权失败"}), ('中' * 15, {"code": 201103, "msg": "获取授权失败"}),
                               ('*' * 15, {"code": 201103, "msg": "获取授权失败"}), ('1a' * 8, {"code": 201103, "msg": "获取授权失败"}),
                               ('1中' * 8, {"code": 201103, "msg": "获取授权失败"}), ('1*' * 8, {"code": 201103, "msg": "获取授权失败"}),
-                              (' ' * 15, {"code": 101000, "msg": "imei值非法"}), ('', {"code": 101000, "msg": "imei值非法"})],
+                              (' ' * 15, {"code": 201103, "msg": "获取授权失败"}), ('', {"code": 201103, "msg": "获取授权失败"})],
                              ids=["imei(超长值)", "imei(小数)", "imei(字母)", "imei(中文)",
                                   "imei(特殊字符)", "imei(数字字母)", "imei(数字中文)",
                                   "imei(数字特殊字符)", "imei(空格)", "imei(空)"])
@@ -657,8 +657,8 @@ class TestWXLogin(object):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
                 if rsp.status_code == 200:
-                    assert rsp_content["code"] == 101000
-                    assert 'imei值非法' in rsp_content["message"]
+                    assert rsp_content["code"] == 201103
+                    assert '获取授权失败' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:

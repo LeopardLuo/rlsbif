@@ -57,20 +57,6 @@ class TestModifyPhoneCheckPhone(object):
                 delete_result = cls.mysql.execute_delete_condition(table, condition)
                 allure.attach("delete result", str(delete_result))
                 cls.logger.info("delete result: {0}".format(delete_result))
-
-            with allure.step("user register."):
-                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
-                        "imei": "460011234567890", "phone": "13511222131", "sms_code": "123456",
-                        "timestamp": get_timestamp()}
-                allure.attach("register params value", str(json))
-                cls.logger.info("register params: {0}".format(json))
-                register_result = make_register(cls.httpclient, json['client_type'], json['client_version'],
-                                       json['device_token'], json['imei'], json['code_type'],
-                                        json['phone'], json['sms_code'], json['timestamp'], cls.logger)
-                allure.attach("register result", str(register_result))
-                cls.logger.info("register result: {0}".format(register_result))
-                cls.token = register_result['token']
-                cls.member_id = register_result['user_info']['member_id']
         except Exception as e:
             cls.logger.error("Error: there is exception occur:")
             cls.logger.error(e)
@@ -83,12 +69,6 @@ class TestModifyPhoneCheckPhone(object):
     def teardown_class(cls):
         cls.logger.info("")
         cls.logger.info("*** Start teardown class ***")
-        with allure.step("user logout."):
-            cls.httpclient.update_header({"authorization": cls.token})
-            logout_result = logout(cls.httpclient, cls.member_id, get_timestamp(), cls.logger)
-            cls.httpclient.update_header({"authorization": None})
-            allure.attach("logout result", str(logout_result))
-            cls.logger.info("logout result: {0}".format(logout_result))
         if hasattr(cls, 'httpclient'):
             cls.httpclient.close()
         if hasattr(cls, 'mysql'):
@@ -103,8 +83,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone by correct parameters(FT-HTJK-111-001)."""
         self.logger.info(".... Start test_111001_check_phone_correct ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222008", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222008", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],self.logger)
@@ -114,7 +107,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222131', "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": '13511222008', "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -140,6 +133,12 @@ class TestModifyPhoneCheckPhone(object):
                 assert rsp_content["code"] == 1
                 assert not rsp_content['message']
                 assert rsp_content['result']['phone_token']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -156,8 +155,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without getmsgcode(FT-HTJK-111-002)."""
         self.logger.info(".... Start test_111002_check_phone_without_getmsgcode ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222669", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222669", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -168,7 +180,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222132', "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": '13511222670', "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -193,6 +205,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201109
                 assert '当前手机号码与验证手机号不符' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -205,21 +223,36 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-111-003")
-    @pytest.mark.parametrize("token, result",
-                             [('1' * 256, {"code": 201001, "msg": "授权非法"}), ('1.0', {"code": 201001, "msg": "授权非法"}),
-                              ('*', {"code": 201001, "msg": "授权非法"}), ('1*', {"code": 201001, "msg": "授权非法"}),
-                              ('', {"code": 201000, "msg": "未登录或登录已过期"})],
+    @pytest.mark.parametrize("token, phone, result",
+                             [('1' * 256, "13511222671", {"code": 201001, "msg": "授权非法"}),
+                              ('1.0', "13511222672", {"code": 201001, "msg": "授权非法"}),
+                              ('*', "13511222673", {"code": 201001, "msg": "授权非法"}),
+                              ('1*', "13511222674", {"code": 201001, "msg": "授权非法"}),
+                              ('', "13511222675", {"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)", "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
-    def test_111003_token_wrong(self, token, result):
+    def test_111003_token_wrong(self, token, phone, result):
         """ Test wrong token values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-111-003).
         :param token: token parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_111003_token_wrong ({}) ....".format(token))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": phone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": phone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -230,7 +263,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222131', "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": phone, "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -255,6 +288,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == result['code']
                 assert result['msg'] in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -267,29 +306,43 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-111-004")
-    @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
-                              ('中', {"status": 400, "code": 0, "msg": ""}),
-                              ('*', {"status": 400, "code": 0, "msg": ""}),
-                              ('1中', {"status": 400, "code": 0, "msg": ""}),
-                              ('1*', {"status": 400, "code": 0, "msg": ""}),
-                              (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": "member_id值非法"}),
-                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
+    @pytest.mark.parametrize("member_id, phone, result",
+                             [('1' * 256, "13511222676", {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, "13511222677", {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              ('中', "13511222678", {"status": 400, "code": 0, "msg": ""}),
+                              ('*', "13511222679", {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', "13511222680", {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', "13511222681", {"status": 400, "code": 0, "msg": ""}),
+                              (' ', "13511222682", {"status": 400, "code": 0, "msg": ""}),
+                              ('', "13511222683", {"status": 400, "code": 0, "msg": ""}),
+                              (0, "13511222684", {"status": 200, "code": 201001, "msg": "授权非法"}),
+                              (9223372036854775808, "13511222685", {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
                                   "member_id(0)", "member_id(超大)"])
-    def test_111004_member_id_wrong(self, member_id, result):
+    def test_111004_member_id_wrong(self, member_id, phone, result):
         """ Test wrong member_id values (超长值、1.0、中文、特殊字符、数字中文、数字特殊字符、空格、空）(FT-HTJK-111-004).
         :param member_id: member_id parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_111004_member_id_wrong ({}) ....".format(member_id))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": phone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": phone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -300,7 +353,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": member_id, "phone": '13511222131', "sms_code": '123456',
+                json = {"member_id": member_id, "phone": phone, "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -328,6 +381,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -340,33 +399,46 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("错误phone值")
     @allure.testcase("FT-HTJK-111-005")
-    @pytest.mark.parametrize("phone, result",
-                             [("1", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("135123456789", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("0", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("-1", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("135112210.0", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1" * 256, {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("a", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("中", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("*", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1351122105a", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1351122105中", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              ("1351122105*", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
-                              (" ", {"code": 101000, "msg": "phone值非法"}),
-                              ("", {"code": 101000, "msg": "phone值非法"})],
+    @pytest.mark.parametrize("phone, oldPhone, result",
+                             [("1", "13511222686", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("135123456789", "13511222687", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("0", "13511222688", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("-1", "13511222689", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("135112210.0", "13511222690", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1" * 256, "13511222691", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("a", "13511222692", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("中", "13511222693", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("*", "13511222694", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1351122105a", "13511222695", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1351122105中", "13511222696", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              ("1351122105*", "13511222697", {"code": 201109, "msg": "当前手机号码与验证手机号不符"}),
+                              (" ", "13511222698", {"code": 101000, "msg": "phone值非法"}),
+                              ("", "13511222699", {"code": 101000, "msg": "phone值非法"})],
                              ids=["phone(1)", "phone(12位)", "phone(0)", "phone(-1)", "phone(小数)", "phone(超长值)",
                                   "phone(字母)", "phone(中文)", "phone(特殊字符)", "phone(数字字母)", "phone(数字中文)",
                                   "phone(数字特殊字符)", "phone(空格)", "phone(空)"])
-    def test_111005_phone_wrong(self, phone, result):
+    def test_111005_phone_wrong(self, phone, oldPhone, result):
         """ Test wrong phone values (1、12位、0、-1、小数、超长值、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-111-005).
         :param phone: phone parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_111005_phone_wrong ({}) ....".format(phone))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": oldPhone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": oldPhone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -405,6 +477,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -417,29 +495,42 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("错误sms_code值")
     @allure.testcase("FT-HTJK-111-006")
-    @pytest.mark.parametrize("sms_code, result",
-                             [('1' * 256, {"code": 201106, "msg": "验证码不正确"}),
-                              ('1.0', {"code": 201106, "msg": "验证码不正确"}),
-                              ('a', {"code": 201106, "msg": "验证码不正确"}),
-                              ('中', {"code": 201106, "msg": "验证码不正确"}),
-                              ('*', {"code": 201106, "msg": "验证码不正确"}),
-                              ('1a', {"code": 201106, "msg": "验证码不正确"}),
-                              ('1中', {"code": 201106, "msg": "验证码不正确"}),
-                              ('1*', {"code": 201106, "msg": "验证码不正确"}),
-                              (' ', {"code": 101000, "msg": "sms_code值非法"}),
-                              ('', {"code": 101000, "msg": "sms_code值非法"})],
+    @pytest.mark.parametrize("sms_code, phone, result",
+                             [('1' * 256, "13511222700", {"code": 201106, "msg": "验证码不正确"}),
+                              ('1.0', "13511222701", {"code": 201106, "msg": "验证码不正确"}),
+                              ('a', "13511222702", {"code": 201106, "msg": "验证码不正确"}),
+                              ('中', "13511222703", {"code": 201106, "msg": "验证码不正确"}),
+                              ('*', "13511222704", {"code": 201106, "msg": "验证码不正确"}),
+                              ('1a', "13511222705", {"code": 201106, "msg": "验证码不正确"}),
+                              ('1中', "13511222706", {"code": 201106, "msg": "验证码不正确"}),
+                              ('1*', "13511222707", {"code": 201106, "msg": "验证码不正确"}),
+                              (' ', "13511222708", {"code": 101000, "msg": "sms_code值非法"}),
+                              ('', "13511222709", {"code": 101000, "msg": "sms_code值非法"})],
                              ids=["sms_code(超长值)", "sms_code(小数)", "sms_code(字母)", "sms_code(中文)",
                                   "sms_code(特殊字符)", "sms_code(数字字母)", "sms_code(数字中文)",
                                   "sms_code(数字特殊字符)", "sms_code(空格)", "sms_code(空)"])
-    def test_111006_smscode_wrong(self, sms_code, result):
+    def test_111006_smscode_wrong(self, sms_code, phone, result):
         """ Test wrong sms_code values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-111-006).
         :param sms_code: sms_code parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_111006_smscode_wrong ({}) ....".format(sms_code))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": phone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": phone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -450,7 +541,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": "13511222131", "sms_code": sms_code,
+                json = {"member_id": self.member_id, "phone": phone, "sms_code": sms_code,
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -478,6 +569,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -490,29 +587,42 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("错误code_token值")
     @allure.testcase("FT-HTJK-111-007")
-    @pytest.mark.parametrize("code_token, result",
-                             [('1' * 256, {"code": 201107, "msg": "授权非法"}),
-                              ('1.0', {"code": 201107, "msg": "授权非法"}),
-                              ('a', {"code": 201107, "msg": "授权非法"}),
-                              ('中', {"code": 201107, "msg": "授权非法"}),
-                              ('*', {"code": 201107, "msg": "授权非法"}),
-                              ('1a', {"code": 201107, "msg": "授权非法"}),
-                              ('1中', {"code": 201107, "msg": "授权非法"}),
-                              ('1*', {"code": 201107, "msg": "授权非法"}),
-                              (' ', {"code": 101000, "msg": "code_token值非法"}),
-                              ('', {"code": 101000, "msg": "code_token值非法"})],
+    @pytest.mark.parametrize("code_token, phone, result",
+                             [('1' * 256, "13511222710", {"code": 201107, "msg": "授权非法"}),
+                              ('1.0', "13511222711", {"code": 201107, "msg": "授权非法"}),
+                              ('a', "13511222712", {"code": 201107, "msg": "授权非法"}),
+                              ('中', "13511222713", {"code": 201107, "msg": "授权非法"}),
+                              ('*', "13511222714", {"code": 201107, "msg": "授权非法"}),
+                              ('1a', "13511222715", {"code": 201107, "msg": "授权非法"}),
+                              ('1中', "13511222716", {"code": 201107, "msg": "授权非法"}),
+                              ('1*', "13511222717", {"code": 201107, "msg": "授权非法"}),
+                              (' ', "13511222718", {"code": 101000, "msg": "code_token值非法"}),
+                              ('', "13511222719", {"code": 101000, "msg": "code_token值非法"})],
                              ids=["code_token(超长值)", "code_token(小数)", "code_token(字母)", "code_token(中文)",
                                   "code_token(特殊字符)", "code_token(数字字母)", "code_token(数字中文)",
                                   "code_token(数字特殊字符)", "code_token(空格)", "code_token(空)"])
-    def test_111007_codetoken_wrong(self, code_token, result):
+    def test_111007_codetoken_wrong(self, code_token, phone, result):
         """ Test wrong code_token values (超长值、1.0、字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-111-007).
         :param code_token: code_token parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_111007_codetoken_wrong ({}) ....".format(code_token))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": phone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": phone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token1 = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -523,7 +633,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": "13511222131", "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": phone, "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -551,6 +661,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -563,19 +679,32 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-111-008")
-    @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 300, {"code": 1, "msg": ""}),
-                              (get_timestamp() + 300, {"code": 1, "msg": ""})],
+    @pytest.mark.parametrize("timestamp, phone, result",
+                             [(get_timestamp() - 300, "13511222720", {"code": 1, "msg": ""}),
+                              (get_timestamp() + 300, "13511222721", {"code": 1, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
-    def test_111008_timestamp_correct(self, timestamp, result):
+    def test_111008_timestamp_correct(self, timestamp, phone, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-111-008).
         :param timestamp: timestamp parameter value.
         :param result: expect result.
         """
         self.logger.info(".... Start test_111008_timestamp_correct ({}) ....".format(timestamp))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": phone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": phone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -586,7 +715,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": "13511222131", "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": phone, "sms_code": '123456',
                         "code_token": code_token, "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -614,6 +743,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert not rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -626,28 +761,28 @@ class TestModifyPhoneCheckPhone(object):
     @allure.severity("critical")
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-111-009")
-    @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 1, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": ""}),
-                              (-1, {"status": 200, "code": 1, "msg": ""}),
-                              (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
-                              (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 1, "msg": ""}),
-                              ('a', {"status": 400, "code": 0, "msg": ""}),
-                              ('中', {"status": 400, "code": 0, "msg": ""}),
-                              ('*', {"status": 400, "code": 0, "msg": ""}),
-                              ('1a', {"status": 400, "code": 0, "msg": ""}),
-                              ('1中', {"status": 400, "code": 0, "msg": ""}),
-                              ('1*', {"status": 400, "code": 0, "msg": ""}),
-                              (' ', {"status": 400, "code": 0, "msg": ""}),
-                              ('', {"status": 400, "code": 0, "msg": ""})],
+    @pytest.mark.parametrize("timestamp, phone, result",
+                             [(1, "13511222722", {"status": 200, "code": 1, "msg": ""}),
+                              (9223372036854775807, "13511222723", {"status": 200, "code": 1, "msg": ""}),
+                              (0, "13511222724", {"status": 200, "code": 101000, "msg": ""}),
+                              (-1, "13511222725", {"status": 200, "code": 1, "msg": ""}),
+                              (-9223372036854775809, "13511222726", {"status": 400, "code": 0, "msg": ""}),
+                              (9223372036854775808, "13511222727", {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, "13511222728", {"status": 200, "code": 1, "msg": ""}),
+                              ('a', "13511222729", {"status": 400, "code": 0, "msg": ""}),
+                              ('中', "13511222730", {"status": 400, "code": 0, "msg": ""}),
+                              ('*', "13511222731", {"status": 400, "code": 0, "msg": ""}),
+                              ('1a', "13511222732", {"status": 400, "code": 0, "msg": ""}),
+                              ('1中', "13511222733", {"status": 400, "code": 0, "msg": ""}),
+                              ('1*', "13511222734", {"status": 400, "code": 0, "msg": ""}),
+                              (' ', "13511222735", {"status": 400, "code": 0, "msg": ""}),
+                              ('', "13511222736", {"status": 400, "code": 0, "msg": ""})],
                              ids=["timestamp(最小值)", "timestamp(最大值)", "timestamp(0)", "timestamp(-1)",
                                   "timestamp(超小值)", "timestamp(超大值)", "timestamp(小数)",
                                   "timestamp(字母)", "timestamp(中文)", "timestamp(特殊字符)", "timestamp(数字字母)",
                                   "timestamp(数字中文)",
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
-    def test_111009_timestamp_wrong(self, timestamp, result):
+    def test_111009_timestamp_wrong(self, timestamp, phone, result):
         """ Test wrong timestamp values (1、9223372036854775807、0、-1、-9223372036854775809、9223372036854775808、1.0、
             字母、中文、特殊字符、数字字母、数字中文、数字特殊字符、空格、空）(FT-HTJK-111-009).
         :param timestamp: timestamp parameter value.
@@ -655,8 +790,21 @@ class TestModifyPhoneCheckPhone(object):
         """
         self.logger.info(".... Start test_111009_timestamp_wrong ({}) ....".format(timestamp))
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": phone, "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": phone, "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -667,7 +815,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": "13511222131", "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": phone, "sms_code": '123456',
                         "code_token": code_token, "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -695,6 +843,12 @@ class TestModifyPhoneCheckPhone(object):
                     assert result['msg'] in rsp_content['message']
                 else:
                     assert rsp_content
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -711,8 +865,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without token(FT-HTJK-111-010)."""
         self.logger.info(".... Start test_111010_no_token ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222737", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222737", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -723,7 +890,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222131', "sms_code": '123456',
+                json = {"member_id": self.member_id, "phone": '13511222737', "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": None}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -748,6 +915,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 201000
                 assert '未登录或登录已过期' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -764,8 +937,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without member_id(FT-HTJK-111-011)."""
         self.logger.info(".... Start test_111011_no_member_id ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222738", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222738", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -776,7 +962,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"phone": '13511222131', "sms_code": '123456',
+                json = {"phone": '13511222738', "sms_code": '123456',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -799,8 +985,14 @@ class TestModifyPhoneCheckPhone(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert 'member_id值非法' in rsp_content['message']
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -817,8 +1009,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without phone(FT-HTJK-111-012)."""
         self.logger.info(".... Start test_111012_no_phone ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222739", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222739", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -854,6 +1059,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'phone值非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -870,8 +1081,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without sms_code(FT-HTJK-111-013)."""
         self.logger.info(".... Start test_111013_no_sms_code ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222740", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222740", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -882,7 +1106,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222131',
+                json = {"member_id": self.member_id, "phone": '13511222740',
                         "code_token": code_token, "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -907,6 +1131,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'sms_code值非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -923,8 +1153,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without code_token(FT-HTJK-111-014)."""
         self.logger.info(".... Start test_111014_no_code_token ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222741", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222741", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -935,7 +1178,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222131',
+                json = {"member_id": self.member_id, "phone": '13511222741',
                         "sms_code": '123456', "timestamp": get_timestamp()}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -960,6 +1203,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'code_token值非法' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -976,8 +1225,21 @@ class TestModifyPhoneCheckPhone(object):
         """ Test check phone without timestamp(FT-HTJK-111-015)."""
         self.logger.info(".... Start test_111015_no_timestamp ....")
         try:
+            with allure.step("user register."):
+                json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901" * 4,
+                        "imei": "460011234567890", "phone": "13511222742", "sms_code": "123456",
+                        "timestamp": get_timestamp()}
+                allure.attach("register params value", str(json))
+                self.logger.info("register params: {0}".format(json))
+                register_result = make_register(self.httpclient, json['client_type'], json['client_version'],
+                                                json['device_token'], json['imei'], json['code_type'],
+                                                json['phone'], json['sms_code'], json['timestamp'], self.logger)
+                allure.attach("register result", str(register_result))
+                self.logger.info("register result: {0}".format(register_result))
+                self.token = register_result['token']
+                self.member_id = register_result['user_info']['member_id']
             with allure.step("teststep1: get msg code."):
-                params = {"code_type": 4, "phone": "13511222131", "timestamp": get_timestamp()}
+                params = {"code_type": 4, "phone": "13511222742", "timestamp": get_timestamp()}
                 allure.attach("getmsgcode params value", str(params))
                 self.logger.info("getmsgcode params: {0}".format(params))
                 code_token = get_msg_code(self.httpclient, params["code_type"], params["phone"], params["timestamp"],
@@ -988,7 +1250,7 @@ class TestModifyPhoneCheckPhone(object):
                     assert False
 
             with allure.step("teststep2: get parameters."):
-                json = {"member_id": self.member_id, "phone": '13511222131',
+                json = {"member_id": self.member_id, "phone": '13511222742',
                         "sms_code": '123456', "code_token": code_token}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
@@ -1013,6 +1275,12 @@ class TestModifyPhoneCheckPhone(object):
                 self.logger.info("response content: {}".format(rsp_content))
                 assert rsp_content["code"] == 101000
                 assert 'timestamp不能为空' in rsp_content['message']
+
+            with allure.step("teststep6: user logout."):
+                logout_result = logout(self.httpclient, self.member_id, get_timestamp(), self.logger)
+                self.httpclient.update_header({"authorization": None})
+                allure.attach("logout result", str(logout_result))
+                self.logger.info("logout result: {0}".format(logout_result))
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1024,5 +1292,5 @@ class TestModifyPhoneCheckPhone(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py'])
-    pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py::TestModifyPhoneCheckPhone::test_111015_no_timestamp'])
+    pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py'])
+    # pytest.main(['-s', 'test_APP_Modify_Phone_CheckPhone.py::TestModifyPhoneCheckPhone::test_111015_no_timestamp'])

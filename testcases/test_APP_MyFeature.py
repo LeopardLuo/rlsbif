@@ -240,7 +240,7 @@ class TestMyFeature(object):
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 201100, "msg": "用户不存在"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -377,7 +377,7 @@ class TestMyFeature(object):
                               ("case.xlsx", {"code": 201412, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201412, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201412, "msg": "照片不合格"}),
-                              ("relate_com.jpg", {"code": 201412, "msg": "照片不合格[人脸太小或太大]"}),
+                              ("relate_com.jpg", {"code": 1, "msg": "采集成功"}),
                               ("dog5.jpg", {"code": 201412, "msg": "照片不合格[图片里没有人脸]"}), ],
                              ids=["face_photo(gif)", "face_photo(xlsx)", "face_photo(txt)",
                                   "face_photo(mp4)", "face_photo(other)", "face_photo(dog)"])
@@ -427,7 +427,8 @@ class TestMyFeature(object):
                 select_result = self.mysql.execute_select_condition(table, condition)
                 allure.attach("query result", str(select_result))
                 self.logger.info("query result: {0}".format(select_result))
-                assert len(select_result) == 0
+                if result['code'] != 1:
+                    assert len(select_result) == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -674,8 +675,8 @@ class TestMyFeature(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201100
-                assert '用户不存在' in rsp_content['message']
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content['message']
 
             with allure.step("teststep5: query database records"):
                 table = 'mem_features'

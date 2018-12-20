@@ -1289,8 +1289,8 @@ class TestRegister(object):
                 rsp_content = rsp.json()
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] != 1
-                assert len(rsp_content["message"]) > 0
+                assert rsp_content["code"] == 1
+                assert '登录成功' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1660,4 +1660,4 @@ class TestRegister(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_APP_Register.py'])
-    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102013_phone_wrong'])
+    # pytest.main(['-s', 'test_APP_Register.py::TestRegister::test_102018_no_clienttype'])

@@ -1082,7 +1082,7 @@ class TestCetServiceOrderList(object):
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 1, "msg": ""}),
                               (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "timestamp不能为空"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
                               (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),

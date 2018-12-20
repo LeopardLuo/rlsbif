@@ -545,7 +545,7 @@ class TestGetIdentityList(object):
     @allure.story("错误page_size值")
     @allure.testcase("FT-HTJK-116-008")
     @pytest.mark.parametrize("page_size, result",
-                             [(-1, {"status": 200, "code": 101000, "msg": ""}),
+                             [(-1, {"status": 500, "code": 0, "msg": ""}),
                               (0, {"status": 200, "code": 1, "msg": ""}),
                               (-2147483649, {"status": 400, "code": 0, "msg": "not valid"}),
                               (2147483648, {"status": 400, "code": 0, "msg": "not valid"}),
@@ -732,8 +732,8 @@ class TestGetIdentityList(object):
     @allure.story("正确orderby值")
     @allure.testcase("FT-HTJK-116-011")
     @pytest.mark.parametrize("orderby, result",
-                             [('features_name asc', {"code": 1, "msg": ""}),
-                              ('features_name desc', {"code": 1, "msg": ""})],
+                             [('features_name asc', {"code": 0, "msg": ""}),
+                              ('features_name desc', {"code": 0, "msg": ""})],
                              ids=["orderby(最小值)", "orderby(最大值)"])
     def test_116011_orderby_correct(self, orderby, result):
         """ Test correct orderby values (最小值、最大值）(FT-HTJK-116-011).

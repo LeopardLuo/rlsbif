@@ -3,6 +3,7 @@
 
 import pytest
 import allure
+import random
 
 from utils.LogTool import Logger
 from utils.ConfigParse import ConfigParse
@@ -60,7 +61,7 @@ class TestModifyNickName(object):
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
-                        "imei": "460011234567890", "phone": "13511222111", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511227134", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
@@ -206,11 +207,11 @@ class TestModifyNickName(object):
     @allure.story("错误member_id值")
     @allure.testcase("FT-HTJK-107-003")
     @pytest.mark.parametrize("member_id, result",
-                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}), (1.0, {"status": 200, "code": 101000, "msg": "昵称的长度为1到10"}),
+                             [('1' * 256, {"status": 400, "code": 0, "msg": ""}), (1.0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}), ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}), ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 101000, "msg": "昵称的长度为1到10"}), (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}), (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
                                   "member_id(数字特殊字符)", "member_id(空格)", "member_id(空)",
@@ -435,12 +436,13 @@ class TestModifyNickName(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-107-007")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 1, "msg": ""}),
-                              (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
-                              (0, {"status": 200, "code": 1, "msg": ""}), (-1, {"status": 200, "code": 1, "msg": ""}),
+                             [(1, {"status": 200, "code": 1, "msg": "修改昵称成功"}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": "修改昵称成功"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
+                              (-1, {"status": 200, "code": 1, "msg": "修改昵称成功"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 1, "msg": ""}), ('a', {"status": 400, "code": 0, "msg": ""}),
+                              (1.0, {"status": 200, "code": 1, "msg": "修改昵称成功"}), ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}), ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1a', {"status": 400, "code": 0, "msg": ""}), ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}), (' ', {"status": 400, "code": 0, "msg": ""}),
@@ -459,7 +461,7 @@ class TestModifyNickName(object):
         self.logger.info(".... Start test_107007_timestamp_wrong ({0}) ....".format(timestamp))
         try:
             with allure.step("teststep1: get parameters."):
-                json = {"member_id": self.member_id, "nickname": "Timestamp", "timestamp": timestamp}
+                json = {"member_id": self.member_id, "nickname": "Time" + str(random.randint(0, 100)), "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -580,14 +582,8 @@ class TestModifyNickName(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201200
-                assert '拉取用户信息失败' in rsp_content["message"]
-
-            with allure.step("teststep5: check user info"):
-                info = userinfo(self.httpclient, self.member_id, get_timestamp(), self.logger)
-                allure.attach("user info：", str(info))
-                self.logger.info("user info: {}".format(info))
-                assert info['nickname'] != "NoMemberId"
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -692,5 +688,5 @@ class TestModifyNickName(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Modify_NickName.py'])
-    pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107010_no_nickname'])
+    pytest.main(['-s', 'test_APP_Modify_NickName.py'])
+    # pytest.main(['-s', 'test_APP_Modify_NickName.py::TestModifyNickName::test_107010_no_nickname'])

@@ -242,11 +242,11 @@ class TestLogout(object):
     @allure.story("错误token值")
     @allure.testcase("FT-HTJK-105-003")
     @pytest.mark.parametrize("token, result",
-                             [('1' * 1001, {"status": 200,"code": 201001, "msg": "退出不成功"}),
-                              ('1.0', {"status": 200,"code": 201001, "msg": "退出不成功"}),
-                              ('*', {"status": 200,"code": 201001, "msg": "退出不成功"}),
-                              ('1*', {"status": 200,"code": 201001, "msg": "退出不成功"}),
-                              ('', {"status": 200,"code": 101000, "msg": "参数非法"})],
+                             [('1' * 1001, {"status": 200,"code": 201001, "msg": "授权非法"}),
+                              ('1.0', {"status": 200,"code": 201001, "msg": "授权非法"}),
+                              ('*', {"status": 200,"code": 201001, "msg": "授权非法"}),
+                              ('1*', {"status": 200,"code": 201001, "msg": "授权非法"}),
+                              ('', {"status": 200,"code": 201000, "msg": "未登录或登录已过期"})],
                              ids=["token(超长值)", "token(小数)",
                                   "token(特殊字符)",
                                   "token(数字特殊字符)", "token(空)"])
@@ -367,8 +367,8 @@ class TestLogout(object):
             with allure.step("teststep6: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 101000
-                assert '参数非法' in rsp_content["message"]
+                assert rsp_content["code"] == 201000
+                assert '未登录或登录已过期' in rsp_content["message"]
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -595,8 +595,8 @@ class TestLogout(object):
                             self.httpclient.update_header({"authorization": None})
                             allure.attach("Logout result：", str(logout_result))
                             self.logger.info("Logout result：{0}".format(logout_result))
-                    assert rsp_content["code"] == 101000
-                    assert '参数非法' in rsp_content["message"]
+                    assert rsp_content["code"] == 201000
+                    assert '未登录或登录已过期' in rsp_content["message"]
                 else:
                     assert rsp_content
         except Exception as e:

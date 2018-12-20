@@ -657,7 +657,7 @@ class TestMyMember(object):
                               ('1*', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               (' ', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
                               ('', {"status": 200, "code": 97, "msg": "参数格式不正确"}),
-                              (1, {"status": 200, "code": 99, "msg": "输入信息非法"}),
+                              (1, {"status": 200, "code": 99, "msg": "信息异常"}),
                               (0, {"status": 200, "code": 1, "msg": "成功"}),
                               (-1, {"status": 200, "code": 1, "msg": "成功"}),
                               (9223372036854775808, {"status": 200, "code": 97, "msg": "参数格式不正确"}),

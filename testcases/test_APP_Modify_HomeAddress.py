@@ -3,6 +3,7 @@
 
 import pytest
 import allure
+import random
 
 from utils.LogTool import Logger
 from utils.ConfigParse import ConfigParse
@@ -60,7 +61,7 @@ class TestModifyHomeAddress(object):
 
             with allure.step("user register."):
                 json = {"code_type": 0, "client_type": 1, "client_version": "v1", "device_token": "12345678901"*4,
-                        "imei": "460011234567890", "phone": "13511222131", "sms_code": "123456",
+                        "imei": "460011234567890", "phone": "13511227133", "sms_code": "123456",
                         "timestamp": get_timestamp()}
                 allure.attach("register params value", str(json))
                 cls.logger.info("register params: {0}".format(json))
@@ -209,13 +210,13 @@ class TestModifyHomeAddress(object):
     @allure.testcase("FT-HTJK-110-003")
     @pytest.mark.parametrize("member_id, result",
                              [('1' * 256, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 201200, "msg": "拉取用户信息失败"}),
+                              (1.0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
                               ('1中', {"status": 400, "code": 0, "msg": ""}),
                               ('1*', {"status": 400, "code": 0, "msg": ""}),
                               (' ', {"status": 400, "code": 0, "msg": ""}), ('', {"status": 400, "code": 0, "msg": ""}),
-                              (0, {"status": 200, "code": 201200, "msg": "拉取用户信息失败"}),
+                              (0, {"status": 200, "code": 201001, "msg": "授权非法"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""})],
                              ids=["member_id(超长值)", "member_id(小数)", "member_id(中文)",
                                   "member_id(特殊字符)", "member_id(数字中文)",
@@ -783,11 +784,11 @@ class TestModifyHomeAddress(object):
     @allure.severity("critical")
     @allure.story("正确timestamp值")
     @allure.testcase("FT-HTJK-110-012")
-    @pytest.mark.parametrize("timestamp, result",
-                             [(get_timestamp() - 300, {"code": 1, "msg": "修改家庭地址成功"}),
-                              (get_timestamp() + 300, {"code": 1, "msg": "修改家庭地址成功"})],
+    @pytest.mark.parametrize("timestamp, address, result",
+                             [(get_timestamp() - 300, "北大街10号",{"code": 1, "msg": "修改家庭地址成功"}),
+                              (get_timestamp() + 300, "北大街11号",{"code": 1, "msg": "修改家庭地址成功"})],
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
-    def test_110012_timestamp_correct(self, timestamp, result):
+    def test_110012_timestamp_correct(self, timestamp, address, result):
         """ Test correct timestamp values (最小值、最大值）(FT-HTJK-110-012).
         :param timestamp: timestamp parameter value.
         :param result: expect result.
@@ -796,7 +797,7 @@ class TestModifyHomeAddress(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "province": '广东省', "city": '广州市', "district": '番禺区',
-                        "address": '北大街2号', "timestamp": timestamp}
+                        "address": address, "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -842,13 +843,13 @@ class TestModifyHomeAddress(object):
     @allure.story("错误timestamp值")
     @allure.testcase("FT-HTJK-110-013")
     @pytest.mark.parametrize("timestamp, result",
-                             [(1, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
-                              (9223372036854775807, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
+                             [(1, {"status": 200, "code": 1, "msg": "修改家庭地址成功"}),
+                              (9223372036854775807, {"status": 200, "code": 1, "msg": "修改家庭地址成功"}),
                               (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
-                              (-1, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
+                              (-1, {"status": 200, "code": 1, "msg": "修改家庭地址成功"}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": ""}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": ""}),
-                              (1.0, {"status": 200, "code": 201204, "msg": "修改家庭地址失败"}),
+                              (1.0, {"status": 200, "code": 1, "msg": "修改家庭地址成功"}),
                               ('a', {"status": 400, "code": 0, "msg": ""}),
                               ('中', {"status": 400, "code": 0, "msg": ""}),
                               ('*', {"status": 400, "code": 0, "msg": ""}),
@@ -872,7 +873,7 @@ class TestModifyHomeAddress(object):
         try:
             with allure.step("teststep1: get parameters."):
                 json = {"member_id": self.member_id, "province": '广东省', "city": '广州市', "district": '番禺区',
-                        "address": '北大街2号', "timestamp": timestamp}
+                        "address": '北大街2号'+ str(random.randint(0,100)), "timestamp": timestamp}
                 headers = {"authorization": self.token}
                 allure.attach("params value", "{0}, {1}".format(json, headers))
                 self.logger.info("data: {0}, headers: {1}".format(json, headers))
@@ -994,8 +995,8 @@ class TestModifyHomeAddress(object):
             with allure.step("teststep4: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201200
-                assert '拉取用户信息失败' in rsp_content["message"]
+                assert rsp_content["code"] == 201001
+                assert '授权非法' in rsp_content["message"]
 
             with allure.step("teststep5: check user info"):
                 self.httpclient.update_header({"authorization": self.token})
@@ -1259,5 +1260,5 @@ class TestModifyHomeAddress(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
-    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110011_address_wrong'])
+    pytest.main(['-s', 'test_APP_Modify_HomeAddress.py'])
+    # pytest.main(['-s', 'test_APP_Modify_HomeAddress.py::TestModifyHomeAddress::test_110012_timestamp_correct'])
