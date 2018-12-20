@@ -118,7 +118,7 @@ class TestTimeSynchronizationRequest(object):
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
                 assert action_id == "204"
-                assert  local_timestamp-10 <=int(timestamp_payload) <= local_timestamp
+                assert local_timestamp - 10 <= int(timestamp_payload) <= local_timestamp
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -228,7 +228,7 @@ class TestTimeSynchronizationRequest(object):
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
                 assert action_id == "204"
-                assert local_timestamp-10 <=int(timestamp_payload) <= local_timestamp
+                assert local_timestamp - 10 <= int(timestamp_payload) <= local_timestamp
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -355,7 +355,7 @@ class TestTimeSynchronizationRequest(object):
             with allure.step("teststep2:request time synchronization"):
                 self.logger.info("strat to request time synchronization.")
                 # stamp = get_timestamp()
-                send_payload = {"action_id":"104","data": None}
+                send_payload = {"action_id": "104", "data": None}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
                 send_topic = "/{0}/{1}/Time/Up".format(self.ProductKey, self.DeviceName)
@@ -389,4 +389,6 @@ class TestTimeSynchronizationRequest(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_IOT_Time_Synchronization_Request.py'])
+    # pytest.main(['-s', 'test_IOT_Time_Synchronization_Request.py'])
+    pytest.main(['-s',
+                 'test_IOT_Time_Synchronization_Request.py::TestTimeSynchronizationRequest::test_003051_request_time_synchronization_no_timestamp'])

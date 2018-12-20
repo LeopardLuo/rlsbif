@@ -1177,4 +1177,4 @@ class TestServiceOrderReport(object):
 if __name__ == '__main__':
     pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
     # pytest.main(['-s',
-    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003067_report_service_order_status_no_timestamp'])
+    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003054_report_service_order_status'])
