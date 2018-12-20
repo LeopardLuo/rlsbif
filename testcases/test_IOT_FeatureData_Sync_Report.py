@@ -16,6 +16,7 @@ import json
 import datetime
 
 
+@pytest.mark.IOT
 @allure.feature("IOT-特征同步上报")
 class TestFeatureDataSyncReport(object):
 

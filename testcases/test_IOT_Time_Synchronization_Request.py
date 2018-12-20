@@ -16,6 +16,7 @@ import json
 import datetime
 
 
+@pytest.mark.IOT
 @allure.feature("IOT-时间同步请求")
 class TestTimeSynchronizationRequest(object):
 

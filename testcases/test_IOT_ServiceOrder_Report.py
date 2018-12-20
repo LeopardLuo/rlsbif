@@ -16,6 +16,7 @@ import json
 import datetime
 
 
+@pytest.mark.IOT
 @allure.feature("IOT-服务单状态（设备上报）")
 class TestServiceOrderReport(object):
 

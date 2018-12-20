@@ -16,6 +16,7 @@ import json
 import datetime
 
 
+@pytest.mark.IOT
 @allure.feature("IoT-服务单关闭")
 class TestServiceOrderClose(object):
 

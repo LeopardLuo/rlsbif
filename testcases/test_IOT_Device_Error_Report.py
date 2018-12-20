@@ -16,6 +16,7 @@ import json
 import datetime
 
 
+@pytest.mark.IOT
 @allure.feature("IOT-设备错误上报")
 class TestDeviceErrorReport(object):
 
