@@ -712,10 +712,12 @@ class TestMixScenario(object):
                         r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = None
+                        service_order_id_list = []
                         for order in r_orderlist:
+                            service_order_id_list.append(order["service_order_id"])
                             if order['features_name'] == 'kuli1':
                                 service_order_id = order["service_order_id"]
-
+                        self.logger.info("service order id list:{0}".format(service_order_id_list))
                 end_time = int(time.time())
                 during = end_time - start_time
                 while len(self.mqttclient.rcv_msg)<2 and during < 60:
@@ -732,7 +734,7 @@ class TestMixScenario(object):
                         msg = self.mqttclient.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
                         self.logger.info("message payload: {}".format(payload))
-                    #assert payload['data']['service_order_id'] == str(service_order_id)
+                        assert int(payload['data']['service_order_id']) in service_order_id_list
                 else:
                     assert False
                 self.logger.info("MQTT receive service order create finished.")
@@ -956,10 +958,12 @@ class TestMixScenario(object):
                         r_orderlist = get_myservice_order_list(self.httpclient, self.member_id, 0, 10, 3, timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = None
+                        service_order_id_list = []
                         for order in r_orderlist:
+                            service_order_id_list.append(order["service_order_id"])
                             if order['features_name'] == 'kuli1':
                                 service_order_id = order["service_order_id"]
-
+                        self.logger.info("service order id list :{0}".format(service_order_id_list))
                 end_time = int(time.time())
                 during = end_time - start_time
                 while len(self.mqttclient.rcv_msg)<2 and during < 60:
@@ -976,7 +980,7 @@ class TestMixScenario(object):
                         msg = self.mqttclient.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
                         self.logger.info("message payload: {}".format(payload))
-                    #assert payload['data']['service_order_id'] == str(service_order_id)
+                        assert int(payload['data']['service_order_id']) in service_order_id_list
                 else:
                     assert False
                 self.logger.info("MQTT receive service order create finished.")
@@ -1502,10 +1506,12 @@ class TestMixScenario(object):
                                                                timestamp=get_timestamp(), logger=self.logger)
                         self.logger.info("service order list: " + str(r_orderlist))
                         service_order_id = None
+                        service_order_id_list = []
                         for order in r_orderlist:
+                            service_order_id_list.append(order["service_order_id"])
                             if order['features_name'] == 'kuli1':
                                 service_order_id = order["service_order_id"]
-
+                        self.logger.info("service order id list:{0}".format(service_order_id_list))
                 end_time = int(time.time())
                 during = end_time - start_time
                 while ( len(self.mqttclient.rcv_msg)<2 or len(self.mqttclient2.rcv_msg)<2) and during < 60:
@@ -1524,7 +1530,7 @@ class TestMixScenario(object):
                         msg = self.mqttclient.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
                         self.logger.info("device1 message payload: {}".format(payload))
-                    # assert payload['data']['service_order_id'] == str(service_order_id)
+                        assert int(payload['data']['service_order_id']) in service_order_id_list
                 else:
                     self.logger.error("Failed:device1 has not received iot message")
                     assert False
@@ -1536,7 +1542,7 @@ class TestMixScenario(object):
                         msg = self.mqttclient2.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
                         self.logger.info("device2 message payload: {}".format(payload))
-                    # assert payload['data']['service_order_id'] == str(service_order_id)
+                        assert int(payload['data']['service_order_id']) in service_order_id_list
                 else:
                     self.logger.error("Failed:device2 has not received iot message")
                     assert False
@@ -1680,4 +1686,4 @@ class TestMixScenario(object):
 
 if __name__ == '__main__':
     pytest.main(['-s', 'test_scenario.py'])
-    # pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400005_owner_create_multi_service_order_different_devices'])
+    # pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400006_relative_create_multi_service_order_different_devices'])
