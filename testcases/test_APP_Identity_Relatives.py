@@ -1450,7 +1450,134 @@ class TestIdentityRelatives(object):
             self.logger.info(".... End test_117022_identity_relatives_feature_sex_correct ({}) ....".format(feature_sex))
             self.logger.info("")
 
+    @allure.severity("blocker")
+    @allure.story("成员照片相同")
+    @allure.testcase("FT-HTJK-117-023")
+    def test_117023_identity_relatives_same_phone(self):
+        """ Test identity relatives with same phone(FT-HTJK-117-023)."""
+        self.logger.info(".... Start test_117023_identity_relatives_same_phone ....")
+        try:
+            with allure.step("teststep1: identity user."):
+                with allure.step("teststep: user feature."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                     get_timestamp(), self.logger)
+                    allure.attach("upload user feature result", "{0}".format(identity_result))
+                    self.logger.info("upload user feature result: {0}".format(identity_result))
+
+                with allure.step("teststep: identity user."):
+                    identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                    get_timestamp(), self.logger)
+                    allure.attach("identity owner result", "{0}".format(identity_result))
+                    self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep2: identity relative."):
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg', get_timestamp(), self.logger)
+                allure.attach("identity relative result", "{0}".format(identity_result1))
+                self.logger.info("identity relative result: {0}".format(identity_result1))
+                assert identity_result1
+
+            with allure.step("teststep3: get parameters."):
+                params = {"member_id": self.member_id, "features_name": 'kuli', "feature_sex": 1,
+                          "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"other_photo": open(get_image_path('relate_face.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+                self.logger.info("request file: {}".format(str(files)))
+
+            with allure.step("teststep4: requests http post."):
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep5: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                print(rsp.text)
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep6: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 201308
+                assert '系统中已有用户' in rsp_content['message']
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_117023_identity_relatives_same_phone ....")
+            self.logger.info("")
+
+    @allure.severity("blocker")
+    @allure.story("本人照片用于成员认证")
+    @allure.testcase("FT-HTJK-117-024")
+    def test_117024_identity_relatives_with_user_photo(self):
+        """ Test identity relatives with user photo(FT-HTJK-117-024)."""
+        self.logger.info(".... Start test_117024_identity_relatives_with_user_photo ....")
+        try:
+            with allure.step("teststep1: identity user."):
+                with allure.step("teststep: user feature."):
+                    headers = {"authorization": self.token}
+                    self.httpclient.update_header(headers)
+                    identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                     get_timestamp(), self.logger)
+                    allure.attach("upload user feature result", "{0}".format(identity_result))
+                    self.logger.info("upload user feature result: {0}".format(identity_result))
+
+                with allure.step("teststep: identity user."):
+                    identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                    get_timestamp(), self.logger)
+                    allure.attach("identity owner result", "{0}".format(identity_result))
+                    self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "features_name": 'kuli', "feature_sex": 1,
+                          "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                files = {"other_photo": open(get_image_path('face2.jpg'), 'rb'),
+                         "my_photo": open(get_image_path('face2.jpg'), 'rb')}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+                self.logger.info("request file: {}".format(str(files)))
+
+            with allure.step("teststep3: requests http post."):
+                rsp = self.httpclient.post(self.URI, data=params, files=files)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                print(rsp.text)
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 201308
+                assert '系统中已有用户' in rsp_content['message']
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            self.logger.info(".... End test_117024_identity_relatives_with_user_photo ....")
+            self.logger.info("")
+
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
-    # pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117022_identity_relatives_feature_sex_correct'])
+    # pytest.main(['-s', 'test_APP_Identity_Relatives.py'])
+    pytest.main(['-s', 'test_APP_Identity_Relatives.py::TestIdentityRelatives::test_117024_identity_relatives_with_user_photo'])
