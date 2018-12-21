@@ -16,6 +16,7 @@ import json
 import datetime
 
 
+@pytest.mark.IOT
 @allure.feature("Iot-服务单下发")
 class TestServiceOrderPush(object):
     @allure.step("+++ setup class +++")
