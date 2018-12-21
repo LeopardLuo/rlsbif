@@ -718,13 +718,16 @@ class TestMixScenario(object):
 
                 end_time = int(time.time())
                 during = end_time - start_time
-                while not self.mqttclient.rcv_msg and during < 60:
+                while len(self.mqttclient.rcv_msg)<2 and during < 60:
                     sleep(5)
                     end_time = int(time.time())
                     during = end_time - start_time
                 self.mqttclient.loopstop()
                 self.mqttclient.unsubscribe(topic)
                 if self.mqttclient.rcv_msg:
+                    if len(self.mqttclient.rcv_msg)<2:
+                        self.logger.error("device1 received message less than 2!")
+                        assert False
                     while self.mqttclient.rcv_msg:
                         msg = self.mqttclient.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
@@ -959,13 +962,16 @@ class TestMixScenario(object):
 
                 end_time = int(time.time())
                 during = end_time - start_time
-                while not self.mqttclient.rcv_msg and during < 60:
+                while len(self.mqttclient.rcv_msg)<2 and during < 60:
                     sleep(5)
                     end_time = int(time.time())
                     during = end_time - start_time
                 self.mqttclient.loopstop()
                 self.mqttclient.unsubscribe(topic)
                 if self.mqttclient.rcv_msg:
+                    if len(self.mqttclient.rcv_msg)<2:
+                        self.logger.error("device1 received message less than 2!")
+                        assert False
                     while self.mqttclient.rcv_msg:
                         msg = self.mqttclient.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
@@ -1167,13 +1173,16 @@ class TestMixScenario(object):
                     devices_ids.append(select_result2[0][0])
 
             with allure.step("teststep10: subscribe service order create."):
+                self.mqttclient2.loopstart()
+                time.sleep(5)
+                self.mqttclient2.loopstop()
                 topic = "/{0}/{1}/{2}".format(self.productkey, self.devicename, self.order_create)
                 topic2 = "/{0}/{1}/{2}".format(self.productkey2, self.devicename2, self.order_create)
                 self.logger.info("topic: {0}".format(topic))
-                self.mqttclient.subscribe(topic, 1)
-                self.mqttclient.loopstart()
                 self.mqttclient2.subscribe(topic2, 1)
                 self.mqttclient2.loopstart()
+                self.mqttclient.subscribe(topic, 1)
+                self.mqttclient.loopstart()
                 self.mqttclient.clear()
                 self.mqttclient2.clear()
                 start_time = int(time.time())
@@ -1499,7 +1508,7 @@ class TestMixScenario(object):
 
                 end_time = int(time.time())
                 during = end_time - start_time
-                while (not self.mqttclient.rcv_msg or not self.mqttclient2.rcv_msg) and during < 60:
+                while ( len(self.mqttclient.rcv_msg)<2 or len(self.mqttclient2.rcv_msg)<2) and during < 60:
                     sleep(5)
                     end_time = int(time.time())
                     during = end_time - start_time
@@ -1508,6 +1517,9 @@ class TestMixScenario(object):
                 self.mqttclient2.loopstop()
                 self.mqttclient2.unsubscribe(topic2)
                 if self.mqttclient.rcv_msg:
+                    if len(self.mqttclient.rcv_msg)<2:
+                        self.logger.error("device1 received message less than 2!")
+                        assert False
                     while self.mqttclient.rcv_msg:
                         msg = self.mqttclient.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
@@ -1517,6 +1529,9 @@ class TestMixScenario(object):
                     self.logger.error("Failed:device1 has not received iot message")
                     assert False
                 if self.mqttclient2.rcv_msg:
+                    if len(self.mqttclient2.rcv_msg)<2:
+                        self.logger.error("device2 received message less than 2!")
+                        assert False
                     while self.mqttclient2.rcv_msg:
                         msg = self.mqttclient2.rcv_msg.pop()
                         payload = json.loads(msg.payload, encoding='utf-8')
@@ -1664,5 +1679,5 @@ class TestMixScenario(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_scenario.py'])
-    pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400006_relative_create_multi_service_order_different_devices'])
+    pytest.main(['-s', 'test_scenario.py'])
+    # pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400005_owner_create_multi_service_order_different_devices'])
