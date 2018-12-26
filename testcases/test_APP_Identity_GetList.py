@@ -1299,7 +1299,193 @@ class TestGetIdentityList(object):
             self.logger.info(".... End test_116021_without_relationships ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("sex 1")
+    @allure.testcase("FT-HTJK-116-022")
+    def test_116022_relatives_sex_1(self):
+        """ Test get list relative sex 1(FT-HTJK-116-022)."""
+        self.logger.info(".... Start test_116022_relatives_sex_1 ....")
+        try:
+            with allure.step("teststep1: identity other."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg', get_timestamp(), self.logger, 1)
+                allure.attach("identity_result", "{0}".format(identity_result1))
+                self.logger.info("identity_result: {0}".format(identity_result1))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "page_index": 0, "page_size": 10, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep3: requests http post."):
+                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert rsp_content['result']['data'][0]['feature_sex'] == 1
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("delete database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                select_result = self.mysql.execute_select_condition(table, condition)
+                for member in select_result:
+                    if member[2] != '本人':
+                        condition = ("features_id", member[0])
+                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                        self.logger.info("")
+                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                        delete_result = self.mysql.execute_delete_condition(table, condition)
+                        allure.attach("delete result", str(delete_result))
+                        self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_116022_relatives_sex_1 ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("sex 2")
+    @allure.testcase("FT-HTJK-116-023")
+    def test_116023_relatives_sex_2(self):
+        """ Test get list relative sex 2(FT-HTJK-116-023)."""
+        self.logger.info(".... Start test_116023_relatives_sex_2 ....")
+        try:
+            with allure.step("teststep1: identity other."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg', get_timestamp(), self.logger, 2)
+                allure.attach("identity_result", "{0}".format(identity_result1))
+                self.logger.info("identity_result: {0}".format(identity_result1))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "page_index": 0, "page_size": 10, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep3: requests http post."):
+                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert rsp_content['result']['data'][0]['feature_sex'] == 2
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("delete database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                select_result = self.mysql.execute_select_condition(table, condition)
+                for member in select_result:
+                    if member[2] != '本人':
+                        condition = ("features_id", member[0])
+                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                        self.logger.info("")
+                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                        delete_result = self.mysql.execute_delete_condition(table, condition)
+                        allure.attach("delete result", str(delete_result))
+                        self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_116023_relatives_sex_2 ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("sex 3")
+    @allure.testcase("FT-HTJK-116-024")
+    def test_116024_relatives_sex_3(self):
+        """ Test get list relative sex 3(FT-HTJK-116-024)."""
+        self.logger.info(".... Start test_116024_relatives_sex_3 ....")
+        try:
+            with allure.step("teststep1: identity other."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result1 = identity_other(self.httpclient, self.member_id, 'kuli1', 'relate_face.jpg',
+                                                  'face2.jpg', get_timestamp(), self.logger)
+                allure.attach("identity_result", "{0}".format(identity_result1))
+                self.logger.info("identity_result: {0}".format(identity_result1))
+
+            with allure.step("teststep2: get parameters."):
+                params = {"member_id": self.member_id, "page_index": 0, "page_size": 10, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                allure.attach("params value", "{0}, {1}".format(params, headers))
+                self.logger.info("data: {0}, headers: {1}".format(params, headers))
+
+            with allure.step("teststep3: requests http post."):
+                rsp = self.httpclient.get(self.URI, params=params, headers=headers)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.url", str(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert not rsp_content['message']
+                assert rsp_content['result']['data'][0]['feature_sex'] == 3
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("delete database records"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                select_result = self.mysql.execute_select_condition(table, condition)
+                for member in select_result:
+                    if member[2] != '本人':
+                        condition = ("features_id", member[0])
+                        allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                        self.logger.info("")
+                        self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                        delete_result = self.mysql.execute_delete_condition(table, condition)
+                        allure.attach("delete result", str(delete_result))
+                        self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_116024_relatives_sex_3 ....")
+            self.logger.info("")
+
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_APP_Identity_GetList.py'])
-    pytest.main(['-s', 'test_APP_Identity_GetList.py::TestGetIdentityList::test_116005_member_id_wrong'])
+    pytest.main(['-s', 'test_APP_Identity_GetList.py::TestGetIdentityList::test_116024_relatives_sex_3'])
