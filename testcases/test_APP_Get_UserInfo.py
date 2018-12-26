@@ -129,6 +129,8 @@ class TestGetUserInfo(object):
                 assert rsp_content["code"] == 1
                 assert '拉取用户信息成功' in rsp_content["message"]
                 assert rsp_content["result"]['member_id'] == data['member_id']
+                assert rsp_content["result"]['auth_state'] == 0
+                assert rsp_content["result"]['feature_state'] == 0
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -501,7 +503,157 @@ class TestGetUserInfo(object):
             self.logger.info(".... End test_106008_no_timestamp ....")
             self.logger.info("")
 
+    @allure.severity("critical")
+    @allure.story("用户已采集照片")
+    @allure.testcase("FT-HTJK-106-009")
+    def test_106009_get_userinfo_with_feature(self):
+        """ Test get user info with feature(FT-HTJK-106-009)."""
+        self.logger.info(".... Start test_106009_get_userinfo_with_feature ....")
+        try:
+            assert self.token and self.member_id
+            with allure.step("teststep1: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                 get_timestamp(), self.logger, "本人")
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep2: get parameters."):
+                data = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                allure.attach("params value", "{0}, {1}".format(data, headers))
+                self.logger.info("data: {0}, headers: {1}".format(data, headers))
+
+            with allure.step("teststep3: requests http get."):
+                rsp = self.httpclient.get(self.URI, params=data, headers=headers)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
+
+            with allure.step("teststep4: assert the response code"):
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep5: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert '拉取用户信息成功' in rsp_content["message"]
+                assert rsp_content["result"]['member_id'] == data['member_id']
+                assert rsp_content["result"]['auth_state'] == 0
+                assert rsp_content["result"]['feature_state'] == 1
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user identity record"):
+                table = 'mem_member_identity'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete user identity record"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_106009_get_userinfo_with_feature ....")
+            self.logger.info("")
+
+    @allure.severity("critical")
+    @allure.story("用户已认证")
+    @allure.testcase("FT-HTJK-106-010")
+    def test_106010_get_userinfo_with_authority(self):
+        """ Test get user info with authority(FT-HTJK-106-010)."""
+        self.logger.info(".... Start test_106010_get_userinfo_with_authority ....")
+        try:
+            assert self.token and self.member_id
+            with allure.step("teststep1: user feature."):
+                headers = {"authorization": self.token}
+                self.httpclient.update_header(headers)
+                identity_result = user_myfeature(self.httpclient, self.member_id, 'face2.jpg',
+                                                get_timestamp(), self.logger, "本人")
+                allure.attach("upload user feature result", "{0}".format(identity_result))
+                self.logger.info("upload user feature result: {0}".format(identity_result))
+
+            with allure.step("teststep2: identity user."):
+                identity_result = user_identity(self.httpclient, self.member_id, 'fore2.jpg', 'back2.jpg',
+                                                get_timestamp(), self.logger)
+                allure.attach("identity owner result", "{0}".format(identity_result))
+                self.logger.info("identity owner result: {0}".format(identity_result))
+
+            with allure.step("teststep3: get parameters."):
+                data = {"member_id": self.member_id, "timestamp": get_timestamp()}
+                headers = {"authorization": self.token}
+                allure.attach("params value", "{0}, {1}".format(data, headers))
+                self.logger.info("data: {0}, headers: {1}".format(data, headers))
+
+            with allure.step("teststep4: requests http get."):
+                rsp = self.httpclient.get(self.URI, params=data, headers=headers)
+                allure.attach("request.headers", str(rsp.request.headers))
+                allure.attach("request.body", str(rsp.request.body))
+                self.logger.info("request.url: {}".format(rsp.request.url))
+                self.logger.info("request.headers: {}".format(rsp.request.headers))
+                self.logger.info("request.body: {}".format(rsp.request.body))
+
+            with allure.step("teststep5: assert the response code"):
+                allure.attach("Expect response code：", '200')
+                allure.attach("Actual response code：", str(rsp.status_code))
+                self.logger.info("Actual response code：{0}".format(rsp.status_code))
+                assert rsp.status_code == 200
+                rsp_content = rsp.json()
+
+            with allure.step("teststep6: assert the response content"):
+                allure.attach("response content：", str(rsp_content))
+                self.logger.info("response content: {}".format(rsp_content))
+                assert rsp_content["code"] == 1
+                assert '拉取用户信息成功' in rsp_content["message"]
+                assert rsp_content["result"]['member_id'] == data['member_id']
+                assert rsp_content["result"]['auth_state'] == 1
+                assert rsp_content["result"]['feature_state'] == 1
+        except Exception as e:
+            allure.attach("Exception: ", "{}".format(e))
+            self.logger.error("Error: exception occur: ")
+            self.logger.error(e)
+            assert False
+        finally:
+            with allure.step("teststep: delete user identity record"):
+                table = 'mem_member_identity'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            with allure.step("teststep: delete user identity record"):
+                table = 'mem_features'
+                condition = ("member_id", self.member_id)
+                allure.attach("table name and condition", "{0},{1}".format(table, condition))
+                self.logger.info("")
+                self.logger.info("table: {0}, condition: {1}".format(table, condition))
+                delete_result = self.mysql.execute_delete_condition(table, condition)
+                allure.attach("delete result", str(delete_result))
+                self.logger.info("delete result: {0}".format(delete_result))
+            self.logger.info(".... End test_106010_get_userinfo_with_authority ....")
+            self.logger.info("")
+
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Get_UserInfo.py'])
-    pytest.main(['-s', 'test_APP_Get_UserInfo.py::TestGetUserInfo::test_106002_get_userinfo_without_login'])
+    pytest.main(['-s', 'test_APP_Get_UserInfo.py'])
+    # pytest.main(['-s', 'test_APP_Get_UserInfo.py::TestGetUserInfo::test_106010_get_userinfo_with_authority'])
