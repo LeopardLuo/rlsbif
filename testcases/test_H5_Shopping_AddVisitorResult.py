@@ -2890,14 +2890,14 @@ class TestShoppingAddVisitorResult(object):
                               (' ', {"status": 200, "code": '300', "msg": "时间条件非法"}),
                               ('', {"status": 200, "code": '300', "msg": "时间条件非法"}),
                               ('2030-01-01', {"status": 200, "code": '300', "msg": "开始时间不能大于结束时间"}),
-                              ('2025-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              ('2025-01-01', {"status": 200, "code": '300', "msg": "结束时间必须晚于开始时间"}),
                               (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (-9223372036854775809, {"status": 200, "code": '300', "msg": "输入时间格式有误"})],
                              ids=["beginTime(1.5)", "beginTime(1)", "beginTime(20000000000)", "beginTime(格式化)", "beginTime(英文)", "beginTime(中文)",
                                   "beginTime(特殊字符)", "beginTime(数字英文)", "beginTime(数字中文)",
                                   "beginTime(数字特殊字符)", "beginTime(空格)", "beginTime(空)",
-                                  "beginTime(1)", "beginTime(0)", "beginTime(-1)", "beginTime(超大)", "beginTime(超小)"])
+                                  "beginTime(2030-01-01)", "beginTime(2025-01-01)", "beginTime(-1)", "beginTime(超大)", "beginTime(超小)"])
     def test_203014_add_visitor_result_begintime_wrong(self, beginTime, result):
         """ Test wrong beginTime values (FT-HTJK-203-014).
         :param beginTime: beginTime parameter value.
@@ -3098,7 +3098,7 @@ class TestShoppingAddVisitorResult(object):
                               ('%1%', {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (' ', {"status": 200, "code": '300', "msg": "时间条件非法"}),
                               ('', {"status": 200, "code": '300', "msg": "时间条件非法"}),
-                              ('2030-01-01', {"status": 200, "code": '300', "msg": "提交邀请失败(平台:结束时间必须晚于开始时间)"}),
+                              ('2030-01-01', {"status": 200, "code": '300', "msg": "结束时间必须晚于开始时间"}),
                               ('2025-01-01', {"status": 200, "code": '300', "msg": "开始时间不能大于结束时间"}),
                               (-1, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
                               (9223372036854775808, {"status": 200, "code": '300', "msg": "输入时间格式有误"}),
@@ -3107,7 +3107,7 @@ class TestShoppingAddVisitorResult(object):
                                   "endTime(英文)", "endTime(中文)",
                                   "endTime(特殊字符)", "endTime(数字英文)", "endTime(数字中文)",
                                   "endTime(数字特殊字符)", "endTime(空格)", "endTime(空)",
-                                  "endTime(1)", "endTime(0)", "endTime(-1)", "endTime(超大)", "endTime(超小)"])
+                                  "endTime(2030-01-01)", "endTime(2025-01-01)", "endTime(-1)", "endTime(超大)", "endTime(超小)"])
     def test_203015_add_visitor_result_endtime_wrong(self, endTime, result):
         """ Test wrong endTime values (FT-HTJK-203-015).
         :param endTime: endTime parameter value.
@@ -3491,12 +3491,12 @@ class TestShoppingAddVisitorResult(object):
     @allure.story("picture不支持的文件类型")
     @allure.testcase("FT-HTJK-203-017")
     @pytest.mark.parametrize("picture, result",
-                             [("relate_face.gif", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
-                              ("case.xlsx", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
-                              ("temp.txt", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
-                              ("hb.mp4", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
-                              ("fore1.PNG", {"status": 200, "code": "300", "msg": "提交邀请失败"}),
-                              ("dog5.jpg", {"status": 200, "code": "300", "msg": "提交邀请失败"}), ],
+                             [("relate_face.gif", {"status": 200, "code": "300", "msg": "照片不合格"}),
+                              ("case.xlsx", {"status": 200, "code": "300", "msg": "照片不合格"}),
+                              ("temp.txt", {"status": 200, "code": "300", "msg": "照片不合格"}),
+                              ("hb.mp4", {"status": 200, "code": "300", "msg": "照片不合格"}),
+                              ("fore1.PNG", {"status": 200, "code": "300", "msg": "照片不合格"}),
+                              ("dog5.jpg", {"status": 200, "code": "300", "msg": "照片不合格"}), ],
                              ids=["picture(gif)", "picture(xlsx)", "picture(txt)",
                                   "picture(mp4)", "picture(other)", "picture(dog)"])
     def test_203017_add_visitor_result_picture_wrong(self, picture, result):
@@ -5089,4 +5089,4 @@ class TestShoppingAddVisitorResult(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py'])
-    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_203025_repeat_add_visitor_result_other_with_whitelist'])
+    pytest.main(['-s', 'test_H5_Shopping_AddVisitorResult.py::TestShoppingAddVisitorResult::test_203014_add_visitor_result_begintime_wrong'])
