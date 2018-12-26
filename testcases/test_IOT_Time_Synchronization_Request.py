@@ -15,7 +15,7 @@ from utils.MqttClient import *
 import json
 import datetime
 
-
+@pytest.mark.skip(reason="时间同步接口已取消")
 @pytest.mark.IOT
 @allure.feature("IOT-时间同步请求")
 class TestTimeSynchronizationRequest(object):
@@ -390,6 +390,6 @@ class TestTimeSynchronizationRequest(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_IOT_Time_Synchronization_Request.py'])
-    pytest.main(['-s',
-                 'test_IOT_Time_Synchronization_Request.py::TestTimeSynchronizationRequest::test_003051_request_time_synchronization_no_timestamp'])
+    pytest.main(['-s', 'test_IOT_Time_Synchronization_Request.py'])
+    # pytest.main(['-s',
+    #              'test_IOT_Time_Synchronization_Request.py::TestTimeSynchronizationRequest::test_003046_request_time_synchronization'])

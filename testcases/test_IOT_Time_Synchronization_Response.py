@@ -15,7 +15,7 @@ from utils.MqttClient import *
 import json
 import datetime
 
-
+@pytest.mark.skip(reason="时间同步接口已取消")
 @pytest.mark.IOT
 @allure.feature("IOT-时间同步响应")
 class TestTimeSynchronizationResponse(object):
@@ -121,6 +121,7 @@ class TestTimeSynchronizationResponse(object):
             assert False
         finally:
             self.mqtt_client.unsubscribe(topic)
+            time.sleep(5)
             self.mqtt_client.loopstop()
             self.logger.info(".... End test_003052_get_payload_action_id_time_synchronization_response ....")
             self.logger.info("")
@@ -170,6 +171,7 @@ class TestTimeSynchronizationResponse(object):
             assert False
         finally:
             self.mqtt_client.unsubscribe(topic)
+            time.sleep(5)
             self.mqtt_client.loopstop()
             self.logger.info(".... End test_003053_get_payload_timestamp_time_synchronization_response ....")
             self.logger.info("")
