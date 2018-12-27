@@ -1016,7 +1016,7 @@ class TestGetRecognizeRecordList(object):
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 1, "msg": ""}),
                               (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "timestamp不能为空"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
                               (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
@@ -1361,5 +1361,5 @@ class TestGetRecognizeRecordList(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
-    # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
+    # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
+    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
