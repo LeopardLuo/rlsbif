@@ -2383,3 +2383,84 @@ def h5_mymember(httpclient, skuId, logger=None):
         return rsp_content['result']['FeatureList']
     else:
         return []
+
+
+@allure.step("H5-Providers-Catecontent")
+def h5_providers_catecontent(httpclient, providerId, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param providerId: interface defined parameter providerId long type.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_providers_catecontent ----")
+    uri = ConfigParse().getItem("uri", "H5ProvidersCatecontent")
+    data = {"providerId": providerId}
+    allure.attach("request params", str(data))
+    logger and logger.info("request dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_providers_catecontent ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_providers_catecontent ----")
+    logger and logger.info("")
+    if int(rsp_content['code']) == 1:
+        return rsp_content['result']
+    else:
+        return {}
+
+
+@allure.step("H5-Providers-Content")
+def h5_providers_content(httpclient, providerId, cateType, pageIndex=None, pageSize=None, logger=None):
+    """ Business system get user info from server.
+    :param httpclient: http request client.
+    :param providerId: interface defined parameter providerId long type.
+    :param cateType: interface defined parameter cateType long type.
+    :param pageIndex: interface defined parameter pageIndex int type, optional.
+    :param pageSize: interface defined parameter pageSize int type, optional.
+    :param logger: logger instance for logging, optional.
+    :rtype: return true or false.
+    """
+    logger and logger.info("")
+    logger and logger.info("---- start h5_providers_content ----")
+    uri = ConfigParse().getItem("uri", "H5ProvidersContent")
+    data = {"providerId": providerId, "cateType": cateType, "pageIndex": pageIndex, "pageSize": pageSize}
+    allure.attach("request params", str(data))
+    logger and logger.info("request dict: {}".format(data))
+    rsp = httpclient.get(uri=uri, params=data)
+    allure.attach("request.headers", str(rsp.request.headers))
+    logger and logger.info("request.headers: {}".format(rsp.request.headers))
+    allure.attach("request.url", str(rsp.request.url))
+    logger and logger.info("request.url: {}".format(rsp.request.url))
+    status_code = rsp.status_code
+    allure.attach("status_code", str(status_code))
+    logger and logger.info("status_code: {}".format(status_code))
+    if status_code != 200:
+        allure.attach("response content", str(rsp.text))
+        logger and logger.info("response content: {}".format(rsp.text))
+        logger and logger.info("---- end h5_providers_content ----")
+        logger and logger.info("")
+        return {}
+    rsp_content = rsp.json()
+    allure.attach("response content", str(rsp_content))
+    logger and logger.info("response content: {}".format(rsp_content))
+    logger and logger.info("---- end h5_providers_content ----")
+    logger and logger.info("")
+    if int(rsp_content['code']) == 1:
+        return rsp_content['result']
+    else:
+        return {}

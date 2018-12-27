@@ -207,7 +207,7 @@ class TestGetRecognizeRecordList(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep: publish service order report."):
-                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
+                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "update")
                 in_payload = {
                     "action_id": "100",
                     "data": {
@@ -1361,5 +1361,5 @@ class TestGetRecognizeRecordList(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
-    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
+    pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py'])
+    # pytest.main(['-s', 'test_APP_Get_Recognize_Record_List.py::TestGetRecognizeRecordList::test_122001_get_recognize_record_correct'])
