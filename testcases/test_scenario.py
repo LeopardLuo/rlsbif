@@ -333,11 +333,11 @@ class TestMixScenario(object):
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 2
                 assert r_orderlist[0]['state'] == 2
-
-            with allure.step("teststep18: subscribe sync time."):
-                payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
-                self.logger.info("Tiime sync message payload: {}".format(payload))
-                assert payload['action_id'] == '204'
+            # iot时间请求时间同步接口已去掉。
+            # with allure.step("teststep18: subscribe sync time."):
+            #     payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
+            #     self.logger.info("Tiime sync message payload: {}".format(payload))
+            #     assert payload['action_id'] == '204'
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -561,11 +561,11 @@ class TestMixScenario(object):
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 10
                 assert r_orderlist[0]['state'] == 2
-
-            with allure.step("teststep18: subscribe sync time."):
-                payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
-                self.logger.info("Tiime sync message payload: {}".format(payload))
-                assert payload['action_id'] == '204'
+            # iot时间请求时间同步接口已去掉。
+            # with allure.step("teststep18: subscribe sync time."):
+            #     payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
+            #     self.logger.info("Tiime sync message payload: {}".format(payload))
+            #     assert payload['action_id'] == '204'
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -806,12 +806,12 @@ class TestMixScenario(object):
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 2
                 assert r_orderlist[0]['state'] == 2
-
-            with allure.step("teststep18: subscribe sync time."):
-                self.mqttclient.clear()
-                payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
-                self.logger.info("Time sync message payload: {}".format(payload))
-                assert payload['action_id'] == '204'
+            # iot时间请求时间同步接口已去掉。
+            # with allure.step("teststep18: subscribe sync time."):
+            #     self.mqttclient.clear()
+            #     payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
+            #     self.logger.info("Time sync message payload: {}".format(payload))
+            #     assert payload['action_id'] == '204'
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1056,12 +1056,12 @@ class TestMixScenario(object):
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 10
                 assert r_orderlist[0]['state'] == 2
-
-            with allure.step("teststep18: subscribe sync time."):
-                self.mqttclient.clear()
-                payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
-                self.logger.info("Tiime sync message payload: {}".format(payload))
-                assert payload['action_id'] == '204'
+            # iot时间请求时间同步接口已去掉。
+            # with allure.step("teststep18: subscribe sync time."):
+            #     self.mqttclient.clear()
+            #     payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
+            #     self.logger.info("Tiime sync message payload: {}".format(payload))
+            #     assert payload['action_id'] == '204'
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1333,16 +1333,16 @@ class TestMixScenario(object):
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 8
                 assert r_orderlist[0]['state'] == 2
-
-            with allure.step("teststep18: subscribe sync time."):
-                self.mqttclient.clear()
-                self.mqttclient2.clear()
-                payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
-                self.logger.info("device1 time sync message payload: {}".format(payload))
-                payload2 = iot_publish_SyncTime(self.mqttclient2, self.productkey2, self.devicename2, 1, logger=self.logger)
-                self.logger.info("device2 time sync message payload: {}".format(payload2))
-                assert payload['action_id'] == '204'
-                assert payload2['action_id'] == '204'
+            # iot时间请求时间同步接口已去掉。
+            # with allure.step("teststep18: subscribe sync time."):
+            #     self.mqttclient.clear()
+            #     self.mqttclient2.clear()
+            #     payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
+            #     self.logger.info("device1 time sync message payload: {}".format(payload))
+            #     payload2 = iot_publish_SyncTime(self.mqttclient2, self.productkey2, self.devicename2, 1, logger=self.logger)
+            #     self.logger.info("device2 time sync message payload: {}".format(payload2))
+            #     assert payload['action_id'] == '204'
+            #     assert payload2['action_id'] == '204'
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
@@ -1637,16 +1637,16 @@ class TestMixScenario(object):
                 self.logger.info("Service order Status: {0}".format(r_orderlist))
                 assert r_orderlist[0]['already_count'] == 8
                 assert r_orderlist[0]['state'] == 2
-
-            with allure.step("teststep18: subscribe sync time."):
-                self.mqttclient.clear()
-                self.mqttclient2.clear()
-                payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
-                self.logger.info("device1 Time sync message payload: {}".format(payload))
-                payload2 = iot_publish_SyncTime(self.mqttclient2, self.productkey2, self.devicename2, 1, logger=self.logger)
-                self.logger.info("device2 Time sync message payload: {}".format(payload2))
-                assert payload['action_id'] == '204'
-                assert payload2['action_id'] == '204'
+            #iot时间请求时间同步接口已去掉。
+            # with allure.step("teststep18: subscribe sync time."):
+            #     self.mqttclient.clear()
+            #     self.mqttclient2.clear()
+            #     payload = iot_publish_SyncTime(self.mqttclient, self.productkey, self.devicename, 1, logger=self.logger)
+            #     self.logger.info("device1 Time sync message payload: {}".format(payload))
+            #     payload2 = iot_publish_SyncTime(self.mqttclient2, self.productkey2, self.devicename2, 1, logger=self.logger)
+            #     self.logger.info("device2 Time sync message payload: {}".format(payload2))
+            #     assert payload['action_id'] == '204'
+            #     assert payload2['action_id'] == '204'
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))
             self.logger.error("Error: exception occur: ")
