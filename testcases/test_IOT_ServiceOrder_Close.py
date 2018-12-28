@@ -42,6 +42,7 @@ class TestServiceOrderClose(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
+                cls.order_close = cls.config.getItem("iot", "ServiceOrderClose")
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -235,7 +236,7 @@ class TestServiceOrderClose(object):
             self.logger.info("delete result: {0}".format(delete_result))
         with allure.step("delete bus_service_order_device_list"):
             bus_service_order_device_list_table = "bus_service_order_device_list"
-            bus_service_order_device_list_condition = ("device_id", self.device_id)
+            bus_service_order_device_list_condition = ("service_order_id", self.service_order_id)
             allure.attach("table name", str(bus_service_order_device_list_table))
             self.logger.info("table: {0}".format(bus_service_order_device_list_table))
             bus_service_order_device_list_result = self.mysql.execute_delete_condition(
@@ -282,11 +283,12 @@ class TestServiceOrderClose(object):
     @allure.testcase("FT-HTJK-003-033")
     def test_003033_get_payload_action_id_after_closed(self):
         self.logger.info(".... test_003033_get_payload_action_id_after_closed ....")
-        topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_close)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:close the service order"):
                 self.logger.info("strat to close service order.")
@@ -310,11 +312,11 @@ class TestServiceOrderClose(object):
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
-                allure.attach("Expect action id:", str(203))
+                allure.attach("Expect action id:", str(202))
                 allure.attach("Actual action id:", str(action_id))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
-                assert action_id == "203"
+                assert action_id == "202"
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -331,11 +333,12 @@ class TestServiceOrderClose(object):
     @allure.testcase("FT-HTJK-003-034")
     def test_003034_get_payload_service_order_id_after_closed(self):
         self.logger.info(".... test_003034_get_payload_service_order_id_after_closed ....")
-        topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_close)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:close the service order"):
                 self.logger.info("strat to close service order.")
@@ -380,11 +383,12 @@ class TestServiceOrderClose(object):
     @allure.testcase("FT-HTJK-003-035")
     def test_003035_get_payload_timestamp_after_closed(self):
         self.logger.info(".... test_003035_get_payload_timestamp_after_closed ....")
-        topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_close)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:close the service order"):
                 self.logger.info("strat to close service order.")
@@ -430,11 +434,12 @@ class TestServiceOrderClose(object):
     @allure.testcase("FT-HTJK-003-036")
     def test_003036_service_order_closed_after_in_count_enough(self):
         self.logger.info(".... start test_003036_service_order_closed_after_in_count_enough ....")
-        topic = "/{0}/{1}/ServiceOrderClose".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_close)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:report the service order status"):
                 self.logger.info("report the service order status.")
@@ -467,12 +472,12 @@ class TestServiceOrderClose(object):
                 allure.attach("Actual service_order_id:", str(service_order_id_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual service_order_id:{0}".format(service_order_id_payload))
-                allure.attach("Expect action id:", str(203))
+                allure.attach("Expect action id:", str(202))
                 allure.attach("Actual action id:", str(action_id))
                 assert int(service_order_id_payload) == self.service_order_id
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
-                assert action_id == "203"
+                assert action_id == "202"
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
             self.logger.error("Error: exception ocurr: ")
@@ -486,6 +491,6 @@ class TestServiceOrderClose(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])
-    pytest.main(
-        ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003036_service_order_closed_after_in_count_enough'])
+    pytest.main(['-s', 'test_IOT_ServiceOrder_Close.py'])
+    # pytest.main(
+    #     ['-s', 'test_IOT_ServiceOrder_Close.py::TestServiceOrderClose::test_003036_service_order_closed_after_in_count_enough'])

@@ -42,6 +42,7 @@ class TestServiceOrderReport(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
+                cls.service_order_report = cls.config.getItem("iot", "ServiceOrderReport")
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -292,7 +293,7 @@ class TestServiceOrderReport(object):
                              ids=["in_out(进)", "in_out(出)", "in_out(未知)"])
     def test_003054_report_service_order_status(self, in_out):
         self.logger.info(".... test_003054_report_service_order_status ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -382,7 +383,7 @@ class TestServiceOrderReport(object):
                                   "action_id(数字特殊字符)", "action_id(空格)", "action_id(空)"])
     def test_003055_report_service_order_status_incorrect_action_id(self, action_id, result):
         self.logger.info(".... test_003055_report_service_order_status_incorrect_action_id ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -440,7 +441,7 @@ class TestServiceOrderReport(object):
                                   "service_order_id(数字特殊字符)", "service_order_id(空格)", "service_order_id(空)"])
     def test_003056_report_service_order_status_incorrect_service_order_id(self, service_order_id):
         self.logger.info(".... test_003056_report_service_order_status_incorrect_service_order_id ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -495,7 +496,7 @@ class TestServiceOrderReport(object):
                                   "device_id(数字特殊字符)", "device_id(空格)", "device_id(空)"])
     def test_003057_report_service_order_status_incorrect_device_id(self, device_id, result):
         self.logger.info(".... test_003057_report_service_order_status_incorrect_device_id ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -552,7 +553,7 @@ class TestServiceOrderReport(object):
                                   "in_out(数字中文)", "in_out(数字特殊字符)", "in_out(空格)", "in_out(空)"])
     def test_003058_report_service_order_status_incorrect_in_out(self, in_out, result):
         self.logger.info(".... test_003058_report_service_order_status_incorrect_in_out ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -623,7 +624,7 @@ class TestServiceOrderReport(object):
                              ids=["extra(空值)", "extra(JSON格式数据)_1", "extra(JSON格式数据)_2"])
     def test_003059_report_service_order_status_correct_extra(self, extra):
         self.logger.info(".... test_003059_report_service_order_status_correct_extra ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -727,7 +728,7 @@ class TestServiceOrderReport(object):
                                   "extra(数字中文)", "extra(数字特殊字符)", "extra(空格)"])
     def test_003060_report_service_order_status_incorrect_extra(self, extra, result):
         self.logger.info(".... test_003060_report_service_order_status_incorrect_extra ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -781,7 +782,7 @@ class TestServiceOrderReport(object):
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_003061_report_service_order_status_correct_timestamp(self, timestamp):
         self.logger.info(".... test_003061_report_service_order_status_correct_timestamp ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -874,7 +875,7 @@ class TestServiceOrderReport(object):
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
     def test_003062_report_service_order_status_incorrect_timestamp(self, timestamp, result):
         self.logger.info(".... test_003062_report_service_order_status_incorrect_timestamp ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -925,7 +926,7 @@ class TestServiceOrderReport(object):
     @allure.testcase("FT-HTJK-003-063")
     def test_003063_report_service_order_status_no_action_id(self):
         self.logger.info(".... test_003063_report_service_order_status_no_action_id ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -975,7 +976,7 @@ class TestServiceOrderReport(object):
     @allure.testcase("FT-HTJK-003-064")
     def test_003064_report_service_order_status_no_service_order_id(self):
         self.logger.info(".... test_003064_report_service_order_status_no_service_order_id ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -1022,7 +1023,7 @@ class TestServiceOrderReport(object):
     @allure.testcase("FT-HTJK-003-065")
     def test_003065_report_service_order_status_no_device_id(self):
         self.logger.info(".... test_003065_report_service_order_status_no_device_id ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -1074,7 +1075,7 @@ class TestServiceOrderReport(object):
     @allure.testcase("FT-HTJK-003-066")
     def test_003066_report_service_order_status_no_extra(self):
         self.logger.info(".... test_003066_report_service_order_status_no_extra ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -1127,7 +1128,7 @@ class TestServiceOrderReport(object):
     @allure.testcase("FT-HTJK-003-067")
     def test_003067_report_service_order_status_no_timestamp(self):
         self.logger.info(".... test_003067_report_service_order_status_no_timestamp ....")
-        topic = "/{0}/{1}/ServiceOrderReport".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.service_order_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -1176,6 +1177,6 @@ class TestServiceOrderReport(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
-    # pytest.main(['-s',
-    #              'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003054_report_service_order_status'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Report.py'])
+    pytest.main(['-s',
+                 'test_IOT_ServiceOrder_Report.py::TestServiceOrderReport::test_003054_report_service_order_status'])

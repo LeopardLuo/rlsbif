@@ -34,6 +34,7 @@ class TestDeviceErrorReport(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_")+1:]
+                cls.error_report = cls.config.getItem("iot", "Error")
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -110,7 +111,7 @@ class TestDeviceErrorReport(object):
     @allure.testcase("FT-HTJK-003-082")
     def test_003082_device_error_report(self):
         self.logger.info(".... test_003082_device_error_report ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -173,7 +174,7 @@ class TestDeviceErrorReport(object):
                                   "action_id(数字特殊字符)", "action_id(空格)", "action_id(空)"])
     def test_003083_device_error_report_incorrect_action_id(self, action_id, result):
         self.logger.info(".... test_003083_device_error_report_incorrect_action_id ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -222,7 +223,7 @@ class TestDeviceErrorReport(object):
                                   "device_id(数字特殊字符)", "device_id(空格)", "device_id(空)"])
     def test_003084_device_error_report_incorrect_device_id(self, device_id, result):
         self.logger.info(".... test_003084_device_error_report_incorrect_device_id ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -270,7 +271,7 @@ class TestDeviceErrorReport(object):
                                   "error_info(数字特殊字符)"])
     def test_003085_device_error_report_correct_error_info(self, error_info):
         self.logger.info(".... test_003085_device_error_report_correct_error_info ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -330,7 +331,7 @@ class TestDeviceErrorReport(object):
                              ids=["error_info(超长值)", "error_info(空格)", "error_info(空)"])
     def test_003086_device_error_report_incorrect_error_info(self, error_info, result):
         self.logger.info(".... test_003087_device_error_report_incorrect_error_info ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -375,7 +376,7 @@ class TestDeviceErrorReport(object):
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_003087_device_error_report_correct_timestamp(self, timestamp):
         self.logger.info(".... test_003087_device_error_report_correct_timestamp ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -441,7 +442,7 @@ class TestDeviceErrorReport(object):
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
     def test_003088_device_error_report_incorrect_timestamp(self, timestamp, result):
         self.logger.info(".... test_003088_device_error_report_incorrect_timestamp ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -483,7 +484,7 @@ class TestDeviceErrorReport(object):
     @allure.testcase("FT-HTJK-003-089")
     def test_003089_device_error_report_no_action_id(self):
         self.logger.info(".... test_003089_device_error_report_no_action_id ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -525,7 +526,7 @@ class TestDeviceErrorReport(object):
     @allure.testcase("FT-HTJK-003-090")
     def test_003090_device_error_report_no_device_id(self):
         self.logger.info(".... test_003090_device_error_report_no_device_id ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -566,7 +567,7 @@ class TestDeviceErrorReport(object):
     @allure.testcase("FT-HTJK-003-091")
     def test_003091_device_error_report_no_error_info(self):
         self.logger.info(".... test_003091_device_error_report_no_error_info ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()
@@ -607,7 +608,7 @@ class TestDeviceErrorReport(object):
     @allure.testcase("FT-HTJK-003-092")
     def test_003092_device_error_report_no_timestamp(self):
         self.logger.info(".... test_003092_device_error_report_no_timestamp ....")
-        topic = "/{0}/{1}/Error".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.error_report)
         try:
             with allure.step("teststep1: start mqtt_client."):
                 self.mqtt_client.loopstart()

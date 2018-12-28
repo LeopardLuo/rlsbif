@@ -15,7 +15,7 @@ from utils.MqttClient import *
 import json
 import datetime
 
-@pytest.mark.skip(reason="设备向平台请求指定时间的服务单未开发完成")
+# @pytest.mark.skip(reason="设备向平台请求指定时间的服务单未开发完成")
 @pytest.mark.IOT
 @allure.feature("IOT-设备向平台请求指定时间的服务单")
 class TestRequestServiceOrder(object):
@@ -48,6 +48,8 @@ class TestRequestServiceOrder(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
+                cls.update = cls.config.getItem("iot", "Update")
+                cls.get = cls.config.getItem("iot", "Get")
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -242,7 +244,7 @@ class TestRequestServiceOrder(object):
             self.logger.info("delete result: {0}".format(delete_result))
         with allure.step("delete bus_service_order_device_list"):
             bus_service_order_device_list_table = "bus_service_order_device_list"
-            bus_service_order_device_list_condition = ("device_id", self.device_id)
+            bus_service_order_device_list_condition = ("service_order_id", self.service_order_id)
             allure.attach("table name", str(bus_service_order_device_list_table))
             self.logger.info("table: {0}".format(bus_service_order_device_list_table))
             bus_service_order_device_list_result = self.mysql.execute_delete_condition(
@@ -289,8 +291,8 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-001")
     def test_310001_request_service_order_normal(self):
         self.logger.info(".... test_310001_request_service_order_normal ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -301,13 +303,21 @@ class TestRequestServiceOrder(object):
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
                 self.logger.info("params: {0}".format(send_payload))
+                time.sleep(20)
+                self.mqtt_client.clear()
                 self.mqtt_client.publish(send_topic, str(send_payload), 1)
                 self.logger.info("publish the request ")
+                self.mqtt_client.clear()
+                self.logger.info("msg lent:{0}".format(len(self.mqtt_client.rcv_msg)))
+                time.sleep(10)
+                self.mqtt_client.publish(send_topic, str(send_payload), 1)
+                self.logger.info("publish the request ")
+                self.logger.info("msg lent:{0}".format(len(self.mqtt_client.rcv_msg)))
             with allure.step("teststep3:assert the action_id in payload"):
                 start_time = datetime.datetime.now()
                 while not self.mqtt_client.rcv_msg:
@@ -317,7 +327,7 @@ class TestRequestServiceOrder(object):
                     if during > 60:
                         self.logger.error("no iot msg received")
                         assert False
-                # time.sleep(5)
+                time.sleep(10)
                 mqtt_msg = self.mqtt_client.rcv_msg.pop()
                 msg_payload = mqtt_msg.payload.decode('utf-8')
                 msg_payload_dict = json.loads(msg_payload)
@@ -342,19 +352,20 @@ class TestRequestServiceOrder(object):
     @allure.story("设置错误action_id，设备向平台请求指定时间的服务单")
     @allure.testcase("FT-HTJK-310-002")
     @pytest.mark.parametrize("action_id, result",
-                             [('109', []), ('106' * 10, []), ('1.0', []), ('中', []), ('a', []), ('*', []), ('1A', []),
+                             [('109', []), ('103' * 10, []), ('1.0', []), ('中', []), ('a', []), ('*', []), ('1A', []),
                               ('1中', []), ('1*', []), (' ', []), ('', [])],
-                             ids=["action_id(非106)", "action_id(超长值)", "action_id(小数)", "action_id(中文)",
+                             ids=["action_id(非103)", "action_id(超长值)", "action_id(小数)", "action_id(中文)",
                                   "action_id(字母)", "action_id(特殊字符)", "action_id(数字字母)", "action_id(数字中文)",
                                   "action_id(数字特殊字符)", "action_id(空格)", "action_id(空)"])
     def test_310002_request_service_order_incorrect_action_id(self, action_id, result):
         self.logger.info(".... test_310002_request_service_order_incorrect_action_id ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
@@ -400,19 +411,20 @@ class TestRequestServiceOrder(object):
                                   "device_id(数字特殊字符)", "device_id(空格)", "device_id(空)"])
     def test_310003_request_service_order_incorrect_device_id(self, device_id, result):
         self.logger.info(".... test_310002_request_service_order_incorrect_action_id ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -447,19 +459,20 @@ class TestRequestServiceOrder(object):
                              ids=["begin_time(支持最早的日期时间)", "begin_time(当前时间戳)"])
     def test_310004_request_service_order_correct_begin_time(self, begin_time):
         self.logger.info(".... test_310004_request_service_order_correct_begin_time ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 # begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -510,19 +523,20 @@ class TestRequestServiceOrder(object):
                                   "begin_time(数字特殊字符)", "begin_time(空格)", "begin_time(空)"])
     def test_310005_request_service_order_incorrect_begin_time(self, begin_time, result):
         self.logger.info(".... test_310005_request_service_order_incorrect_begin_time ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 # begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -557,19 +571,20 @@ class TestRequestServiceOrder(object):
                              ids=["end_time(支持最早的日期时间)", "end_time(当前时间戳)"])
     def test_310006_request_service_order_correct_end_time(self, end_time):
         self.logger.info(".... test_310006_request_service_order_correct_end_time ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 # end_time = end_time
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -620,19 +635,20 @@ class TestRequestServiceOrder(object):
                                   "end_time(数字特殊字符)", "end_time(空格)", "end_time(空)"])
     def test_310007_request_service_order_incorrect_end_time(self, end_time, result):
         self.logger.info(".... test_310007_request_service_order_incorrect_end_time ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 50
                 # end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -664,19 +680,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-008")
     def test_310008_request_service_order_correct_data_type_0(self):
         self.logger.info(".... test_310008_request_service_order_correct_data_type_0 ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -728,19 +745,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-009")
     def test_310009_request_service_order_correct_data_type_1(self):
         self.logger.info(".... test_310009_request_service_order_correct_data_type_1 ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 1}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -792,19 +810,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-010")
     def test_310010_request_service_order_correct_data_type_2(self):
         self.logger.info(".... test_310010_request_service_order_correct_data_type_2 ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 2}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -864,19 +883,20 @@ class TestRequestServiceOrder(object):
                                   "data_type(数字特殊字符)", "data_type(空格)", "data_type(空)"])
     def test_310011_request_service_order_incorrect_data_type(self, data_type, result):
         self.logger.info(".... test_310011_request_service_order_incorrect_data_type ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": data_type}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -911,19 +931,20 @@ class TestRequestServiceOrder(object):
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_310012_request_service_order_correct_timestamp(self, timestamp):
         self.logger.info(".... test_310012_request_service_order_correct_timestamp ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(timestamp)}
                 allure.attach("params value", str(send_payload))
@@ -974,19 +995,20 @@ class TestRequestServiceOrder(object):
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
     def test_310013_request_service_order_incorrect_timestamp(self, timestamp, result):
         self.logger.info(".... test_310013_request_service_order_incorrect_timestamp ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(timestamp)}
                 allure.attach("params value", str(send_payload))
@@ -1018,12 +1040,13 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-014")
     def test_310014_request_service_order_no_action_id(self):
         self.logger.info(".... test_310014_request_service_order_no_action_id ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
@@ -1061,19 +1084,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-015")
     def test_310015_request_service_order_no_device_id(self):
         self.logger.info(".... test_310015_request_service_order_no_device_id ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -1105,19 +1129,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-016")
     def test_310016_request_service_order_no_begin_time(self):
         self.logger.info(".... test_310016_request_service_order_no_begin_time ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 # begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id":self.device_id, "end_time": end_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -1149,19 +1174,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-017")
     def test_310017_request_service_order_no_end_time(self):
         self.logger.info(".... test_310017_request_service_order_no_end_time ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 # end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time,
                                          "data_type": 0}, "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -1193,19 +1219,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-018")
     def test_310018_request_service_order_no_data_type(self):
         self.logger.info(".... test_310018_request_service_order_no_data_type ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time,"end_time":end_time},
                                 "timestamp": str(stamp)}
                 allure.attach("params value", str(send_payload))
@@ -1237,19 +1264,20 @@ class TestRequestServiceOrder(object):
     @allure.testcase("FT-HTJK-310-019")
     def test_310019_request_service_order_no_timestamp(self):
         self.logger.info(".... test_310019_request_service_order_no_timestamp ....")
-        topic = "/{0}/{1}/Common/Down".format(self.ProductKey, self.DeviceName)
-        send_topic = "/{0}/{1}/Common/Up".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.update)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
                 self.mqtt_client.loopstart()
+                self.mqtt_client.clear()
                 self.logger.info("subscribe topic succeed!")
             with allure.step("teststep2:request service orders"):
                 self.logger.info("request service orders.")
                 stamp = get_timestamp()
                 begin_time = stamp - 3600
                 end_time = stamp + 3600
-                send_payload = {"action_id": "106",
+                send_payload = {"action_id": "103",
                                 "data": {"device_id": self.device_id, "begin_time": begin_time, "end_time": end_time,
                                          "data_type": 0}}
                 allure.attach("params value", str(send_payload))
@@ -1275,3 +1303,7 @@ class TestRequestServiceOrder(object):
             self.mqtt_client.loopstop()
             self.logger.info(".... End test_310019_request_service_order_no_timestamp ....")
             self.logger.info("")
+
+if __name__ == '__main__':
+    # pytest.main(['-s', 'test_IOT_Request_ServiceOrder.py'])
+    pytest.main(['-s', 'test_IOT_Request_ServiceOrder.py::TestRequestServiceOrder::test_310001_request_service_order_normal'])
