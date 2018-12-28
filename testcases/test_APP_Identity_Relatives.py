@@ -821,7 +821,7 @@ class TestIdentityRelatives(object):
             with allure.step("teststep5: assert the response content"):
                 allure.attach("response content：", str(rsp_content))
                 self.logger.info("response content: {}".format(rsp_content))
-                assert rsp_content["code"] == 201307
+                assert rsp_content["code"] == 201412
                 assert '照片不合格' in rsp_content['message']
         except Exception as e:
             allure.attach("Exception: ", "{}".format(e))

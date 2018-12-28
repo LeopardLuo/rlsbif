@@ -339,8 +339,8 @@ class TestModifyHeadImage(object):
     @pytest.mark.parametrize("filename, result",
                              [("case.xlsx", {"code": 1, "msg": ""}),
                               ("temp.txt", {"code": 1, "msg": ""}),
-                              ("hb.mp4", {"code": 1, "msg": ""}),
-                              ("max.jpg", {"code": 1, "msg": ""}), ],
+                              ("hb.mp4", {"code": 201400, "msg": "文件上传失败"}),
+                              ("max.jpg", {"code": 201400, "msg": "文件上传失败"}), ],
                              ids=["image(xlsx)", "image(txt)", "image(mp4)", "image(max)"])
     def test_109005_image_type_wrong(self, filename, result):
         """ Test wrong image type values (png/jpg/jpeg/bmp/gif）(FT-HTJK-109-005).
@@ -712,5 +712,5 @@ class TestModifyHeadImage(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_APP_Modify_HeadImage.py'])
-    # pytest.main(['-s', 'test_APP_Modify_HeadImage.py::TestModifyHeadImage::test_109005_image_type_wrong'])
+    # pytest.main(['-s', 'test_APP_Modify_HeadImage.py'])
+    pytest.main(['-s', 'test_APP_Modify_HeadImage.py::TestModifyHeadImage::test_109005_image_type_wrong'])

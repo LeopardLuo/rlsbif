@@ -377,7 +377,7 @@ class TestMyFeature(object):
                               ("case.xlsx", {"code": 201412, "msg": "照片不合格"}),
                               ("temp.txt", {"code": 201412, "msg": "照片不合格"}),
                               ("hb.mp4", {"code": 201412, "msg": "照片不合格"}),
-                              ("monkey.jpg", {"code": 1, "msg": "照片不合格"}),
+                              ("monkey.jpg", {"code": 201412, "msg": "照片不合格"}),
                               ("dog5.jpg", {"code": 201412, "msg": "照片不合格"}), ],
                              ids=["face_photo(gif)", "face_photo(xlsx)", "face_photo(txt)",
                                   "face_photo(mp4)", "face_photo(other)", "face_photo(dog)"])
