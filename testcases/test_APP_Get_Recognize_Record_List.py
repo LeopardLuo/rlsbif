@@ -207,7 +207,7 @@ class TestGetRecognizeRecordList(object):
                     devices_ids.append(select_result[0][0])
 
             with allure.step("teststep: publish service order report."):
-                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "ServiceOrderReport")
+                topic = "/{0}/{1}/{2}".format(cls.productkey, cls.devicename, "update")
                 in_payload = {
                     "action_id": "100",
                     "data": {
@@ -1016,7 +1016,7 @@ class TestGetRecognizeRecordList(object):
     @pytest.mark.parametrize("timestamp, result",
                              [(1, {"status": 200, "code": 1, "msg": ""}),
                               (9223372036854775807, {"status": 200, "code": 1, "msg": ""}),
-                              (0, {"status": 200, "code": 0, "msg": "timestamp不能为空"}),
+                              (0, {"status": 200, "code": 101000, "msg": "timestamp不能为空"}),
                               (-1, {"status": 200, "code": 1, "msg": ""}),
                               (-9223372036854775809, {"status": 400, "code": 0, "msg": "is invalid"}),
                               (9223372036854775808, {"status": 400, "code": 0, "msg": "is invalid"}),
