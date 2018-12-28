@@ -19,7 +19,7 @@ class LoginPage(PageObject):
     submit = PageElement(xpath='//*[@id="form"]/div/div[3]/button')
 
 class MainMenu(PageObject):
-    page_title = PageElement(xpath='/html/body/nav/div/div[1]/span/b')
+    page_title = PageElement(xpath='/html/body/nav/div/div[1]/span/b', timeout=30)
     login_username = PageElement(xpath='//*[@id="bs-example-navbar-collapse-1"]/div/a/span/b[2]')
     system_manage = PageElement(xpath='//*[@id="menu"]/li/div[1]')
     provider_info_manage = PageElement(xpath='//*[@id="menu"]/li/div[3]')
@@ -33,15 +33,15 @@ class MainMenu(PageObject):
     logout_cancel = PageElement(xpath='//*[@id="LogOut"]/div/div/div[2]/div/button[2]')
 
 class OrderManage(PageObject):
-    search_name = PageElement(id_='name')
-    pass_order_all = PageElement(xpath='//*[@id="searchForm"]/div[5]/button[1]')
-    refuse_order_all = PageElement(xpath='//*[@id="searchForm"]/div[5]/button[2]')
+    search_name = PageElement(id_='name', timeout=30)
     order_list = PageElements(xpath='/html/body/div[1]/div[1]/table/tbody/tr')
-    select_all = PageElement(xpath='/html/body/div[1]/div[1]/table/thead/tr/th[1]/div/label')
-    modal = PageElement(xpath='//*[@id="DeleteModel"]')
-    confirm_info = PageElement(xpath='//*[@id="DeleteModel"]/div/div/div[2]/p', timeout=30)
-    pass_confirm = PageElement(xpath='//*[@id="DeleteModel"]/div/div/div[2]/div/button[1]')
-    pass_concel = PageElement(xpath='//*[@id="DeleteModel"]/div/div/div[2]/div/button[2]')
+    order_id = PageElement(xpath='//*[@id="orderNum"]', timeout=30)
+    approve_refuse = PageElement(xpath='//*[@id="modal"]/div/div/div[3]/button[2]')
+    approve_pass = PageElement(xpath='//*[@id="modal"]/div/div/div[3]/button[3]')
+    approve_cancel = PageElement(xpath='//*[@id="modal"]/div/div/div[3]/button[4]')
+    prompt_info = PageElement(xpath='//*[@id="DeleteModel"]/div/div/div[2]/p', timeout=30)
+    prompt_confirm = PageElement(xpath='//*[@id="DeleteModel"]/div/div/div[2]/div/button[1]')
+    prompt_cancel = PageElement(xpath='//*[@id="DeleteModel"]/div/div/div[2]/div/button[2]')
     result_info = PageElement(xpath='//*[@id="MessageModel"]/div/div/div[2]/p', timeout=30)
     result_close = PageElement(xpath='//*[@id="MessageModel"]/div/div/div[2]/div/button')
 
@@ -54,8 +54,16 @@ class OrderManage(PageObject):
             orders.append(order)
         return orders
 
+    def get_first_order(self):
+        orderinfo = []
+        for i in range(2, 9):
+            orderinfo.append(self.order_list[0].find_element_by_xpath("td[{}]".format(i)))
+        return orderinfo
+
 def approve_orders(username, password, logger=None):
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument('lang=zh_CN.UTF-8')
+    driver = webdriver.Chrome(chrome_options=options)
     driver.maximize_window()
     is_pass = True
     try:
@@ -71,47 +79,61 @@ def approve_orders(username, password, logger=None):
         login.password = password
         login.submit.click()
         menu = MainMenu(driver)
-        # 在订单审批页面循环批量审批订单
-        for i in range(0, 200):
-            logger and logger.info("Test times({})".format(i + 1))
-            driver.refresh()
-            menu.order_manage.click()
-            menu.order_approve.click()
+        # 进入订单审批页面
+        menu.order_manage.click()
+        menu.order_approve.click()
+        sleep(1)
+        # 切换到订单列表窗口
+        driver.switch_to.frame("RIframe")
+        order_manage = OrderManage(driver)
+        orders = order_manage.order_list
+        orders_list = order_manage.get_order_list(orders)
+        logger and logger.info(orders_list)
+        # 判断是否还有订单
+        i = 1
+        while orders_list:
+            logger and logger.info("<<<<<<<<<<<<<<<<< 第({})个订单 >>>>>>>>>>>>>>>>>>".format(i))
+            # 点击第一个订单的审批按钮
+            approve_btn = order_manage.get_first_order()[-1]
+            approve_btn.click()
+            # 弹出审批订单模态对话框
+            driver.switch_to.default_content()
+            logger and logger.info(order_manage.order_id.text)
+            # 下拉页面到底部
+            driver.execute_script("arguments[0].focus();", order_manage.approve_pass)
             sleep(1)
+            order_manage.approve_pass.click()
+            # 弹出审批确认对话框
+            sleep(1)
+            logger and logger.info(order_manage.prompt_info.text)
+            sleep(1)
+            order_manage.prompt_confirm.click()
+            # 弹出审批结果对话框
+            sleep(1)
+            result_info = order_manage.result_info.text
+            if '成功' not in result_info:
+                piture = pic_path + '_' + str(i) + '.png'
+                logger and logger.info(piture)
+                driver.save_screenshot(piture)
+                is_pass = False
+                order_manage.result_close.click()
+                driver.switch_to.default_content()
+                break
+            order_manage.result_close.click()
+            sleep(3)
+            # 返回到主页面
+            driver.switch_to.default_content()
+            logger and logger.info(menu.page_title.text)
+            # 切换到订单列表窗口
             driver.switch_to.frame("RIframe")
-            order_manage = OrderManage(driver)
+            search_input = order_manage.search_name
             orders = order_manage.order_list
             orders_list = order_manage.get_order_list(orders)
             logger and logger.info(orders_list)
-            # 判断是否还有订单
-            if orders_list:
-                # 批量审批并且保持审批结果
-                order_manage.select_all.click()
-                order_manage.pass_order_all.click()
-                driver.switch_to.default_content()
-                logger and logger.info(order_manage.confirm_info.text)
-                sleep(1)
-                order_manage.pass_confirm.click()
-                sleep(5)
-                result_text = order_manage.result_info.text
-                logger and logger.info(result_text)
-                sleep(1)
-                if '成功' not in result_text:
-                    piture = pic_path + '_' + str(i) + '.png'
-                    logger and logger.info(piture)
-                    driver.save_screenshot(piture)
-                    is_pass = False
-                    driver.switch_to.default_content()
-                    break
-                order_manage.result_close.click()
-                sleep(3)
-                driver.switch_to.default_content()
-            else:
-                logger and logger.info("No orders.")
-                driver.switch_to.default_content()
-                is_pass = True
-                break
+            i += 1
         # 退出登录
+        sleep(1)
+        driver.switch_to.default_content()
         sleep(1)
         menu.login_username.click()
         menu.logout.click()
