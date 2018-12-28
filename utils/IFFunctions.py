@@ -1977,7 +1977,7 @@ def iot_publish_SyncFeatureData(mqttclient, productkey, devicename, device_id, f
     logger and logger.info("---- start iot_publish_SyncFeatureData ----")
     tname = ConfigParse().getItem("iot", "SyncFeatureDataUp")
     topic = "/{0}/{1}/{2}".format(productkey, devicename, tname)
-    payload = {"action_id": "105",
+    payload = {"action_id": "101",
                "data": {
                    "device_id": device_id,
                    "feature_info": feature_info},

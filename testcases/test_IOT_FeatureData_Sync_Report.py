@@ -34,6 +34,8 @@ class TestFeatureDataSyncReport(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
+                cls.data_sync_get = cls.config.getItem("iot", "SyncFeatureDataDown")
+                cls.data_sync_up = cls.config.getItem("iot", "SyncFeatureDataUp")
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -100,9 +102,9 @@ class TestFeatureDataSyncReport(object):
     @allure.testcase("FT-HTJK-003-068")
     def test_003068_report_feature_data_synchronization(self):
         self.logger.info(".... test_003068_report_feature_data_synchronization ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -113,7 +115,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": "123456"},
@@ -136,14 +138,14 @@ class TestFeatureDataSyncReport(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
-                allure.attach("Expect action id:", "205")
+                allure.attach("Expect action id:", "203")
                 allure.attach("Actual action id:", str(action_id))
                 allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
                 allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
-                assert action_id == "205"
+                assert action_id == "203"
                 assert send_payload["data"]["feature_info"] == feature_info_payload
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -162,16 +164,16 @@ class TestFeatureDataSyncReport(object):
     @allure.story("设置错误的action_id，设备特征同步上报")
     @allure.testcase("FT-HTJK-003-069")
     @pytest.mark.parametrize("action_id, result",
-                             [('109', []), ('105' * 10, []), ('1.0', []), ('中', []), ('a', []), ('*', []), ('1A', []),
+                             [('109', []), ('101' * 10, []), ('1.0', []), ('中', []), ('a', []), ('*', []), ('1A', []),
                               ('1中', []), ('1*', []), (' ', []), ('', [])],
-                             ids=["action_id(非105)", "action_id(超长值)", "action_id(小数)", "action_id(中文)",
+                             ids=["action_id(非101)", "action_id(超长值)", "action_id(小数)", "action_id(中文)",
                                   "action_id(字母)", "action_id(特殊字符)", "action_id(数字字母)", "action_id(数字中文)",
                                   "action_id(数字特殊字符)", "action_id(空格)", "action_id(空)"])
     def test_003069_report_feature_data_synchronization_incorrect_action_id(self, action_id, result):
         self.logger.info(".... test_003069_report_feature_data_synchronization_incorrect_action_id ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -229,9 +231,9 @@ class TestFeatureDataSyncReport(object):
                                   "device_id(数字特殊字符)", "device_id(空格)", "device_id(空)"])
     def test_003070_report_feature_data_synchronization_incorrect_device_id(self, device_id, result):
         self.logger.info(".... test_003070_report_feature_data_synchronization_incorrect_device_id ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -242,7 +244,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": device_id,
                                     "feature_info": "123456"},
@@ -285,9 +287,9 @@ class TestFeatureDataSyncReport(object):
                              ids=["feature_info(JSON字符串)", "feature_info(数字)", "feature_info(字母)"])
     def test_003071_report_feature_data_synchronization_correct_feature_info(self,feature_info):
         self.logger.info(".... test_003071_report_feature_data_synchronization_correct_feature_info ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -298,7 +300,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": feature_info},
@@ -321,14 +323,14 @@ class TestFeatureDataSyncReport(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
-                allure.attach("Expect action id:", "205")
+                allure.attach("Expect action id:", "203")
                 allure.attach("Actual action id:", str(action_id))
                 allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
                 allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
-                assert action_id == "205"
+                assert action_id == "203"
                 assert send_payload["data"]["feature_info"] == feature_info_payload
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -352,9 +354,9 @@ class TestFeatureDataSyncReport(object):
                                   "device_id(数字特殊字符)", "device_id(空格)", "device_id(空)"])
     def test_003072_report_feature_data_synchronization_incorrect_feature_info(self, feature_info, result):
         self.logger.info(".... test_003072_report_feature_data_synchronization_incorrect_feature_info ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -365,7 +367,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": feature_info},
@@ -408,9 +410,9 @@ class TestFeatureDataSyncReport(object):
                              ids=["timestamp(最小值)", "timestamp(最大值)"])
     def test_003073_report_feature_data_synchronization_correct_timestamp(self, timestamp):
         self.logger.info(".... test_003073_report_feature_data_synchronization_correct_timestamp ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -421,7 +423,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": "123456"},
@@ -444,14 +446,14 @@ class TestFeatureDataSyncReport(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
-                allure.attach("Expect action id:", "205")
+                allure.attach("Expect action id:", "203")
                 allure.attach("Actual action id:", str(action_id))
                 allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
                 allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
-                assert action_id == "205"
+                assert action_id == "203"
                 assert send_payload["data"]["feature_info"] == feature_info_payload
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -480,9 +482,9 @@ class TestFeatureDataSyncReport(object):
                                   "timestamp(数字特殊字符)", "timestamp(空格)", "timestamp(空)"])
     def test_003074_report_feature_data_synchronization_incorrect_timestamp(self, timestamp, result):
         self.logger.info(".... test_003074_report_feature_data_synchronization_incorrect_timestamp ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -493,7 +495,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": "123456"},
@@ -533,9 +535,9 @@ class TestFeatureDataSyncReport(object):
     @allure.testcase("FT-HTJK-003-075")
     def test_003075_report_feature_data_synchronization_no_action_id(self):
         self.logger.info(".... test_003075_report_feature_data_synchronization_no_action_id ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -586,9 +588,9 @@ class TestFeatureDataSyncReport(object):
     @allure.testcase("FT-HTJK-003-076")
     def test_003076_report_feature_data_synchronization_no_device_id(self):
         self.logger.info(".... test_003076_report_feature_data_synchronization_no_device_id ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -599,7 +601,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {   "action_id": "105",
+                send_payload = {   "action_id": "101",
                     "data": {
                         "feature_info": "123456"},
                     "timestamp": str(get_timestamp())}
@@ -638,9 +640,9 @@ class TestFeatureDataSyncReport(object):
     @allure.testcase("FT-HTJK-003-077")
     def test_003077_report_feature_data_synchronization_no_feature_info(self):
         self.logger.info(".... test_003077_report_feature_data_synchronization_no_feature_info ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -651,7 +653,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id},
                                 "timestamp": str(get_timestamp())}
@@ -690,9 +692,9 @@ class TestFeatureDataSyncReport(object):
     @allure.testcase("FT-HTJK-003-078")
     def test_003078_report_feature_data_synchronization_no_timestamp(self):
         self.logger.info(".... test_003078_report_feature_data_synchronization_no_timestamp ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -703,7 +705,7 @@ class TestFeatureDataSyncReport(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                 "feature_info": "123456"}}

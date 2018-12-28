@@ -41,6 +41,7 @@ class TestServiceOrderPush(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
+                cls.order_create = cls.config.getItem('iot', 'ServiceOrderPush')
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -192,7 +193,7 @@ class TestServiceOrderPush(object):
             self.logger.info("delete result: {0}".format(features_delete_result))
         with allure.step("delete bus_service_order_device_list"):
             bus_service_order_device_list_table = "bus_service_order_device_list"
-            bus_service_order_device_list_condition = ("device_id", self.device_id)
+            bus_service_order_device_list_condition = ("service_order_id", self.service_order_id)
             allure.attach("table name", str(bus_service_order_device_list_table))
             self.logger.info("table: {0}".format(bus_service_order_device_list_table))
             bus_service_order_device_list_result = self.mysql.execute_delete_condition(
@@ -223,7 +224,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-001")
     def test_003001_get_payload_action_id(self):
         self.logger.info(".... test_003001_get_payload_action_id ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         self.logger.info("topic:{0}".format(topic))
         try:
             with allure.step("teststep1: subscribe the topic."):
@@ -305,7 +306,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-002")
     def test_003002_get_payload_service_order_id(self):
         self.logger.info(".... test_003002_get_payload_service_order_id ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -386,7 +387,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-003")
     def test_003003_get_payload_feature(self):
         self.logger.info(".... test_003003_get_payload_feature ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -470,7 +471,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-004")
     def test_003004_get_payload_feature_type(self):
         self.logger.info(".... test_003004_get_payload_feature_type ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -554,7 +555,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-005")
     def test_003005_get_payload_verify_condition_type(self):
         self.logger.info(".... test_003005_get_payload_verify_condition_type ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -645,7 +646,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-006")
     def test_003006_get_payload_begin_time(self):
         self.logger.info(".... test_003006_get_payload_begin_time ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -727,7 +728,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-007")
     def test_003007_get_payload_end_time(self):
         self.logger.info(".... test_003007_get_payload_end_time ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -809,7 +810,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-008")
     def test_003008_get_payload_begin_time_and_end_time_1(self):
         self.logger.info("....test_get_payload_begin_time_and_end_time_1 ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -902,7 +903,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-009")
     def test_003009_get_payload_begin_time_and_end_time_2(self):
         self.logger.info("....test_get_payload_begin_time_and_end_time_2 ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -994,7 +995,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-010")
     def test_003010_get_payload_begin_time_and_end_time_3(self):
         self.logger.info("....test_get_payload_begin_time_and_end_time_3 ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1087,7 +1088,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-011")
     def test_003011_get_payload_in_count(self):
         self.logger.info("....test_get_payload_in_count ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1178,7 +1179,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-012")
     def test_003012_get_payload_in_count_1(self):
         self.logger.info("....test_get_payload_in_count_1 ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1274,7 +1275,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-013")
     def test_003013_get_payload_in_count_2(self):
         self.logger.info("....test_get_payload_in_count_2 ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1371,7 +1372,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-014")
     def test_003014_get_payload_in_count_3(self):
         self.logger.info("....test_get_payload_in_count_2 ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1468,7 +1469,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-015")
     def test_003015_get_payload_extra(self):
         self.logger.info("....test_get_payload_extra ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1549,7 +1550,7 @@ class TestServiceOrderPush(object):
     @allure.testcase("FT-HTJK-003-016")
     def test_003016_get_payload_timestamp(self):
         self.logger.info("....test_get_payload_timestamp ....")
-        topic = "/{0}/{1}/ServiceOrderPush".format(self.ProductKey, self.DeviceName)
+        topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.order_create)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(topic)
@@ -1630,5 +1631,5 @@ class TestServiceOrderPush(object):
 
 
 if __name__ == '__main__':
-    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])
-    pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003001_get_payload_action_id'])
+    pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py'])
+    # pytest.main(['-s', 'test_IOT_ServiceOrder_Push.py::TestServiceOrderPush::test_003001_get_payload_action_id'])

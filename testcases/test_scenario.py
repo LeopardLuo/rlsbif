@@ -321,7 +321,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     assert False
@@ -549,7 +549,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     assert False
@@ -794,7 +794,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     assert False
@@ -1044,7 +1044,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     assert False
@@ -1311,7 +1311,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("device1 message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     self.logger.error("Failed:device1 has not received iot message")
@@ -1320,7 +1320,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient2.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("device2 message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     self.logger.error("Failed:device2 has not received iot message")
@@ -1615,7 +1615,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     self.logger.error("Failed:device1 has not received iot message")
@@ -1624,7 +1624,7 @@ class TestMixScenario(object):
                     msg = self.mqttclient2.rcv_msg.pop()
                     payload = json.loads(msg.payload, encoding='utf-8')
                     self.logger.info("message payload: {}".format(payload))
-                    assert payload['action_id'] == '203'
+                    assert payload['action_id'] == '202'
                     assert payload['data']['service_order_id'] == str(service_order_id)
                 else:
                     self.logger.error("Failed:device2 has not received iot message")
@@ -1685,5 +1685,5 @@ class TestMixScenario(object):
 
 
 if __name__ == '__main__':
-    pytest.main(['-s', 'test_scenario.py'])
-    # pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400006_relative_create_multi_service_order_different_devices'])
+    # pytest.main(['-s', 'test_scenario.py'])
+    pytest.main(['-s', 'test_scenario.py::TestMixScenario::test_400005_owner_create_multi_service_order_different_devices'])

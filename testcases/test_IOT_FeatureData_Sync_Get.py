@@ -34,6 +34,8 @@ class TestFeatureDataSyncReportGet(object):
                 cls.DeviceName = cls.config.getItem("device", "d3_devicename")
                 cls.DeviceSecret = cls.config.getItem("device", "d3_secret")
                 cls.device_id = cls.DeviceName[cls.DeviceName.rfind("_") + 1:]
+                cls.data_sync_get = cls.config.getItem("iot", "SyncFeatureDataDown")
+                cls.data_sync_up = cls.config.getItem("iot", "SyncFeatureDataUp")
                 cls.params = AliParam(ProductKey=cls.ProductKey, DeviceName=cls.DeviceName,
                                       DeviceSecret=cls.DeviceSecret)
                 cls.clientid, cls.username, cls.password, cls.hostname = cls.params.get_param()
@@ -100,9 +102,9 @@ class TestFeatureDataSyncReportGet(object):
     @allure.testcase("FT-HTJK-003-079")
     def test_003079_get_payload_action_id(self):
         self.logger.info(".... test_003079_get_payload_action_id ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -113,7 +115,7 @@ class TestFeatureDataSyncReportGet(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": "123456"},
@@ -136,14 +138,14 @@ class TestFeatureDataSyncReportGet(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
-                allure.attach("Expect action id:", "205")
+                allure.attach("Expect action id:", "203")
                 allure.attach("Actual action id:", str(action_id))
                 allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
                 allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
-                assert action_id == "205"
+                assert action_id == "203"
                 assert send_payload["data"]["feature_info"] == feature_info_payload
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -163,9 +165,9 @@ class TestFeatureDataSyncReportGet(object):
     @allure.testcase("FT-HTJK-003-080")
     def test_003080_get_payload_feature_info(self):
         self.logger.info(".... test_003080_get_payload_feature_info ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -176,7 +178,7 @@ class TestFeatureDataSyncReportGet(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": "123456"},
@@ -199,14 +201,14 @@ class TestFeatureDataSyncReportGet(object):
                 msg_payload_dict = json.loads(msg_payload)
                 action_id = msg_payload_dict["action_id"]
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
-                allure.attach("Expect action id:", "205")
+                allure.attach("Expect action id:", "203")
                 allure.attach("Actual action id:", str(action_id))
                 allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
                 allure.attach("Actual feature_info:", str(feature_info_payload))
                 self.logger.info("Actual payload:{0}".format(msg_payload))
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
-                assert action_id == "205"
+                assert action_id == "203"
                 assert send_payload["data"]["feature_info"] == feature_info_payload
         except Exception as e:
             allure.attach("Exception: ", "{0}".format(e))
@@ -226,9 +228,9 @@ class TestFeatureDataSyncReportGet(object):
     @allure.testcase("FT-HTJK-003-081")
     def test_003081_get_payload_timestamp(self):
         self.logger.info(".... test_003081_get_payload_timestamp ....")
-        re_topic = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey, self.DeviceName)
-        re_topic2 = "/{0}/{1}/SyncFeatureData/Down".format(self.ProductKey2, self.DeviceName2)
-        send_topic = "/{0}/{1}/SyncFeatureData/Up".format(self.ProductKey, self.DeviceName)
+        re_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_get)
+        re_topic2 = "/{0}/{1}/{2}".format(self.ProductKey2, self.DeviceName2, self.data_sync_get)
+        send_topic = "/{0}/{1}/{2}".format(self.ProductKey, self.DeviceName, self.data_sync_up)
         try:
             with allure.step("teststep1: subscribe the topic."):
                 self.mqtt_client.subscribe(re_topic)
@@ -239,7 +241,7 @@ class TestFeatureDataSyncReportGet(object):
                 self.logger.info("device_2 subscribe topic succeed!")
             with allure.step("teststep2:report feature data"):
                 self.logger.info("strat to report feature data.")
-                send_payload = {"action_id": "105",
+                send_payload = {"action_id": "101",
                                 "data": {
                                     "device_id": self.device_id,
                                     "feature_info": "123456"},
@@ -264,7 +266,7 @@ class TestFeatureDataSyncReportGet(object):
                 feature_info_payload = msg_payload_dict["data"]["feature_info"]
                 timestamp_payload = msg_payload_dict["timestamp"]
                 local_timestamp = get_timestamp()
-                allure.attach("Expect action id:", "205")
+                allure.attach("Expect action id:", "203")
                 allure.attach("Actual action id:", str(action_id))
                 allure.attach("Expect feature_info:", str(send_payload["data"]["feature_info"]))
                 allure.attach("Actual feature_info:", str(feature_info_payload))
@@ -274,7 +276,7 @@ class TestFeatureDataSyncReportGet(object):
                 self.logger.info("Actual action id:{0}".format(action_id))
                 self.logger.info("Actual feature_info:{0}".format(feature_info_payload))
                 self.logger.info("Actual timestamp:{0}".format(timestamp_payload))
-                assert action_id == "205"
+                assert action_id == "203"
                 assert send_payload["data"]["feature_info"] == feature_info_payload
                 assert local_timestamp <= int(timestamp_payload) + 5
         except Exception as e:
@@ -292,4 +294,4 @@ class TestFeatureDataSyncReportGet(object):
 
 if __name__ == '__main__':
     # pytest.main(['-s', 'test_IOT_FeatureData_Sync_Report.py'])
-    pytest.main(['-s', 'test_IOT_FeatureData_Sync_Report_Get.py::TestFeatureDataSyncReportGet::test_003079_get_payload_action_id'])
+    pytest.main(['-s', 'test_IOT_FeatureData_Sync_Get.py::TestFeatureDataSyncReportGet::test_003079_get_payload_action_id'])
